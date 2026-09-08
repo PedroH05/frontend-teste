@@ -32,6 +32,7 @@ export interface Captacao {
   docPl: boolean | null;
   docRecebidaEm: string | null;
   prejuizoPublico: boolean | null;
+  dateLabel: string | null;
   createdAt: string;
 }
 

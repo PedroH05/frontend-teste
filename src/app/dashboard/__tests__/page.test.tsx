@@ -1,0 +1,77 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import DashboardPage from '../page';
+import type { Captacao } from '@/lib/types';
+
+const apiFetchMock = vi.fn();
+vi.mock('@/lib/api', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api')>('@/lib/api');
+  return { ...actual, apiFetch: (...args: unknown[]) => apiFetchMock(...args) };
+});
+
+function cap(overrides: Partial<Captacao>): Captacao {
+  const old = new Date();
+  old.setMonth(old.getMonth() - 3);
+  return {
+    id: 1,
+    cli: 'TECNO',
+    referencia: null,
+    eta: null,
+    regime: null,
+    bl: null,
+    ce: null,
+    container: null,
+    quantidade: null,
+    navio: null,
+    despachante: null,
+    terminalDescarga: null,
+    terminalCaptado: null,
+    observacao: null,
+    cnpj: null,
+    stage: null,
+    docBl: null,
+    docCe: null,
+    docPl: null,
+    docRecebidaEm: null,
+    prejuizoPublico: null,
+    dateLabel: null,
+    createdAt: old.toISOString(), // fora do período "mês" por padrão
+    ...overrides,
+  };
+}
+
+describe('DashboardPage', () => {
+  it('"Total histórico" e "Tabela pública" não mudam com o filtro de período', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce([
+      cap({ id: 1, prejuizoPublico: true }), // fora do mês corrente
+      cap({ id: 2 }),
+    ]);
+    render(<DashboardPage />);
+
+    await screen.findByText('Total histórico');
+    // 2 captações no total, independente do período "mês" (padrão) filtrar 0.
+    const totalCard = screen.getByText('Total histórico').previousSibling;
+    expect(totalCard?.textContent).toBe('2');
+    const publicaCard = screen.getByText('Tabela pública').previousSibling;
+    expect(publicaCard?.textContent).toBe('1');
+
+    await user.click(screen.getByRole('button', { name: 'Hoje' }));
+
+    expect(screen.getByText('Total histórico').previousSibling?.textContent).toBe('2');
+    expect(screen.getByText('Tabela pública').previousSibling?.textContent).toBe('1');
+  });
+
+  it('KPI "Captações" reflete o período selecionado', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce([cap({ id: 1 }), cap({ id: 2 })]); // ambas fora do mês corrente
+    render(<DashboardPage />);
+
+    await screen.findByText(/Captações · /);
+    expect(screen.getByText(/Captações · /).previousSibling?.textContent).toBe('0');
+
+    await user.click(screen.getByRole('button', { name: 'Total' }));
+    expect(screen.getByText(/Captações · /).previousSibling?.textContent).toBe('2');
+  });
+});

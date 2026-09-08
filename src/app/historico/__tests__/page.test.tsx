@@ -33,6 +33,7 @@ function base(overrides: Partial<Captacao>): Captacao {
     docPl: null,
     docRecebidaEm: null,
     prejuizoPublico: null,
+    dateLabel: null,
     createdAt: new Date().toISOString(),
     ...overrides,
   };
