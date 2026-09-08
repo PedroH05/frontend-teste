@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
-import type { CaptacaoInput } from '@/lib/types';
+import type { Captacao, CaptacaoInput } from '@/lib/types';
 import { cleanDesp } from '@/lib/despachante';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,16 +34,69 @@ type FormState = CaptacaoInput & { publicaConfirmado?: boolean };
 const initialForm: FormState = {};
 
 export default function CaptacoesPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-sm text-muted-foreground">Carregando…</div>}>
+      <CaptacoesForm />
+    </Suspense>
+  );
+}
+
+function CaptacoesForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get('edit');
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(initialForm);
   const [status, setStatus] = useState<'PENDENTE' | 'EFETIVA'>('PENDENTE');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [loadingEdit, setLoadingEdit] = useState(!!editId);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
   }
+
+  // Modo edição: carrega a captação existente e preenche o formulário.
+  // Não existe GET /captacoes/:id — busca a lista e acha pelo id, mesmo
+  // padrão do original (editProcess() achava no array DATA já carregado).
+  useEffect(() => {
+    if (!editId) return;
+    (async () => {
+      try {
+        const rows = await apiFetch<Captacao[]>('/captacoes');
+        const c = rows.find((r) => r.id === Number(editId));
+        if (!c) {
+          setError('Captação não encontrada.');
+          return;
+        }
+        setForm({
+          cli: c.cli ?? '',
+          referencia: c.referencia ?? '',
+          eta: c.eta ? c.eta.slice(0, 10) : undefined,
+          navio: c.navio ?? '',
+          quantidade: c.quantidade ?? undefined,
+          container: c.container ?? '',
+          ce: c.ce ?? '',
+          regime: c.regime ?? undefined,
+          bl: c.bl ?? '',
+          despachante: c.despachante ?? '',
+          terminalDescarga: c.terminalDescarga ?? undefined,
+          terminalCaptado: c.terminalCaptado ?? undefined,
+          observacao: c.observacao ?? '',
+          cnpj: c.cnpj ?? '',
+          docBl: c.docBl ?? false,
+          docCe: c.docCe ?? false,
+          docPl: c.docPl ?? false,
+          prejuizoPublico: c.prejuizoPublico ?? false,
+        });
+        setStatus(c.stage === 'EFETIVA' ? 'EFETIVA' : 'PENDENTE');
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : 'Erro ao carregar captação');
+      } finally {
+        setLoadingEdit(false);
+      }
+    })();
+  }, [editId]);
 
   function handlePublicaChange(checked: boolean) {
     if (checked && !confirm('Confirma marcar esta carga como tabela pública?')) return;
@@ -67,10 +120,17 @@ export default function CaptacoesPage() {
         despachante: form.despachante ? cleanDesp(form.despachante) : undefined,
         efetivada: status === 'EFETIVA',
       };
-      await apiFetch<CaptacaoInput>('/captacoes', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
+      if (editId) {
+        await apiFetch<CaptacaoInput>(`/captacoes/${editId}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+        });
+      } else {
+        await apiFetch<CaptacaoInput>('/captacoes', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+      }
       router.push('/historico');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erro ao salvar captação');
@@ -81,10 +141,18 @@ export default function CaptacoesPage() {
 
   const showDocs = status !== 'EFETIVA';
 
+  if (loadingEdit) {
+    return (
+      <div className="p-8 text-sm text-muted-foreground">Carregando captação…</div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-8">
       <div>
-        <h1 className="text-lg font-semibold">Captação manual</h1>
+        <h1 className="text-lg font-semibold">
+          {editId ? 'Editar captação' : 'Captação manual'}
+        </h1>
         <p className="text-sm text-muted-foreground">
           Os mesmos campos da planilha — agora salvos direto na captacao-api
         </p>
