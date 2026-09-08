@@ -46,7 +46,27 @@ function CaptacoesForm() {
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormState>(initialForm);
+  // Pré-preenchimento a partir da Carteira (captar()): mesmos campos que o
+  // original levava do embarque pro formulário. Só usado quando não é edição.
+  const [form, setForm] = useState<FormState>(() => {
+    if (editId) return initialForm;
+    const pick = (k: string) => searchParams.get(k) || undefined;
+    const prefill: FormState = {
+      cli: pick('cli'),
+      referencia: pick('referencia'),
+      eta: pick('eta'),
+      navio: pick('navio'),
+      ce: pick('ce'),
+      bl: pick('bl'),
+      container: pick('container'),
+      regime: pick('regime'),
+      despachante: pick('despachante'),
+      terminalDescarga: pick('terminalDescarga'),
+      terminalCaptado: pick('terminalCaptado'),
+      cnpj: pick('cnpj'),
+    };
+    return Object.values(prefill).some(Boolean) ? prefill : initialForm;
+  });
   const [status, setStatus] = useState<'PENDENTE' | 'EFETIVA'>('PENDENTE');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);

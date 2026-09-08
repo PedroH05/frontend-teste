@@ -35,6 +35,27 @@ export interface Captacao {
   createdAt: string;
 }
 
+// Devolvido por GET /carteira — já casado e classificado pelo backend
+// (domain/cockpit.ts). Ver migration-plan/comparison/API_COMPARISON.md.
+export interface CockpitRow {
+  cnpj: string;
+  cli: string;
+  ref: string;
+  eta: string;
+  regime: string;
+  ce: string;
+  bl: string;
+  navio: string;
+  cont: string;
+  qtd: string;
+  desp: string;
+  atrac: string;
+  parc: string;
+  stage: 'NENHUM' | 'SAIU' | 'EFETIVA' | 'MANIFESTADA_DOCS' | 'MANIFESTADA_PARC';
+  capId: number | null;
+  prov?: boolean;
+}
+
 // Corpo aceito por POST/PATCH /captacoes — ver
 // migration-plan/comparison/API_COMPARISON.md.
 export interface CaptacaoInput {
