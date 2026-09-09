@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
-import type { CockpitRow } from '@/lib/types';
+import type { CockpitRow, ImportResult } from '@/lib/types';
 import { BANDS, banda, diasAte, dLabel, fmtEta, shortTerm } from '@/lib/risco';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +44,9 @@ export default function CarteiraPage() {
   const [busca, setBusca] = useState('');
   const [ask, setAsk] = useState('');
   const [askAnswer, setAskAnswer] = useState<React.ReactNode>(null);
+  const [importing, setImporting] = useState(false);
+  const [importSummary, setImportSummary] = useState<ImportResult | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [alertMin, setAlertMin] = useState(() => {
     if (typeof window === 'undefined') return false;
     try {
@@ -256,6 +259,28 @@ export default function CarteiraPage() {
     }
   }
 
+  async function handleImportFile(file: File | undefined) {
+    if (!file) return;
+    setImporting(true);
+    setImportSummary(null);
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const result = await apiFetch<ImportResult>('/import/logcomex', {
+        method: 'POST',
+        body: formData,
+      });
+      setImportSummary(result);
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Erro ao ler o arquivo');
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
   async function handleExport() {
     try {
       const { apiFetch: fetchFn } = await import('@/lib/api');
@@ -315,13 +340,32 @@ export default function CarteiraPage() {
             {linhas.length} processos · {totalContainers} contêineres
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={handleExport}>
             Exportar Captação Oficial
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            disabled={importing}
+            aria-label="Selecionar planilha do Logcomex"
+            onChange={(e) => handleImportFile(e.target.files?.[0])}
+          />
+          <Button variant="outline" disabled={importing} onClick={() => fileInputRef.current?.click()}>
+            {importing ? 'Lendo a planilha…' : 'Importar Logcomex'}
           </Button>
           <Button onClick={() => router.push('/captacoes')}>+ Nova captação</Button>
         </div>
       </div>
+
+      {importSummary && (
+        <div className="rounded-lg border bg-emerald-50 p-4 text-sm text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">
+          <b>{importSummary.processados}</b> processados · <b>{importSummary.porCnpj}</b> por CNPJ ·{' '}
+          <b>{importSummary.provaveis}</b> prováveis · <b>{importSummary.ignorados}</b> ignorados
+        </div>
+      )}
 
       <div className="rounded-lg border bg-zinc-900 p-4 text-zinc-50">
         <div className="mb-2 flex items-center justify-between">

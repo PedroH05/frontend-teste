@@ -87,4 +87,29 @@ describe('CarteiraPage', () => {
 
     expect(await screen.findByText(/em estado crítico/)).toBeInTheDocument();
   });
+
+  it('importa uma planilha e mostra o resumo estruturado, recarregando a carteira', async () => {
+    const user = userEvent.setup();
+    apiFetchMock
+      .mockResolvedValueOnce({ rows: [] }) // load() inicial
+      .mockResolvedValueOnce({ processados: 3, porCnpj: 2, provaveis: 1, ignorados: 5 }) // import
+      .mockResolvedValueOnce({ rows: [row({})] }); // load() depois do import
+    render(<CarteiraPage />);
+
+    await screen.findByText('Alerta de hoje');
+    const file = new File(['conteudo'], 'planilha.xlsx', {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    await user.upload(screen.getByLabelText('Selecionar planilha do Logcomex'), file);
+
+    expect(await screen.findByText(/processados/)).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(apiFetchMock).toHaveBeenCalledWith(
+      '/import/logcomex',
+      expect.objectContaining({ method: 'POST', body: expect.any(FormData) }),
+    );
+    // recarregou a carteira depois de importar (última chamada é GET /carteira de novo)
+    const ultimaChamada = apiFetchMock.mock.calls.at(-1);
+    expect(ultimaChamada?.[0]).toBe('/carteira');
+  });
 });

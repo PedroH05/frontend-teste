@@ -23,10 +23,14 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     data: { session },
   } = await getSupabase().auth.getSession();
 
+  // Upload de arquivo (FormData) não pode ter Content-Type forçado — o
+  // browser precisa gerar o boundary do multipart sozinho.
+  const isFormData = init?.body instanceof FormData;
+
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
       ...init?.headers,
     },

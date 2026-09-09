@@ -1,6 +1,14 @@
 // Espelham as respostas da captacao-api — ver
 // migration-plan/comparison/API_COMPARISON.md.
 
+// Devolvido por POST /import/logcomex.
+export interface ImportResult {
+  processados: number;
+  porCnpj: number;
+  provaveis: number;
+  ignorados: number;
+}
+
 export interface Cliente {
   id: number;
   name: string;
