@@ -13,7 +13,7 @@ export interface Banda {
 
 export const BANDS: { k: Banda['k']; l: string }[] = [
   { k: 'prej', l: 'Crítico' },
-  { k: 'jan', l: 'Janela aberta ≤7d' },
+  { k: 'jan', l: 'Próximos 7 dias' },
   { k: 'and', l: 'Em andamento' },
   { k: 'efet', l: 'Efetivado' },
   { k: 'conc', l: 'Concluído' },

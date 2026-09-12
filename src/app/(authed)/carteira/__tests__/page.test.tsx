@@ -6,6 +6,7 @@ import type { CockpitRow } from '@/lib/types';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => '/carteira',
 }));
 
 const apiFetchMock = vi.fn();
@@ -48,10 +49,12 @@ describe('CarteiraPage', () => {
 
   it('alerta minimizável esconde e mostra o texto', async () => {
     const user = userEvent.setup();
-    apiFetchMock.mockResolvedValueOnce({ rows: [] });
+    apiFetchMock.mockResolvedValueOnce({
+      rows: [row({ regime: '', eta: '2026-12-01', stage: 'NENHUM', capId: null })],
+    });
     render(<CarteiraPage />);
 
-    await screen.findByText('Alerta de hoje');
+    await screen.findByText('Processos');
     expect(screen.getByText(/janela de 7 dias/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '▾' }));
@@ -63,14 +66,14 @@ describe('CarteiraPage', () => {
     apiFetchMock.mockResolvedValueOnce({ rows: [] });
     render(<CarteiraPage />);
 
-    await screen.findByText('Alerta de hoje');
+    await screen.findByText('Processos');
     await user.type(
       screen.getByPlaceholderText(/o que falta captar/),
       'MSDU7175720',
     );
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
 
-    expect(await screen.findByText(/container/)).toBeInTheDocument();
+    expect(await screen.findByText(/Detectei um/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Rastrear no track-trace' })).toBeInTheDocument();
   });
 
@@ -81,7 +84,7 @@ describe('CarteiraPage', () => {
     });
     render(<CarteiraPage />);
 
-    await screen.findByText('Alerta de hoje');
+    await screen.findByText('Processos');
     await user.type(screen.getByPlaceholderText(/o que falta captar/), 'o que está crítico?');
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
 
@@ -96,7 +99,7 @@ describe('CarteiraPage', () => {
       .mockResolvedValueOnce({ rows: [row({})] }); // load() depois do import
     render(<CarteiraPage />);
 
-    await screen.findByText('Alerta de hoje');
+    await screen.findByText('Processos');
     const file = new File(['conteudo'], 'planilha.xlsx', {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });

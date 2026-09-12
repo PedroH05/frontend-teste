@@ -1,4 +1,5 @@
 import { getSupabase } from './supabase';
+import { isMockMode } from './mock-mode';
 
 // Cliente HTTP pra captacao-api. Toda chamada carrega o JWT da sessão atual
 // do Supabase — é isso que substitui o acesso direto ao banco (ver
@@ -15,6 +16,13 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  // Modo demo: responde do "backend" falso em memória, sem rede nenhuma —
+  // ver lib/mock-mode.ts e lib/mock-backend.ts.
+  if (isMockMode()) {
+    const { mockRequest } = await import('./mock-backend');
+    return mockRequest<T>(path, init);
+  }
+
   if (!API_URL) {
     throw new Error('NEXT_PUBLIC_API_URL ausente — preencher .env.local');
   }

@@ -18,6 +18,13 @@ export interface Cliente {
   ativo: boolean;
 }
 
+// Corpo aceito por POST/PATCH /clientes.
+export interface ClienteInput {
+  name?: string;
+  cnpj?: string;
+  aliases?: string[];
+}
+
 export interface Captacao {
   id: number;
   cli: string | null;

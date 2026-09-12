@@ -4,6 +4,11 @@ import { describe, expect, it, vi } from 'vitest';
 import DashboardPage from '../page';
 import type { Captacao } from '@/lib/types';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => '/dashboard',
+}));
+
 const apiFetchMock = vi.fn();
 vi.mock('@/lib/api', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api')>('@/lib/api');

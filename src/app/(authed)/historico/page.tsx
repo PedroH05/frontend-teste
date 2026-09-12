@@ -1,0 +1,383 @@
+'use client';
+
+import { useMemo, useState } from 'react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { apiFetch, ApiError } from '@/lib/api';
+import type { Captacao } from '@/lib/types';
+import { splitBls } from '@/lib/bl-split';
+import { shortTerm } from '@/lib/risco';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { EmptyState } from '@/components/ship-scene';
+import { RowActions } from '@/components/row-actions';
+import { SegmentedControl } from '@/components/segmented-control';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
+
+// Comportamento portado de captacao-valetrade/public/index.html
+// (renderHistorico, setHistDia, setHistStatus). Ver
+// migration-plan/features/historico/CURRENT_BEHAVIOR.md e
+// migration-plan/prompts/05-historico.md. Sem rota de API própria — lê
+// GET /captacoes (03-captacoes) e filtra no client, igual ao original.
+type Dia = 'hoje' | 'ontem' | 'anteontem' | 'data' | 'tudo';
+type StatusFiltro = 'todos' | 'conc' | 'efet' | 'and';
+
+function inicioDoDia(offsetDias: number): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - offsetDias);
+  return d;
+}
+
+function categoriaDe(stage: string | null): Exclude<StatusFiltro, 'todos'> {
+  if (stage === 'SAIU_TERMINAL') return 'conc';
+  if (stage === 'EFETIVA') return 'efet';
+  return 'and';
+}
+
+function formatDataHora(v: string | null): string {
+  if (!v) return '—';
+  const d = new Date(v);
+  return Number.isNaN(d.getTime())
+    ? '—'
+    : d.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+}
+
+function formatData(v: string | null): string {
+  if (!v) return '—';
+  return v.slice(0, 10).split('-').reverse().join('/');
+}
+
+const STAGE_LABEL: Record<string, string> = {
+  SAIU_TERMINAL: 'Concluído',
+  EFETIVA: 'Efetivado',
+};
+
+const PAGE_SIZE = 12;
+
+export default function HistoricoPage() {
+  const router = useRouter();
+  const [captacoes, setCaptacoes] = useState<Captacao[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [dia, setDia] = useState<Dia>('tudo');
+  const [dataSel, setDataSel] = useState('');
+  const [statusFiltro, setStatusFiltro] = useState<StatusFiltro>('todos');
+  const [busca, setBusca] = useState('');
+  const [drawerBls, setDrawerBls] = useState<string[] | null>(null);
+  const [pagina, setPagina] = useState(1);
+
+  async function load() {
+    setLoading(true);
+    try {
+      const data = await apiFetch<Captacao[]>('/captacoes');
+      setCaptacoes(data);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Erro ao carregar histórico');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    // Busca no mount — setState só depois do await dentro de load().
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    load();
+  }, []);
+
+  const alvo = useMemo((): Date | null => {
+    if (dia === 'hoje') return inicioDoDia(0);
+    if (dia === 'ontem') return inicioDoDia(1);
+    if (dia === 'anteontem') return inicioDoDia(2);
+    if (dia === 'data' && dataSel) return new Date(`${dataSel}T12:00:00`);
+    return null;
+  }, [dia, dataSel]);
+
+  const linhas = useMemo(() => {
+    let rows = [...captacoes];
+    if (alvo) {
+      rows = rows.filter((c) => {
+        const d = c.createdAt ? new Date(c.createdAt) : null;
+        return d && !Number.isNaN(d.getTime()) && d.toDateString() === alvo.toDateString();
+      });
+      rows.sort((a, b) => (b.createdAt < a.createdAt ? -1 : 1));
+    } else {
+      rows.sort((a, b) => ((b.eta ?? '') < (a.eta ?? '') ? -1 : 1));
+    }
+    if (statusFiltro !== 'todos') {
+      rows = rows.filter((c) => categoriaDe(c.stage) === statusFiltro);
+    }
+    if (busca) {
+      const q = busca.toLowerCase();
+      rows = rows.filter((c) => JSON.stringify(c).toLowerCase().includes(q));
+    }
+    return rows;
+  }, [captacoes, alvo, statusFiltro, busca]);
+
+  // Volta pra página 1 sempre que o filtro muda o conjunto exibido — senão
+  // dá pra ficar numa página que não existe mais (ex.: filtrou e sobrou só
+  // 1 página, mas você tava na 4). Ajuste durante o render (não em efeito)
+  // pra não gerar uma renderização em cascata — ver
+  // https://react.dev/learn/you-might-not-need-an-effect.
+  const [filtroAnterior, setFiltroAnterior] = useState({ alvo, statusFiltro, busca });
+  if (filtroAnterior.alvo !== alvo || filtroAnterior.statusFiltro !== statusFiltro || filtroAnterior.busca !== busca) {
+    setFiltroAnterior({ alvo, statusFiltro, busca });
+    setPagina(1);
+  }
+
+  const totalPaginas = Math.max(1, Math.ceil(linhas.length / PAGE_SIZE));
+  const linhasPagina = useMemo(
+    () => linhas.slice((pagina - 1) * PAGE_SIZE, pagina * PAGE_SIZE),
+    [linhas, pagina],
+  );
+
+  async function handleDelete(id: number) {
+    if (!confirm('Excluir este processo? Esta ação não pode ser desfeita.')) return;
+    try {
+      await apiFetch(`/captacoes/${id}`, { method: 'DELETE' });
+      await load(); // fica no Histórico — não força navegação (ver features/captacoes)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Erro ao excluir');
+    }
+  }
+
+  const glassInput = 'vt-glass-strong rounded-[11px] border-[var(--vt-line)] text-[13px]';
+
+  return (
+    <div className="space-y-5 p-6 sm:p-8" style={{ color: 'var(--vt-ink)' }}>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-[21px] font-bold tracking-tight">Histórico</h1>
+            <p className="mt-0.5 text-[12.5px]" style={{ color: 'var(--vt-muted)' }}>
+              Registro completo de tudo que já foi captado (todos os períodos)
+            </p>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="vt-glass-strong rounded-[20px] px-3 py-1.5 text-[12px] font-semibold" style={{ color: 'var(--vt-muted)' }}>
+              {linhas.length} captações
+            </span>
+            <Button
+              variant="ghost"
+              className="vt-btn-primary rounded-[11px] px-3.5 py-2 text-[12.5px] font-semibold transition hover:-translate-y-px"
+              onClick={() => router.push('/captacoes')}
+            >
+              + Nova captação
+            </Button>
+          </div>
+        </div>
+
+        {error && (
+          <p className="text-[13px] font-semibold" style={{ color: 'var(--vt-c-prej)' }}>{error}</p>
+        )}
+
+        <div className="vt-glass overflow-hidden">
+          <div className="flex flex-wrap items-center gap-3 p-[14px_18px]" style={{ borderBottom: '1px solid var(--vt-line2)' }}>
+            <h3 className="text-[14px] font-bold">Captações</h3>
+            <SegmentedControl
+              options={[
+                { value: 'hoje', label: 'Hoje' },
+                { value: 'tudo', label: 'Tudo' },
+              ]}
+              value={dia === 'data' ? 'tudo' : dia}
+              onChange={(v: Dia) => setDia(v)}
+            />
+            <Input
+              type="date"
+              title="Escolher um dia"
+              className={`w-auto ${glassInput}`}
+              value={dataSel}
+              onChange={(e) => {
+                setDataSel(e.target.value);
+                setDia(e.target.value ? 'data' : 'tudo');
+              }}
+            />
+            <select
+              className="vt-native-select"
+              value={statusFiltro}
+              onChange={(e) => setStatusFiltro(e.target.value as StatusFiltro)}
+            >
+              <option value="todos">Todos os status</option>
+              <option value="efet">Efetivado</option>
+              <option value="and">Em andamento</option>
+              <option value="conc">Concluído</option>
+            </select>
+            <Input
+              placeholder="buscar cliente, BL, navio…"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className={`ml-auto w-[220px] ${glassInput}`}
+            />
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow style={{ borderColor: 'var(--vt-line)' }}>
+                {['Status', 'Cliente / Referência', 'Registrado em', 'ETA', 'Regime', 'CE', 'BL', 'Navio', 'Despachante', 'Atracação → Parceiro'].map((h) => (
+                  <TableHead key={h} className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
+                    {h}
+                  </TableHead>
+                ))}
+                <TableHead />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={11} className="text-center" style={{ color: 'var(--vt-muted)' }}>
+                    Carregando…
+                  </TableCell>
+                </TableRow>
+              ) : linhas.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={11}>
+                    <EmptyState title="Histórico vazio" subtitle="As captações aparecem aqui conforme forem feitas." />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                linhasPagina.map((c) => {
+                  const bls = splitBls(c.bl);
+                  return (
+                    <TableRow key={c.id} style={{ borderColor: 'var(--vt-line)' }}>
+                      <TableCell>
+                        <span className={`vt-band ${c.stage === 'SAIU_TERMINAL' ? 'b-conc' : c.stage === 'EFETIVA' ? 'b-efet' : 'b-and'}`}>
+                          {STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="max-w-[170px]">
+                        <div className="flex flex-col gap-px">
+                          <span
+                            title={c.cli ?? undefined}
+                            className="truncate text-[13.5px] font-bold"
+                            style={{ color: 'var(--vt-red)' }}
+                          >
+                            {c.cli}
+                          </span>
+                          <span
+                            title={c.referencia ?? undefined}
+                            className="truncate text-[11px]"
+                            style={{ color: 'var(--vt-muted)' }}
+                          >
+                            {c.referencia}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs whitespace-nowrap">
+                        {formatDataHora(c.createdAt)}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">{formatData(c.eta)}</TableCell>
+                      <TableCell>{c.regime || '—'}</TableCell>
+                      <TableCell className="font-mono text-xs">{c.ce || '—'}</TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {bls.length <= 1 ? (
+                          <span title={c.bl ?? ''} className="inline-block max-w-[110px] truncate align-middle">
+                            {c.bl || '—'}
+                          </span>
+                        ) : (
+                          <>
+                            <span title={c.bl ?? ''} className="inline-block max-w-[110px] truncate align-middle">
+                              {bls[0]}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setDrawerBls(bls)}
+                              className="ml-1 text-xs font-semibold hover:underline"
+                              style={{ color: 'var(--vt-c-prej)' }}
+                            >
+                              +{bls.length - 1}
+                            </button>
+                          </>
+                        )}
+                      </TableCell>
+                      <TableCell className="max-w-[130px] truncate" title={c.navio ?? undefined}>
+                        {c.navio || '—'}
+                      </TableCell>
+                      <TableCell>{c.despachante || '—'}</TableCell>
+                      <TableCell>
+                        {shortTerm(c.terminalDescarga) || '—'} <span style={{ color: 'var(--vt-red)', fontWeight: 700 }}>→</span> {shortTerm(c.terminalCaptado) || '—'}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <RowActions
+                          onEdit={() => router.push(`/captacoes?edit=${c.id}`)}
+                          onDelete={() => handleDelete(c.id)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+          {!loading && linhas.length > 0 && (
+            <div
+              className="flex items-center justify-between px-[18px] py-3 text-[12px]"
+              style={{ borderTop: '1px solid var(--vt-line2)', color: 'var(--vt-muted)' }}
+            >
+              <span>
+                Página {pagina} de {totalPaginas} · {linhas.length} processos
+              </span>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="ghost"
+                  className="vt-glass-strong rounded-[9px] px-2.5 py-1 text-[12px] font-semibold"
+                  disabled={pagina <= 1}
+                  onClick={() => setPagina((p) => Math.max(1, p - 1))}
+                >
+                  ‹ Anterior
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="vt-glass-strong rounded-[9px] px-2.5 py-1 text-[12px] font-semibold"
+                  disabled={pagina >= totalPaginas}
+                  onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+                >
+                  Próxima ›
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <Drawer open={drawerBls !== null} onOpenChange={(open) => !open && setDrawerBls(null)}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>BLs deste processo</DrawerTitle>
+            </DrawerHeader>
+            <div className="flex flex-col gap-2 px-4 pb-4">
+              {(drawerBls ?? []).map((bl, i) => (
+                <div
+                  key={bl + i}
+                  className="vt-glass flex items-center justify-between px-3 py-2 font-mono text-sm"
+                >
+                  {bl}
+                  <span className="text-xs" style={{ color: 'var(--vt-muted)' }}>BL {i + 1}</span>
+                </div>
+              ))}
+            </div>
+            <DrawerFooter>
+              <DrawerClose render={<Button variant="outline">Fechar</Button>} />
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      </div>
+  );
+}

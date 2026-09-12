@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import CaptacoesPage from '../page';
@@ -7,6 +7,7 @@ const pushMock = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
   useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/captacoes',
 }));
 
 const apiFetchMock = vi.fn();
@@ -20,13 +21,16 @@ describe('CaptacoesPage', () => {
     const user = userEvent.setup();
     render(<CaptacoesPage />);
 
-    // navega até o último passo sem preencher nada
-    for (let i = 0; i < 4; i++) {
+    // navega até o último passo (Revisão) sem preencher nada
+    for (let i = 0; i < 5; i++) {
       await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
     }
     await user.click(screen.getByRole('button', { name: 'Salvar' }));
 
-    expect(await screen.findByText('Informe ao menos o cliente.')).toBeInTheDocument();
+    // erro agora aparece junto do campo (stepper aponta o passo 1 com "!"),
+    // não mais como banner solto — ver goToStep(0) em handleSubmit.
+    expect(await screen.findByText('Campo obrigatório')).toBeInTheDocument();
+    expect(screen.getByText('!')).toBeInTheDocument(); // stepper aponta o passo 1
     expect(apiFetchMock).not.toHaveBeenCalled();
   });
 
@@ -37,7 +41,7 @@ describe('CaptacoesPage', () => {
 
     await user.type(screen.getByLabelText('Cliente'), 'tecno');
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
     }
     await user.click(screen.getByRole('button', { name: 'Salvar' }));
@@ -50,6 +54,8 @@ describe('CaptacoesPage', () => {
     expect(body.cli).toBe('TECNO');
     expect(body.efetivada).toBe(false); // status default é PENDENTE
 
-    expect(pushMock).toHaveBeenCalledWith('/historico');
+    // espera a animação do botão Salvar (1.4s) terminar antes de navegar —
+    // ver shipButtonAway() em ../page.tsx.
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/historico'), { timeout: 2000 });
   });
 });

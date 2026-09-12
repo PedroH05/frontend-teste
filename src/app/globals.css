@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -122,9 +122,602 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: var(--vt-page-bg);
   }
   html {
     @apply font-sans;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Design tokens do sistema antigo (captacao-valetrade/public/index.html) */
+/* Prefixo vt- pra não colidir com o tema shadcn acima. Valores copiados  */
+/* literalmente do :root original — não inventar cor nova aqui.          */
+/* ------------------------------------------------------------------ */
+:root {
+  --vt-red: #C01829;
+  --vt-red-soft: #E0556230;
+  --vt-ink: #26241f;
+  --vt-muted: #7c776c;
+  --vt-muted2: #a8a39a;
+  --vt-line: rgba(40, 36, 28, .10);
+  --vt-line2: rgba(40, 36, 28, .06);
+  --vt-c-prej: #C0392B;
+  --vt-c-jan: #B4730E;
+  --vt-c-and: #C9A227;
+  --vt-c-efet: #2C7A5B;
+  --vt-c-conc: #6c7480;
+  --vt-c-prog: #5a6e8c;
+  --vt-bg-prej: rgba(192, 57, 43, .10);
+  --vt-bg-jan: rgba(180, 115, 14, .12);
+  --vt-bg-and: rgba(201, 162, 39, .15);
+  --vt-bg-efet: rgba(44, 122, 91, .12);
+  --vt-bg-conc: rgba(108, 116, 128, .10);
+  --vt-bg-prog: rgba(90, 110, 140, .10);
+  --vt-glass: rgba(255, 255, 255, .55);
+  --vt-glass-strong: rgba(255, 255, 255, .72);
+  --vt-blur: saturate(170%) blur(22px);
+  --vt-sh: 0 6px 22px rgba(40, 36, 28, .07), 0 1px 3px rgba(40, 36, 28, .05);
+  --vt-sh-lg: 0 16px 50px rgba(40, 36, 28, .12);
+  --vt-radius: 16px;
+  --vt-page-bg: #f3efe8;
+  --vt-hover: rgba(255, 255, 255, .45);
+  --vt-hover-strong: rgba(255, 255, 255, .5);
+  --vt-surface: #fff;
+}
+
+/* Modo escuro — só os tons neutros mudam (fundo/texto/linhas/vidro); as   */
+/* cores de status (--vt-c-*) ficam iguais nos dois modos, de propósito,   */
+/* pra não perder o significado (crítico continua vermelho em qualquer     */
+/* tema). Aplicado via data-theme="dark" na raiz (ver lib/theme.ts).       */
+[data-theme='dark'] {
+  --vt-ink: #ECE8E0;
+  --vt-muted: #a8a29c;
+  --vt-muted2: #7c776e;
+  --vt-line: rgba(255, 255, 255, .10);
+  --vt-line2: rgba(255, 255, 255, .06);
+  --vt-glass: rgba(38, 35, 30, .62);
+  --vt-glass-strong: rgba(46, 42, 36, .78);
+  --vt-sh: 0 6px 22px rgba(0, 0, 0, .35), 0 1px 3px rgba(0, 0, 0, .25);
+  --vt-sh-lg: 0 16px 50px rgba(0, 0, 0, .45);
+  --vt-page-bg: #171512;
+  --vt-hover: rgba(255, 255, 255, .07);
+  --vt-hover-strong: rgba(255, 255, 255, .08);
+  --vt-surface: #2e2a24;
+}
+
+/* Camada de fundo fixa (equivalente a .ambient do sistema antigo) — NÃO usar */
+/* como classe do container de conteúdo, senão os gradientes viram relativos  */
+/* à altura do conteúdo (que rola) em vez do viewport, e ficam saturados      */
+/* demais. Renderizar como irmã fixa, atrás de tudo (ver AppShell).          */
+.vt-ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 78% 6%, rgba(192, 24, 41, .16), transparent 60%),
+    radial-gradient(50% 40% at 6% 90%, rgba(214, 158, 46, .16), transparent 60%),
+    radial-gradient(45% 45% at 95% 92%, rgba(44, 122, 91, .12), transparent 60%),
+    linear-gradient(160deg, #f6f2ea, #efe9df);
+}
+/* Véu do login (index.html original: .login-wrap tinha um overlay claro   */
+/* por cima do ambient-bg pra suavizar contraste do formulário). Precisa    */
+/* de versão escura própria — não é só var(--vt-glass), é mais sutil.       */
+.vt-login-overlay {
+  background: rgba(243, 239, 232, .6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+[data-theme='dark'] .vt-login-overlay {
+  background: rgba(15, 14, 12, .55);
+}
+
+[data-theme='dark'] .vt-ambient-bg {
+  background:
+    radial-gradient(60% 50% at 78% 6%, rgba(192, 24, 41, .14), transparent 60%),
+    radial-gradient(50% 40% at 6% 90%, rgba(214, 158, 46, .10), transparent 60%),
+    radial-gradient(45% 45% at 95% 92%, rgba(44, 122, 91, .10), transparent 60%),
+    linear-gradient(160deg, #1c1a17, #100f0d);
+}
+
+/* SIDEBAR — ver .side/.brand/.nav do index.html original */
+.vt-side {
+  width: 236px;
+  flex-shrink: 0;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  background: var(--vt-glass);
+  backdrop-filter: var(--vt-blur);
+  -webkit-backdrop-filter: var(--vt-blur);
+  border-right: 1px solid var(--vt-line);
+  box-shadow: var(--vt-sh);
+}
+.vt-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 6px 8px 15px;
+  margin: 2px 2px 4px;
+}
+.vt-nav .ic {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: .85;
+}
+.vt-nav.active .ic { opacity: 1; }
+.vt-brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(150deg, #CC0000, #990010);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 17px;
+  box-shadow: 0 4px 12px rgba(192, 24, 41, .35);
+  flex-shrink: 0;
+}
+.vt-brand-shine {
+  background: linear-gradient(100deg, var(--vt-ink) 45%, #fff 50%, var(--vt-ink) 55%);
+  background-size: 250% 100%;
+  background-position: 180% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: vt-brandshine 7s ease-in-out infinite;
+}
+@keyframes vt-brandshine {
+  0%, 82% { background-position: 180% 0; }
+  100% { background-position: -60% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vt-brand-shine { animation: none; background: none; color: var(--vt-ink); }
+}
+
+.vt-nav-sec {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--vt-muted2);
+  padding: 12px 10px 5px;
+  font-weight: 700;
+}
+.vt-nav {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 11px;
+  cursor: pointer;
+  color: var(--vt-ink);
+  font-weight: 500;
+  font-size: 13.5px;
+  transition: color .18s;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+.vt-nav:hover:not(.active) { background: var(--vt-hover); }
+.vt-nav.active { color: var(--vt-red); font-weight: 700; }
+.vt-nav .badge { margin-left: auto; font-size: 10px; font-weight: 800; background: var(--vt-bg-prej); color: var(--vt-c-prej); padding: 1px 7px; border-radius: 20px; }
+
+/* Indicador deslizante (#navInd do index.html original) — uma "saliência"  */
+/* de vidro só, que desliza até o item ativo em vez de cada item ter seu    */
+/* próprio fundo. Posição/altura calculadas em JS (ver AppShell).           */
+.vt-nav-ind {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  height: 0;
+  border-radius: 11px;
+  background: var(--vt-glass-strong);
+  border: 1px solid var(--vt-line);
+  box-shadow: var(--vt-sh);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: top .30s cubic-bezier(.34,1.35,.5,1), height .30s cubic-bezier(.34,1.35,.5,1), opacity .2s;
+}
+.vt-side-foot {
+  margin-top: auto;
+  padding: 11px;
+  border-radius: 12px;
+  background: rgba(38, 36, 31, .92);
+  color: #f3efe8;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* Cartão de usuário no rodapé — substitui o item "Sair" solto + o rodapé */
+/* de texto por um único bloco (avatar + e-mail + botão de logout).       */
+.vt-user-card {
+  margin-top: auto;
+  padding: 9px;
+  border-radius: 14px;
+  background: rgba(38, 36, 31, .94);
+  color: #f3efe8;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.vt-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(150deg, #CC0000, #990010);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.vt-user-meta {
+  flex: 1;
+  min-width: 0;
+}
+.vt-user-meta .email {
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vt-user-meta .role {
+  font-size: 10px;
+  color: #b9b3a6;
+}
+.vt-logout-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f3efe8;
+  opacity: .75;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.vt-logout-btn:hover { opacity: 1; background: rgba(255, 255, 255, .12); }
+
+/* Animação do botão Salvar (Captações) — portada literalmente do */
+/* .form-actions/.save-wrap/.save-truck do index.html original.    */
+.vt-save-wrap {
+  position: relative;
+  display: inline-flex;
+  --fallX: 2px;
+  --fallY: 33px;
+  --rideX: 260px;
+  --cBase: #4FA8C9;
+  --cShade: #3A7A96;
+}
+.vt-save-truck {
+  position: absolute;
+  left: 30px;
+  top: 100%;
+  margin-top: 2px;
+  opacity: 0;
+  transform: translateY(-8px) scale(.92);
+  transform-origin: left top;
+  pointer-events: none;
+  z-index: 1;
+}
+.vt-shipping .vt-save-truck { animation: vt-truckwait 1.4s cubic-bezier(.4,0,.2,1) forwards; }
+@keyframes vt-truckwait {
+  0% { opacity: 0; transform: translateY(-8px) scale(.92); }
+  12% { opacity: 1; transform: translateY(0) scale(.92); }
+  80% { opacity: 1; transform: translateY(0) scale(.92); }
+  90% { opacity: 1; transform: translate(calc(var(--rideX) * .72), 0) scale(.92); }
+  100% { opacity: 0; transform: translate(var(--rideX), 0) scale(.92); }
+}
+.vt-shipping .vt-save-btn {
+  position: relative;
+  z-index: 2;
+  animation: vt-btnfall 1.4s cubic-bezier(.4,0,.2,1) forwards;
+  pointer-events: none;
+}
+@keyframes vt-btnfall {
+  0% { opacity: 1; color: #fff; transform: translate(0,0) rotate(0deg) scale(1); background: linear-gradient(150deg,#CC0000,#A50016); border-radius: 11px; box-shadow: 0 6px 16px rgba(192,24,41,.3); }
+  12% { transform: translate(0,-10px) rotate(-8deg) scale(1.08); }
+  27% { transform: translate(1px,-16px) rotate(14deg) scale(1.1); }
+  32% { opacity: 1; color: #fff; transform: translate(1px,-13px) rotate(20deg) scale(1); }
+  34% { opacity: .15; color: transparent; transform: translate(2px,-9px) rotate(24deg) scale(.82); }
+  38% { opacity: 1; transform: translate(2px,-6px) rotate(28deg) scale(.78); background: repeating-linear-gradient(0deg,var(--cBase),var(--cBase) 4px,var(--cShade) 4px,var(--cShade) 8px); border-radius: 4px; box-shadow: inset 0 0 0 2px rgba(0,0,0,.18); }
+  55% { opacity: 1; transform: translate(var(--fallX),var(--fallY)) rotate(18deg) scale(.6); }
+  64% { opacity: 1; transform: translate(var(--fallX),calc(var(--fallY) - 3px)) rotate(6deg) scale(.5); }
+  70% { opacity: 1; transform: translate(var(--fallX),var(--fallY)) rotate(0deg) scale(.45); }
+  80% { opacity: 1; transform: translate(var(--fallX),var(--fallY)) rotate(0deg) scale(.45); }
+  90% { opacity: 1; color: transparent; transform: translate(calc(var(--fallX) + var(--rideX) * .72),var(--fallY)) rotate(0deg) scale(.45); }
+  100% { opacity: 0; color: transparent; transform: translate(calc(var(--fallX) + var(--rideX)),var(--fallY)) rotate(0deg) scale(.45); }
+}
+.vt-tiresmoke { opacity: 0; transform-origin: center; pointer-events: none; }
+.vt-shipping .vt-tiresmoke.s1 { animation: vt-puff .5s ease-out .95s forwards; }
+.vt-shipping .vt-tiresmoke.s2 { animation: vt-puff .5s ease-out 1.02s forwards; }
+.vt-shipping .vt-tiresmoke.s3 { animation: vt-puff .5s ease-out 1.09s forwards; }
+@keyframes vt-puff {
+  0% { opacity: 0; transform: scale(.3) translate(0,0); }
+  25% { opacity: .85; }
+  100% { opacity: 0; transform: scale(2) translate(-5px,-6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vt-shipping .vt-save-truck, .vt-shipping .vt-save-btn, .vt-shipping .vt-tiresmoke { animation: none; }
+}
+
+/* Navio decorativo — portado de .ship-scene/.login-sail do index.html. */
+.vt-ship-scene .vt-ship { transform-box: fill-box; transform-origin: center; animation: vt-shipBob 3.4s ease-in-out infinite; }
+@keyframes vt-shipBob {
+  0%, 100% { transform: translateY(1px) rotate(-1.6deg); }
+  50% { transform: translateY(-4px) rotate(1.6deg); }
+}
+.vt-ship-scene .vt-wave { animation: vt-shipFlow 3s linear infinite; }
+@keyframes vt-shipFlow { from { transform: translateX(0); } to { transform: translateX(-80px); } }
+.vt-login-sail {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 56px;
+  pointer-events: none;
+  opacity: .14;
+  overflow: hidden;
+  z-index: 0;
+}
+.vt-login-sail .vt-ship-scene {
+  width: 90px;
+  position: absolute;
+  bottom: -4px;
+  left: -30%;
+  animation: vt-sail 13s linear infinite;
+}
+@keyframes vt-sail { 0% { left: -30%; } 100% { left: 112%; } }
+@media (prefers-reduced-motion: reduce) {
+  .vt-ship-scene .vt-ship, .vt-ship-scene .vt-wave, .vt-login-sail .vt-ship-scene { animation: none; }
+}
+
+/* Componentes shadcn (Input/Select/Checkbox) — aplicado GLOBALMENTE via     */
+/* data-slot (não por className por instância) pra nenhuma tela nova ficar  */
+/* com o visual padrão do shadcn destoando do resto. Ver .fg input/select e */
+/* .docchk do index.html original.                                          */
+[data-slot='input'],
+[data-slot='select-trigger'] {
+  background: var(--vt-glass-strong);
+  -webkit-backdrop-filter: var(--vt-blur);
+  backdrop-filter: var(--vt-blur);
+  border-color: var(--vt-line);
+  border-radius: 10px;
+  color: var(--vt-ink);
+}
+[data-slot='input']:focus-visible,
+[data-slot='select-trigger']:focus-visible {
+  border-color: var(--vt-red);
+  background: var(--vt-surface);
+  box-shadow: none;
+  outline: none;
+}
+[data-slot='select-content'] {
+  background: var(--vt-glass-strong);
+  -webkit-backdrop-filter: var(--vt-blur);
+  backdrop-filter: var(--vt-blur);
+  border: 1px solid var(--vt-line);
+}
+[data-slot='select-item'][data-highlighted] {
+  background: var(--vt-bg-jan);
+}
+
+/* Checkbox redondo vermelho (.docchk do index.html original) — o app antigo */
+/* só tem esse um tipo de checkbox, então a troca é global, não por classe.  */
+[data-slot='checkbox'] {
+  border-radius: 50%;
+  border-color: var(--vt-line);
+  background: var(--vt-surface);
+}
+[data-slot='checkbox'][data-checked] {
+  background: var(--vt-surface);
+  border-color: var(--vt-red);
+}
+[data-slot='checkbox'][data-checked] [data-slot='checkbox-indicator'] {
+  color: var(--vt-red);
+}
+
+/* Drawer (modal de múltiplos BL no Histórico) — não existe no sistema      */
+/* antigo (era um modal customizado, trocado por decisão consciente, ver    */
+/* DECISIONS.md), mas precisa do mesmo acabamento visual do resto do app.   */
+[data-slot='drawer-popup'] {
+  background: var(--vt-glass-strong);
+  -webkit-backdrop-filter: var(--vt-blur);
+  backdrop-filter: var(--vt-blur);
+  border-color: var(--vt-line) !important;
+}
+
+/* Controle segmentado (.seg/.seg-ind do index.html original) — pílula que  */
+/* desliza atrás do botão ativo, usada nas abas de Captações e nos filtros  */
+/* de Histórico/Dashboard. Ver components/segmented-control.tsx.            */
+.vt-seg {
+  position: relative;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: 3px;
+  border-radius: 13px;
+  background: var(--vt-glass);
+  border: 1px solid var(--vt-line);
+  box-shadow: var(--vt-sh);
+}
+.vt-seg-btn {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 12.5px;
+  color: var(--vt-muted);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color .15s;
+}
+.vt-seg-btn:hover { color: var(--vt-ink); }
+.vt-seg-btn.active { color: #fff; }
+.vt-seg-ind {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  width: 0;
+  border-radius: 10px;
+  background: linear-gradient(150deg, #CC0000, #A50016);
+  box-shadow: 0 6px 16px rgba(192, 24, 41, .3);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: left .28s cubic-bezier(.34,1.35,.5,1), width .28s cubic-bezier(.34,1.35,.5,1), opacity .2s;
+}
+
+/* Select nativo (.srch do index.html original — lá é literalmente um       */
+/* <select>, não um dropdown customizado). Usado no filtro de status do     */
+/* Histórico.                                                                */
+.vt-native-select {
+  font-size: 12.5px;
+  background: var(--vt-glass-strong);
+  border: 1px solid var(--vt-line);
+  border-radius: 10px;
+  padding: 7px 12px;
+  outline: none;
+  color: var(--vt-ink);
+}
+.vt-native-select:focus { border-color: var(--vt-red); }
+
+/* Espaçamento da tabela (shadcn Table vem muito apertado: 8px de padding). */
+/* Original usa th{height:44px;padding:12px 18px} td{padding:14px 18px}.    */
+[data-slot='table-head'] {
+  height: 44px;
+  padding: 12px 18px;
+}
+[data-slot='table-cell'] {
+  padding: 14px 18px;
+  line-height: 1.35;
+}
+[data-slot='table-row'] {
+  transition: background .1s;
+}
+[data-slot='table-row']:hover {
+  background: var(--vt-hover-strong);
+}
+[data-slot='table-head']:not(:last-child),
+[data-slot='table-cell']:not(:last-child) {
+  border-right: 1px solid var(--vt-line2);
+}
+
+.vt-pulse {
+  animation: vt-pulse 2s ease-in-out infinite;
+}
+@keyframes vt-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(192, 24, 41, .28); }
+  50% { box-shadow: 0 0 0 7px rgba(192, 24, 41, .05); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vt-pulse { animation: none; box-shadow: 0 0 0 4px rgba(192, 24, 41, .28); }
+}
+
+.vt-chip {
+  font-size: 11px;
+  background: var(--vt-glass-strong);
+  border: 1px solid var(--vt-line);
+  border-radius: 20px;
+  padding: 5px 12px;
+  cursor: pointer;
+  color: var(--vt-muted);
+  transition: .14s;
+}
+.vt-chip:hover { border-color: var(--vt-red); color: var(--vt-red); }
+
+.vt-glass {
+  background: var(--vt-glass);
+  backdrop-filter: var(--vt-blur);
+  -webkit-backdrop-filter: var(--vt-blur);
+  border: 1px solid var(--vt-line);
+  border-radius: var(--vt-radius);
+  box-shadow: var(--vt-sh);
+}
+
+.vt-glass-strong {
+  background: var(--vt-glass-strong);
+  backdrop-filter: var(--vt-blur);
+  -webkit-backdrop-filter: var(--vt-blur);
+}
+
+.vt-btn-primary {
+  background: linear-gradient(150deg, #CC0000, #A50016);
+  color: #fff;
+  border: 0;
+  box-shadow: 0 6px 16px rgba(192, 24, 41, .3);
+}
+.vt-btn-primary:hover { filter: brightness(1.04); }
+
+/* Badge de estágio (.band da versão antiga) — bolinha colorida por padrão,   */
+/* ícone específico (check/timer/alerta/relógio/caixa) nos estágios com um.   */
+.vt-band {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.vt-band::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+.vt-band.b-efet::before {
+  width: 13px; height: 13px; border-radius: 0; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m16 9-5.5 5.5L8 12'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m16 9-5.5 5.5L8 12'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.vt-band.b-and::before {
+  width: 13px; height: 13px; border-radius: 0; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='10' x2='14' y1='2' y2='2'/%3E%3Cline x1='12' x2='15' y1='14' y2='11'/%3E%3Ccircle cx='12' cy='14' r='8'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='10' x2='14' y1='2' y2='2'/%3E%3Cline x1='12' x2='15' y1='14' y2='11'/%3E%3Ccircle cx='12' cy='14' r='8'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.vt-band.b-prej::before {
+  width: 13px; height: 13px; border-radius: 0; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v4'/%3E%3Cpath d='M12 16h.01'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v4'/%3E%3Cpath d='M12 16h.01'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.vt-band.b-jan::before {
+  width: 13px; height: 13px; border-radius: 0; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12 6 12 12 16 14'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12 6 12 12 16 14'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.vt-band.b-conc::before {
+  width: 13px; height: 13px; border-radius: 0; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z'/%3E%3Cline x1='4' x2='4' y1='22' y2='15'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z'/%3E%3Cline x1='4' x2='4' y1='22' y2='15'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.vt-band.b-prog::before {
+  width: 13px; height: 13px; border-radius: 0; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='4' rx='2'/%3E%3Cpath d='M16 2v4'/%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M3 10h18'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='4' rx='2'/%3E%3Cpath d='M16 2v4'/%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M3 10h18'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.b-prej { background: var(--vt-bg-prej); color: var(--vt-c-prej); }
+.b-jan  { background: var(--vt-bg-jan);  color: var(--vt-c-jan); }
+.b-and  { background: var(--vt-bg-and);  color: var(--vt-c-and); }
+.b-efet { background: var(--vt-bg-efet); color: var(--vt-c-efet); }
+.b-conc { background: var(--vt-bg-conc); color: var(--vt-c-conc); }
+.b-prog { background: var(--vt-bg-prog); color: var(--vt-c-prog); }

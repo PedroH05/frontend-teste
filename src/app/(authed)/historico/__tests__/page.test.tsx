@@ -4,6 +4,11 @@ import { describe, expect, it, vi } from 'vitest';
 import HistoricoPage from '../page';
 import type { Captacao } from '@/lib/types';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => '/historico',
+}));
+
 const apiFetchMock = vi.fn();
 vi.mock('@/lib/api', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api')>('@/lib/api');
@@ -40,7 +45,7 @@ function base(overrides: Partial<Captacao>): Captacao {
 }
 
 describe('HistoricoPage', () => {
-  it('filtro "Hoje" (padrão) mostra só captações registradas hoje', async () => {
+  it('filtro "Tudo" (padrão) mostra captações de qualquer dia', async () => {
     const ontem = new Date();
     ontem.setDate(ontem.getDate() - 1);
     apiFetchMock.mockResolvedValueOnce([
@@ -51,10 +56,10 @@ describe('HistoricoPage', () => {
     render(<HistoricoPage />);
 
     expect(await screen.findByText('DE HOJE')).toBeInTheDocument();
-    expect(screen.queryByText('DE ONTEM')).not.toBeInTheDocument();
+    expect(screen.getByText('DE ONTEM')).toBeInTheDocument();
   });
 
-  it('filtro "Tudo" mostra todas, independente do dia', async () => {
+  it('filtro "Hoje" mostra só captações registradas hoje', async () => {
     const user = userEvent.setup();
     const ontem = new Date();
     ontem.setDate(ontem.getDate() - 1);
@@ -65,9 +70,9 @@ describe('HistoricoPage', () => {
 
     render(<HistoricoPage />);
     await screen.findByText('DE HOJE');
-    await user.click(screen.getByRole('button', { name: 'Tudo' }));
+    await user.click(screen.getByRole('button', { name: 'Hoje' }));
 
-    expect(screen.getByText('DE ONTEM')).toBeInTheDocument();
+    expect(screen.queryByText('DE ONTEM')).not.toBeInTheDocument();
   });
 
   it('filtro de status separa concluído/efetivado/em andamento', async () => {
@@ -81,7 +86,8 @@ describe('HistoricoPage', () => {
     render(<HistoricoPage />);
     await screen.findByText('CONCLUIDA');
 
-    await user.click(screen.getByRole('button', { name: 'Efetivado' }));
+    await user.selectOptions(screen.getByRole('combobox'), 'Efetivado');
+
     expect(screen.getByText('EFETIVADA')).toBeInTheDocument();
     expect(screen.queryByText('CONCLUIDA')).not.toBeInTheDocument();
     expect(screen.queryByText('ANDAMENTO')).not.toBeInTheDocument();
