@@ -240,6 +240,10 @@ export default function CarteiraPage() {
     );
   }
 
+  // Sem uso desde que os botões Captar/captado saíram da coluna de ação
+  // (14/09/2026) — mantida de propósito, pode voltar se recuperarmos esse
+  // fluxo mais tarde.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function captar(row: CockpitRow) {
     const params = new URLSearchParams();
     const set = (k: string, v?: string) => v && params.set(k, v);
@@ -258,6 +262,8 @@ export default function CarteiraPage() {
     router.push(`/captacoes?${params.toString()}`);
   }
 
+  // Sem uso pelo mesmo motivo do captar() acima (14/09/2026).
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function marcarCaptado(row: CockpitRow) {
     if (!confirm(`Marcar ${row.cli} como JÁ CAPTADO (efetivado)?`)) return;
     try {
@@ -702,29 +708,16 @@ export default function CarteiraPage() {
                     </TableCell>
                     <TableCell>{(r.navio || '').slice(0, 18)}</TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {r.capId ? (
+                      {r.capId && (
                         // Simplificado a pedido (11/09/2026): só editar/excluir aqui.
                         // Tinha Efetivar/Docs/status ("captado"/"saiu") antes — pode
                         // voltar a esse modelo mais completo depois, ver histórico
-                        // da conversa se precisar recuperar.
+                        // da conversa se precisar recuperar. Botões Captar/captado
+                        // removidos a pedido (14/09/2026) das linhas sem captação.
                         <RowActions
                           onEdit={() => router.push(`/captacoes?edit=${r.capId}`)}
                           onDelete={() => handleDelete(r.capId!)}
                         />
-                      ) : (
-                        <>
-                          <Button size="sm" variant="ghost" className="vt-btn-primary mr-1 rounded-[8px] px-3 text-[11px]" onClick={() => captar(r)}>
-                            Captar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="vt-glass-strong rounded-[8px] border border-[var(--vt-line)] px-3 text-[11px]"
-                            onClick={() => marcarCaptado(r)}
-                          >
-                            captado
-                          </Button>
-                        </>
                       )}
                     </TableCell>
                   </TableRow>
