@@ -19,7 +19,7 @@ export function RowActions({
   deleteTitle?: string;
 }) {
   return (
-    <div className="flex items-center justify-end gap-0.5">
+    <div className="flex items-center justify-center gap-0.5">
       <Button variant="ghost" size="icon-sm" title={editTitle} style={{ color: 'var(--vt-muted)' }} onClick={onEdit}>
         <Pencil />
       </Button>
