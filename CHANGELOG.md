@@ -1,0 +1,30 @@
+# Changelog — captacao-web
+
+Mudanças relevantes deste frontend. Não é histórico de commit — só o que
+importa pra quem quer entender a evolução do sistema sem ler `git log`.
+
+## 2026-09-15 — Reorganização de documentação
+
+- Criada estrutura `docs/` (`ARCHITECTURE.md`, `DECISIONS.md`), separada da
+  documentação histórica que vive no repositório do backend
+  (`migration-plan/`).
+- `README.md` e `CLAUDE.md` reescritos (antes eram boilerplate/só um
+  `@AGENTS.md`).
+
+## 2026-09-11/14 — Polish de UI e melhorias
+
+- Rotas autenticadas movidas pra route group `(authed)/` com layout
+  compartilhado — necessário pro indicador deslizante de navegação animar
+  entre páginas.
+- Modo escuro (`lib/theme.ts`), aplicado nos tokens `--vt-*`.
+- Modo demo (`lib/mock-mode.ts`/`mock-backend.ts`/`mock-data.ts`).
+- Componente `RowActions` padronizado (editar/excluir) em todas as tabelas.
+- Paginação client-side no Histórico (12/página).
+- Diversos ajustes visuais em Carteira, Dashboard, Captações, Clientes,
+  Histórico e Login — ver `docs/ARCHITECTURE.md` para os pontos que viraram
+  padrão (design tokens, componentes reutilizáveis).
+
+## Antes de 2026-09-11
+
+Ver `../captacao-api/migration-plan/` para o histórico completo da
+migração das 5 telas a partir do sistema antigo (`captacao-valetrade`).
