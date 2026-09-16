@@ -160,7 +160,12 @@ export default function HistoricoPage() {
     if (!confirm('Excluir este processo? Esta ação não pode ser desfeita.')) return;
     try {
       await apiFetch(`/captacoes/${id}`, { method: 'DELETE' });
-      await load(); // fica no Histórico — não força navegação (ver features/captacoes)
+      // Tira da tela na hora, sem esperar um novo GET — achado testando com
+      // dado real: o `GET /captacoes` logo depois de um DELETE às vezes
+      // ainda vinha com o item excluído (a Vercel injeta Cache-Control
+      // público por padrão nas rotas da API; suspeita, não 100% confirmada).
+      // Independente da causa, atualizar local garante a tela certa na hora.
+      setCaptacoes((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erro ao excluir');
     }

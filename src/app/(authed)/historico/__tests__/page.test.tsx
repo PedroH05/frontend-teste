@@ -121,6 +121,26 @@ describe('HistoricoPage', () => {
     expect(screen.queryByText(/^\+\d/)).not.toBeInTheDocument();
   });
 
+  it('excluir tira a linha da tela na hora, sem esperar um novo GET (achado testando com dado real)', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    apiFetchMock.mockResolvedValueOnce([base({ id: 1, cli: 'PRA EXCLUIR' })]); // GET inicial
+
+    render(<HistoricoPage />);
+    await screen.findByText('PRA EXCLUIR');
+
+    apiFetchMock.mockClear();
+    apiFetchMock.mockResolvedValueOnce(undefined); // DELETE
+    await user.click(screen.getByTitle('Excluir'));
+
+    expect(screen.queryByText('PRA EXCLUIR')).not.toBeInTheDocument();
+    // Só o DELETE — nenhum GET novo depois de excluir (a Vercel pode
+    // devolver a lista antiga por causa de cache, então a tela não deve
+    // depender disso pra atualizar).
+    expect(apiFetchMock).toHaveBeenCalledTimes(1);
+    expect(apiFetchMock).toHaveBeenCalledWith('/captacoes/1', { method: 'DELETE' });
+  });
+
   it('múltiplos BL mostram badge "+N" que abre o drawer com a lista completa', async () => {
     const user = userEvent.setup();
     apiFetchMock.mockResolvedValueOnce([

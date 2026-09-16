@@ -147,7 +147,8 @@ export default function ClientesPage() {
     if (!confirm('Excluir este cliente do cadastro?')) return;
     try {
       await apiFetch(`/clientes/${id}`, { method: 'DELETE' });
-      await load();
+      // Tira da tela na hora — ver comentário equivalente em historico/page.tsx.
+      setClientes((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erro ao excluir cliente');
     }

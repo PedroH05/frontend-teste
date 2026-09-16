@@ -308,7 +308,8 @@ export default function CarteiraPage() {
     if (!confirm('Excluir este processo? Esta ação não pode ser desfeita.')) return;
     try {
       await apiFetch(`/captacoes/${capId}`, { method: 'DELETE' });
-      await load();
+      // Tira da tela na hora — ver comentário equivalente em historico/page.tsx.
+      setRows((prev) => prev.filter((r) => r.capId !== capId));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erro ao excluir');
     }
