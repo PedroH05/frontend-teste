@@ -59,6 +59,27 @@ describe('HistoricoPage', () => {
     expect(screen.getByText('DE ONTEM')).toBeInTheDocument();
   });
 
+  it('"Tudo" ordena por data de registro, não por ETA — captação sem ETA aparece primeiro se for a mais recente', async () => {
+    // Regressão: até 16/09/2026 "Tudo" ordenava por ETA (igual ao sistema
+    // antigo), então uma captação recém-criada sem ETA ia parar no fim de
+    // uma lista paginada, "sumida" pra quem acabou de criar.
+    const semana = new Date();
+    semana.setDate(semana.getDate() - 7);
+    apiFetchMock.mockResolvedValueOnce([
+      base({ id: 1, cli: 'ANTIGA COM ETA', eta: '2026-12-31', createdAt: semana.toISOString() }),
+      base({ id: 2, cli: 'NOVA SEM ETA', eta: null }),
+    ]);
+
+    render(<HistoricoPage />);
+    await screen.findByText('NOVA SEM ETA');
+
+    const linhas = screen.getAllByRole('row').map((r) => r.textContent ?? '');
+    const idxNova = linhas.findIndex((t) => t.includes('NOVA SEM ETA'));
+    const idxAntiga = linhas.findIndex((t) => t.includes('ANTIGA COM ETA'));
+    expect(idxNova).toBeGreaterThan(-1);
+    expect(idxNova).toBeLessThan(idxAntiga);
+  });
+
   it('filtro "Hoje" mostra só captações registradas hoje', async () => {
     const user = userEvent.setup();
     const ontem = new Date();

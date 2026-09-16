@@ -3,6 +3,13 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-16 — Histórico "Tudo" ordena por data de registro
+
+- Achado testando com dado real: aba "Tudo" ordenava por ETA (herdado do
+  sistema antigo), então captação sem ETA sumia no fim de uma lista
+  paginada. Agora ordena por data de registro, mais recente primeiro — ver
+  `docs/DECISIONS.md`.
+
 ## 2026-09-15 — Reorganização de documentação
 
 - Criada estrutura `docs/` (`ARCHITECTURE.md`, `DECISIONS.md`), separada da

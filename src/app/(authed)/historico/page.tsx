@@ -121,10 +121,14 @@ export default function HistoricoPage() {
         const d = c.createdAt ? new Date(c.createdAt) : null;
         return d && !Number.isNaN(d.getTime()) && d.toDateString() === alvo.toDateString();
       });
-      rows.sort((a, b) => (b.createdAt < a.createdAt ? -1 : 1));
-    } else {
-      rows.sort((a, b) => ((b.eta ?? '') < (a.eta ?? '') ? -1 : 1));
     }
+    // Sempre por data de registro, mais recente primeiro — inclusive em
+    // "Tudo". O original ordenava "Tudo" por ETA (index.html:1551), mas
+    // pedido do Pedro em 16/09/2026: captação sem ETA (ou ETA distante)
+    // ficava perdida no fim de uma lista paginada, difícil de achar logo
+    // depois de criar. Mudança deliberada de comportamento, ver
+    // docs/DECISIONS.md.
+    rows.sort((a, b) => (b.createdAt < a.createdAt ? -1 : 1));
     if (statusFiltro !== 'todos') {
       rows = rows.filter((c) => categoriaDe(c.stage) === statusFiltro);
     }
