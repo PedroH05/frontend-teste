@@ -148,10 +148,14 @@ do `(authed)/layout.tsx`.
 - **Fetch client-side, nunca Server Component, em telas autenticadas** —
   ver seção Autenticação acima. Decisão registrada originalmente em
   `../../captacao-api/migration-plan/architecture/DECISIONS.md`.
-- **Paginação client-side no Histórico** (12 itens/página) — implementada
-  como tentativa de resolver uma lentidão percebida ao navegar pra essa
-  tela; a causa raiz real acabou sendo a busca redundante de `/carteira` no
-  `AppShell` a cada navegação (ver acima), não o volume de linhas da
-  tabela. A paginação ficou como melhoria de UX de qualquer forma, mas não
-  deve ser tratada como "a" correção de performance se um problema
-  parecido reaparecer — investigar busca de dado redundante primeiro.
+- **Paginação client-side no Histórico e na Carteira** (12 itens/página,
+  mesmo tamanho nas duas). No Histórico foi implementada como tentativa de
+  resolver uma lentidão percebida ao navegar pra essa tela; a causa raiz
+  real acabou sendo a busca redundante de `/carteira` no `AppShell` a cada
+  navegação (ver acima), não o volume de linhas da tabela — a paginação
+  ficou como melhoria de UX de qualquer forma, mas não deve ser tratada
+  como "a" correção de performance se um problema parecido reaparecer.
+  Na Carteira (16/09/2026, pedido direto) foi puro pedido de UX pra tabela
+  de Processos, sem relação com performance. Nas duas, a página volta pra 1
+  sempre que um filtro muda o conjunto exibido (ajuste durante o render,
+  não em efeito — ver comentário no código).

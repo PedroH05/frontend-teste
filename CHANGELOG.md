@@ -3,6 +3,11 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-16 — Paginação na tabela de Processos da Carteira
+
+- 12 por página, mesmo tamanho e padrão visual do Histórico. Pedido direto,
+  sem relação com performance dessa vez. Ver `docs/ARCHITECTURE.md`.
+
 ## 2026-09-16 — Corrigido: excluir dava "Erro ao excluir" mesmo funcionando
 
 - Causa real (não era cache, como se suspeitou a princípio): `DELETE`

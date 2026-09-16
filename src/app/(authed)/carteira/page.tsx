@@ -39,6 +39,8 @@ function despValido(desp: string): string | undefined {
 // Portado de COLS/setSort() no index.html original.
 type SortKey = 'pr' | 'cli' | 'dias' | 'regime' | 'desp' | 'navio';
 
+const PAGE_SIZE = 12; // mesmo tamanho de página do Histórico
+
 export default function CarteiraPage() {
   const router = useRouter();
   const [rows, setRows] = useState<CockpitRow[]>([]);
@@ -152,6 +154,28 @@ export default function CarteiraPage() {
   }, [enriquecidas, busca, filterBand, chipFiltro, sortKey, sortDir]);
 
   const totalContainers = linhas.reduce((s, { r }) => s + (Number(r.qtd) || 1), 0);
+
+  // Paginação da tabela de processos — mesmo padrão do Histórico. Volta pra
+  // página 1 sempre que um filtro muda o conjunto exibido, senão dá pra
+  // ficar numa página que não existe mais. Ajuste durante o render (não em
+  // efeito) — ver https://react.dev/learn/you-might-not-need-an-effect.
+  const [pagina, setPagina] = useState(1);
+  const [filtroAnterior, setFiltroAnterior] = useState({ filterBand, chipFiltro, busca, sortKey, sortDir });
+  if (
+    filtroAnterior.filterBand !== filterBand ||
+    filtroAnterior.chipFiltro !== chipFiltro ||
+    filtroAnterior.busca !== busca ||
+    filtroAnterior.sortKey !== sortKey ||
+    filtroAnterior.sortDir !== sortDir
+  ) {
+    setFiltroAnterior({ filterBand, chipFiltro, busca, sortKey, sortDir });
+    setPagina(1);
+  }
+  const totalPaginas = Math.max(1, Math.ceil(linhas.length / PAGE_SIZE));
+  const linhasPagina = useMemo(
+    () => linhas.slice((pagina - 1) * PAGE_SIZE, pagina * PAGE_SIZE),
+    [linhas, pagina],
+  );
 
   const alerta = useMemo(() => {
     const prej = enriquecidas
@@ -662,7 +686,7 @@ export default function CarteiraPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                linhas.map(({ r, b, d }) => (
+                linhasPagina.map(({ r, b, d }) => (
                   <TableRow key={r.capId ?? `${r.bl}-${r.ref}`} style={{ borderColor: 'var(--vt-line)' }}>
                     <TableCell>
                       <span className={`vt-band b-${b.k}`}>{b.t}</span>
@@ -726,6 +750,34 @@ export default function CarteiraPage() {
               )}
             </TableBody>
           </Table>
+          {!loading && linhas.length > 0 && (
+            <div
+              className="flex items-center justify-between px-[18px] py-3 text-[12px]"
+              style={{ borderTop: '1px solid var(--vt-line2)', color: 'var(--vt-muted)' }}
+            >
+              <span>
+                Página {pagina} de {totalPaginas} · {linhas.length} processos
+              </span>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="ghost"
+                  className="vt-glass-strong rounded-[9px] px-2.5 py-1 text-[12px] font-semibold"
+                  disabled={pagina <= 1}
+                  onClick={() => setPagina((p) => Math.max(1, p - 1))}
+                >
+                  ‹ Anterior
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="vt-glass-strong rounded-[9px] px-2.5 py-1 text-[12px] font-semibold"
+                  disabled={pagina >= totalPaginas}
+                  onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+                >
+                  Próxima ›
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
