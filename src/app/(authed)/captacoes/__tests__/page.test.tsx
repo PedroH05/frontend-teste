@@ -58,4 +58,15 @@ describe('CaptacoesPage', () => {
     // ver shipButtonAway() em ../page.tsx.
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/historico'), { timeout: 2000 });
   });
+
+  it('Enter num campo avança pra próxima etapa, sem precisar clicar em Próximo (pedido 16/09/2026)', async () => {
+    const user = userEvent.setup();
+    render(<CaptacoesPage />);
+
+    expect(screen.getByLabelText('Cliente')).toBeInTheDocument(); // passo 1 (Identificação)
+    await user.type(screen.getByLabelText('Cliente'), 'tecno{Enter}');
+
+    expect(await screen.findByLabelText('ETA')).toBeInTheDocument(); // passo 2 (Carga)
+    expect(screen.queryByLabelText('Cliente')).not.toBeInTheDocument();
+  });
 });

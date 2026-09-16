@@ -10,6 +10,12 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-16 — Enter avança etapa na Captação manual
+
+- Pressionar Enter num campo de texto avança pra próxima etapa (ou salva,
+  na última com campo), igual clicar em "Próximo". Não interfere no Select
+  (continua escolhendo a opção normalmente).
+
 ## 2026-09-16 — Tooltip no gráfico de contêineres por mês
 
 - Passar o mouse em qualquer bolinha do gráfico mostra o total daquele mês

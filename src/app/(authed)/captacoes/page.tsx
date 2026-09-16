@@ -225,6 +225,18 @@ function CaptacoesForm() {
     })();
   }, [editId]);
 
+  // Enter num campo de texto avança pra próxima etapa (ou salva, na última
+  // com campo) — antes só dava pra avançar clicando em "Próximo". Só reage
+  // em <input> mesmo: dentro do Select (é um <button> disparando o menu),
+  // Enter continua escolhendo a opção normalmente, sem interferir.
+  function handleStepKeyDown(e: React.KeyboardEvent) {
+    if (e.key !== 'Enter') return;
+    if ((e.target as HTMLElement).tagName !== 'INPUT') return;
+    e.preventDefault();
+    if (step < STEPS.length - 1) goToStep(step + 1);
+    else handleSubmit();
+  }
+
   function handlePublicaChange(checked: boolean) {
     if (checked && !confirm('Confirma marcar esta carga como tabela pública?')) return;
     set('prejuizoPublico', checked);
@@ -349,7 +361,7 @@ function CaptacoesForm() {
         })}
       </div>
 
-      <div className="vt-glass p-[18px_20px]">
+      <div className="vt-glass p-[18px_20px]" onKeyDown={handleStepKeyDown}>
 
       {step === 0 && (
         <div className="grid gap-4 sm:grid-cols-3">
