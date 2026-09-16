@@ -74,7 +74,7 @@ const STAGE_LABEL: Record<string, string> = {
   EFETIVA: 'Efetivado',
 };
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 
 export default function HistoricoPage() {
   const router = useRouter();

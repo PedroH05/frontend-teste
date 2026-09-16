@@ -5,8 +5,10 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
 ## 2026-09-16 — Paginação na tabela de Processos da Carteira
 
-- 12 por página, mesmo tamanho e padrão visual do Histórico. Pedido direto,
-  sem relação com performance dessa vez. Ver `docs/ARCHITECTURE.md`.
+- Mesmo tamanho e padrão visual do Histórico. Pedido direto, sem relação
+  com performance dessa vez. Ver `docs/ARCHITECTURE.md`.
+- Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
+  pedido, logo em seguida.
 
 ## 2026-09-16 — Corrigido: excluir dava "Erro ao excluir" mesmo funcionando
 
