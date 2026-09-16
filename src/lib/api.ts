@@ -49,5 +49,10 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     throw new ApiError(res.status, body.message ?? res.statusText);
   }
 
-  return res.json() as Promise<T>;
+  // DELETE (e outras rotas sem corpo) vêm com Content-Length: 0 — chamar
+  // res.json() nelas lança "Unexpected end of JSON input", o que sempre
+  // caía no catch do chamador e nunca chegava a atualizar a tela (achado
+  // testando exclusão com dado real: parecia bug de cache, era isso).
+  const text = await res.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
