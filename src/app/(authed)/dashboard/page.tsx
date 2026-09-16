@@ -50,7 +50,12 @@ function Bars({ entries, unidade = 'contêineres' }: { entries: [string, number]
 // Série temporal: linha/área, não barra de ranking — o formato de barra
 // escondia a tendência (mês mais alto aparecia sempre em cima, fora de
 // ordem cronológica). Mês atual (último ponto) ganha destaque.
-function TrendChart({ points }: { points: { label: string; n: number }[] }) {
+export function TrendChart({ points }: { points: { label: string; n: number }[] }) {
+  // Passar o mouse numa bolinha mostra o total daquele mês — antes só o
+  // último mês tinha o número visível; os outros dependiam do tooltip
+  // nativo do navegador (<title>), que é lento e pouco visível. Pedido em
+  // 16/09/2026.
+  const [hover, setHover] = useState<number | null>(null);
   const w = 340;
   const h = 150;
   const padL = 30;
@@ -88,12 +93,28 @@ function TrendChart({ points }: { points: { label: string; n: number }[] }) {
       <polyline points={line} fill="none" stroke="var(--vt-red)" strokeWidth={2} />
       {coords.map((c, i) => {
         const isLast = i === coords.length - 1;
+        const showLabel = isLast || hover === i;
         return (
-          <g key={c.label}>
-            <circle cx={c.x} cy={c.y} r={isLast ? 5 : 3.5} fill={isLast ? 'var(--vt-red)' : '#fff'} stroke="var(--vt-red)" strokeWidth={2}>
+          <g
+            key={c.label}
+            onMouseEnter={() => setHover(i)}
+            onMouseLeave={() => setHover((h) => (h === i ? null : h))}
+            style={{ cursor: 'pointer' }}
+          >
+            {/* área invisível maior — só a bolinha visível (r=3.5) é pequena
+                demais pra passar o mouse com precisão */}
+            <circle cx={c.x} cy={c.y} r={10} fill="transparent" />
+            <circle
+              cx={c.x}
+              cy={c.y}
+              r={isLast || hover === i ? 5 : 3.5}
+              fill={isLast || hover === i ? 'var(--vt-red)' : '#fff'}
+              stroke="var(--vt-red)"
+              strokeWidth={2}
+            >
               <title>{`${c.label} — ${c.n} contêineres`}</title>
             </circle>
-            {isLast && (
+            {showLabel && (
               <text x={c.x} y={c.y - 12} textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--vt-ink)">
                 {c.n}
               </text>

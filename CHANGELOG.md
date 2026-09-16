@@ -10,6 +10,18 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-16 — Tooltip no gráfico de contêineres por mês
+
+- Passar o mouse em qualquer bolinha do gráfico mostra o total daquele mês
+  — antes só o último mês tinha o número visível o tempo todo, os outros
+  dependiam do tooltip nativo do navegador (lento, pouco visível).
+
+## 2026-09-16 — 401 desloga e manda pro login sozinho
+
+- Sessão inválida/expirada não trava mais mostrando erro genérico — o app
+  desloga e manda pra `/login` sozinho. Achado com uma funcionária que
+  ficou "logada" com token ruim. Ver `docs/DECISIONS.md`.
+
 ## 2026-09-16 — Corrigido: excluir dava "Erro ao excluir" mesmo funcionando
 
 - Causa real (não era cache, como se suspeitou a princípio): `DELETE`

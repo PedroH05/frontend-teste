@@ -10,6 +10,36 @@ Escolha → Motivo → Consequências.
 
 ---
 
+## 2026-09-16 — 401 desloga e manda pro login sozinho
+
+**Contexto.** Uma funcionária abriu o site já "logada" (sessão antiga no
+navegador) e o app travou mostrando "Token inválido ou expirado" sem
+carregar nada — precisou o Pedro orientar por fora a sair e entrar de novo
+pra funcionar.
+
+**Problema.** Toda rota da API exige token; um `401` só acontece por sessão
+ruim (token expirado, assinado com chave antiga, revogado), nunca por regra
+de negócio. Antes, `apiFetch` só devolvia a mensagem de erro — cabia à
+pessoa entender que precisava deslogar manualmente.
+
+**Escolha.** `apiFetch` agora reage a `401` chamando `signOut()` do Supabase
+e mandando pra `/login` sozinho (recarga cheia da página, não
+`router.push`), antes de lançar o erro pro chamador.
+
+**Motivo.** É código de biblioteca (`lib/api.ts`), fora de componente/hook
+— não dá pra usar `useRouter()`. Recarga cheia também limpa qualquer estado
+do Next que ficou preso com a sessão ruim, não só troca a URL.
+
+**Consequências.**
+- Ninguém mais precisa ser orientado a "sai e entra de novo" — o app faz
+  isso sozinho.
+- Só reage a `401` especificamente; erro de negócio (`404`, `409`, etc.)
+  continua só virando `ApiError`, sem deslogar ninguém.
+- Não foi confirmada a causa exata da sessão antiga ficar guardada no
+  navegador dela (suspeita: sessão de teste anterior, sem investigação
+  mais funda) — a correção é deixar o sintoma se resolver sozinho, não uma
+  correção da causa raiz.
+
 ## 2026-09-16 — `apiFetch` não quebra mais em resposta sem corpo
 
 **Contexto.** Testando exclusão com dado real de produção: o botão excluir

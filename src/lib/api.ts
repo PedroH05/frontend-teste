@@ -46,6 +46,23 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ message: res.statusText }));
+    if (res.status === 401) {
+      // Sessão inválida/expirada no navegador (achado 16/09/2026: uma
+      // funcionária ficou "logada" com um token que o backend não aceitava
+      // mais e a tela só mostrava erro genérico — precisou alguém dizer pra
+      // ela sair e entrar de novo). Toda rota exige token; um 401 só
+      // acontece por sessão ruim, nunca por regra de negócio — então força
+      // logout e manda pro login sozinho, sem depender de ninguém perceber.
+      getSupabase()
+        .auth.signOut()
+        .finally(() => {
+          // apiFetch não é componente/hook — não dá pra usar useRouter() aqui.
+          // Recarga cheia é proposital: limpa qualquer estado do Next preso
+          // com a sessão ruim, não só troca de rota.
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+          if (typeof window !== 'undefined') window.location.href = '/login';
+        });
+    }
     throw new ApiError(res.status, body.message ?? res.statusText);
   }
 

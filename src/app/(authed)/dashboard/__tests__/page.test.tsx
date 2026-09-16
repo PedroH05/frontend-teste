@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import DashboardPage from '../page';
+import DashboardPage, { TrendChart } from '../page';
 import type { Captacao } from '@/lib/types';
 
 vi.mock('next/navigation', () => ({
@@ -78,5 +78,29 @@ describe('DashboardPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Total' }));
     expect(screen.getByText(/Captações · /).previousSibling?.textContent).toBe('2');
+  });
+});
+
+describe('TrendChart — gráfico de contêineres por mês', () => {
+  it('sem passar o mouse, só o último mês mostra o número', () => {
+    const { container } = render(
+      <TrendChart points={[{ label: 'jul', n: 12 }, { label: 'ago', n: 27 }]} />,
+    );
+    expect(screen.getByText('27')).toBeInTheDocument();
+    expect(screen.queryByText('12')).not.toBeInTheDocument();
+    expect(container.querySelectorAll('circle[r="10"]')).toHaveLength(2);
+  });
+
+  it('passar o mouse numa bolinha que não é a última mostra o total daquele mês (pedido 16/09/2026)', () => {
+    const { container } = render(
+      <TrendChart points={[{ label: 'jul', n: 12 }, { label: 'ago', n: 27 }]} />,
+    );
+    const grupoJul = container.querySelectorAll('g')[0];
+
+    fireEvent.mouseEnter(grupoJul);
+    expect(screen.getByText('12')).toBeInTheDocument();
+
+    fireEvent.mouseLeave(grupoJul);
+    expect(screen.queryByText('12')).not.toBeInTheDocument();
   });
 });
