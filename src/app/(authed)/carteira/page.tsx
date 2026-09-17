@@ -40,7 +40,7 @@ function despValido(desp: string): string | undefined {
 // Portado de COLS/setSort() no index.html original.
 type SortKey = 'pr' | 'cli' | 'registrado' | 'dias' | 'regime' | 'desp' | 'navio';
 
-const PAGE_SIZE = 10; // mesmo tamanho de página do Histórico
+const PAGE_SIZE = 5; // mesmo tamanho de página do Histórico
 
 export default function CarteiraPage() {
   const router = useRouter();

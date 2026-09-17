@@ -148,8 +148,9 @@ do `(authed)/layout.tsx`.
 - **Fetch client-side, nunca Server Component, em telas autenticadas** —
   ver seção Autenticação acima. Decisão registrada originalmente em
   `../../captacao-api/migration-plan/architecture/DECISIONS.md`.
-- **Paginação client-side no Histórico e na Carteira** (10 itens/página,
-  mesmo tamanho nas duas — era 12, reduzido a pedido em 16/09/2026). No Histórico foi implementada como tentativa de
+- **Paginação client-side no Histórico e na Carteira** (5 itens/página,
+  mesmo tamanho nas duas — era 12, depois 10, reduzido a pedido de novo em
+  17/09/2026 pra facilitar teste). No Histórico foi implementada como tentativa de
   resolver uma lentidão percebida ao navegar pra essa tela; a causa raiz
   real acabou sendo a busca redundante de `/carteira` no `AppShell` a cada
   navegação (ver acima), não o volume de linhas da tabela — a paginação

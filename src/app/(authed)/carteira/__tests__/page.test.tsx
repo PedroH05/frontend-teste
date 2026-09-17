@@ -120,29 +120,29 @@ describe('CarteiraPage', () => {
     expect(await screen.findByText(/em estado crítico/)).toBeInTheDocument();
   });
 
-  it('pagina a tabela de processos de 10 em 10, igual ao Histórico', async () => {
+  it('pagina a tabela de processos de 5 em 5, igual ao Histórico', async () => {
     const user = userEvent.setup();
-    const rows = Array.from({ length: 11 }, (_, i) =>
+    const rows = Array.from({ length: 6 }, (_, i) =>
       row({ capId: i + 1, cli: `CLIENTE${i + 1}`, ref: `REF${i + 1}` }),
     );
     apiFetchMock.mockResolvedValueOnce({ rows });
     render(<CarteiraPage />);
 
     await screen.findByText('CLIENTE1');
-    expect(screen.getByText('CLIENTE10')).toBeInTheDocument();
-    expect(screen.queryByText('CLIENTE11')).not.toBeInTheDocument();
+    expect(screen.getByText('CLIENTE5')).toBeInTheDocument();
+    expect(screen.queryByText('CLIENTE6')).not.toBeInTheDocument();
     expect(screen.getByText(/Página 1 de 2/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Próxima ›' }));
 
-    expect(screen.getByText('CLIENTE11')).toBeInTheDocument();
+    expect(screen.getByText('CLIENTE6')).toBeInTheDocument();
     expect(screen.queryByText('CLIENTE1')).not.toBeInTheDocument();
     expect(screen.getByText(/Página 2 de 2/)).toBeInTheDocument();
   });
 
   it('volta pra página 1 quando um filtro muda o conjunto exibido', async () => {
     const user = userEvent.setup();
-    const rows = Array.from({ length: 11 }, (_, i) => row({ capId: i + 1, cli: `CLIENTE${i + 1}` }));
+    const rows = Array.from({ length: 6 }, (_, i) => row({ capId: i + 1, cli: `CLIENTE${i + 1}` }));
     apiFetchMock.mockResolvedValueOnce({ rows });
     render(<CarteiraPage />);
 

@@ -10,6 +10,10 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-17 — Paginação reduzida pra 5 (Carteira e Histórico)
+
+- Era 10, pra teste com dado real. Ver `docs/ARCHITECTURE.md`.
+
 ## 2026-09-17 — Busca ignora espaço no final (Carteira e Histórico)
 
 - Um espaço sobrando no fim da busca (BL, CE etc.) fazia não achar nada,
