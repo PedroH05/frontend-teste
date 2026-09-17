@@ -10,6 +10,13 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-17 — Avatar do rodapé virou um indicador de sessão ativa
+
+- Corrigido: o círculo mostrava a inicial do e-mail, mas caía num
+  placeholder fixo (a letra "V") enquanto o e-mail não carregava — não era
+  intencional. Trocado por uma bolinha verde simples de "sessão ativa",
+  sem depender de nenhum dado que possa demorar ou falhar.
+
 ## 2026-09-17 — Cartão de usuário do rodapé refeito
 
 - Trocado o bloco escuro fixo (que não seguia o tema claro/escuro) por uma

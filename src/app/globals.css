@@ -349,17 +349,16 @@
   align-items: center;
   gap: 9px;
 }
+/* Só um indicador de "sessão ativa" — não é mais um avatar com inicial.
+   Antes caía num placeholder fixo (a letra "V") enquanto o e-mail não
+   carregava, o que mostrava uma inicial errada por um instante (ou pra
+   sempre, se /auth/me falhasse). Ver artefato discutido em 17/09/2026. */
 .vt-avatar {
-  width: 28px;
-  height: 28px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: linear-gradient(150deg, #CC0000, #990010);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 12px;
+  background: var(--vt-c-efet);
+  box-shadow: 0 0 0 3px rgba(44, 122, 91, .18);
   flex-shrink: 0;
 }
 .vt-user-meta {

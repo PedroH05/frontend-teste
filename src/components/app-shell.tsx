@@ -157,7 +157,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           ))}
           <div className="vt-user-card">
-            <div className="vt-avatar">{(userEmail || 'V')[0].toUpperCase()}</div>
+            <div className="vt-avatar" title="Sessão ativa" />
             <div className="vt-user-meta">
               <div className="email" title={userEmail}>
                 {userEmail || 'Sessão ativa'}
