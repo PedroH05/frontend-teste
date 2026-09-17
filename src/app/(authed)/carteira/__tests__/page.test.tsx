@@ -53,7 +53,27 @@ describe('CarteiraPage', () => {
     render(<CarteiraPage />);
 
     expect(await screen.findByText('05/09/2026')).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'Registrado em' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /Registrado em/ })).toBeInTheDocument();
+  });
+
+  it('ordena por "Registrado em" ao clicar no cabeçalho — mais recente/mais antigo', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce({
+      rows: [
+        row({ capId: 1, cli: 'ANTIGO', createdAt: '2026-09-01T00:00:00.000Z' }),
+        row({ capId: 2, cli: 'RECENTE', createdAt: '2026-09-10T00:00:00.000Z' }),
+      ],
+    });
+    render(<CarteiraPage />);
+    await screen.findByText('ANTIGO');
+
+    await user.click(screen.getByRole('columnheader', { name: /Registrado em/ }));
+    let clientes = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    expect(clientes[0]).toContain('ANTIGO'); // 1º clique: crescente (mais antigo primeiro)
+
+    await user.click(screen.getByRole('columnheader', { name: /Registrado em/ }));
+    clientes = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    expect(clientes[0]).toContain('RECENTE'); // 2º clique: inverte (mais recente primeiro)
   });
 
   it('alerta minimizável esconde e mostra o texto', async () => {

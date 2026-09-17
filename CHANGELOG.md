@@ -10,12 +10,14 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
-## 2026-09-17 — Coluna "Registrado em" na Carteira
+## 2026-09-17 — Coluna "Registrado em" na Carteira, ordenável
 
 - A tabela de Processos não mostrava quando o processo foi feito (só o
   Histórico tinha). Nova coluna entre Cliente/Ref. e ETA, mesmo formato do
   Histórico. `formatData`/`formatDataHora` extraídos pra `lib/format.ts`
   (estavam duplicados só no Histórico).
+- Coluna clicável pra ordenar (mais recente ↔ mais antigo primeiro), igual
+  às outras colunas da tabela.
 
 ## 2026-09-17 — Carteira: sem porcentagem nos blocos de risco, ETA com ano
 

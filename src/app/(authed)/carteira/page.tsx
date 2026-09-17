@@ -38,7 +38,7 @@ function despValido(desp: string): string | undefined {
 }
 
 // Portado de COLS/setSort() no index.html original.
-type SortKey = 'pr' | 'cli' | 'dias' | 'regime' | 'desp' | 'navio';
+type SortKey = 'pr' | 'cli' | 'registrado' | 'dias' | 'regime' | 'desp' | 'navio';
 
 const PAGE_SIZE = 10; // mesmo tamanho de página do Histórico
 
@@ -137,6 +137,8 @@ export default function CarteiraPage() {
           return item.b.pr;
         case 'cli':
           return item.r.cli.toLowerCase();
+        case 'registrado':
+          return item.r.createdAt ?? ''; // ISO ordena certo como texto
         case 'regime':
           return item.r.regime || 'zzz';
         case 'desp':
@@ -643,11 +645,15 @@ export default function CarteiraPage() {
                     </span>
                   </TableHead>
                 ))}
-                {/* Não é sortable — não tem chave própria no join, é só a
-                    data crua da captação/embarque (ver createdAt em
-                    GET /carteira). Mesmo lugar que no Histórico. */}
-                <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
-                  Registrado em
+                <TableHead
+                  className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
+                  style={{ color: sortKey === 'registrado' ? 'var(--vt-red)' : 'var(--vt-muted)' }}
+                  onClick={() => toggleSort('registrado')}
+                >
+                  Registrado em{' '}
+                  <span style={{ opacity: sortKey === 'registrado' ? 1 : 0.35 }}>
+                    {sortKey === 'registrado' ? (sortDir === 1 ? '▲' : '▼') : '↕'}
+                  </span>
                 </TableHead>
                 {(
                   [
