@@ -337,28 +337,29 @@
   line-height: 1.5;
 }
 
-/* Cartão de usuário no rodapé — substitui o item "Sair" solto + o rodapé */
-/* de texto por um único bloco (avatar + e-mail + botão de logout).       */
+/* Cartão de usuário no rodapé — avatar + e-mail + ações, separado do menu
+   só por uma linha (sem bloco escuro fixo: aquele bloco não seguia o tema
+   claro/escuro do resto do app — ficava sempre escuro mesmo no claro).
+   Ver artefato de referência discutido em 17/09/2026 (opção 2, "Linha"). */
 .vt-user-card {
   margin-top: auto;
-  padding: 9px;
-  border-radius: 14px;
-  background: rgba(38, 36, 31, .94);
-  color: #f3efe8;
+  padding-top: 11px;
+  border-top: 1px solid var(--vt-line);
   display: flex;
   align-items: center;
   gap: 9px;
 }
 .vt-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   background: linear-gradient(150deg, #CC0000, #990010);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 .vt-user-meta {
@@ -368,29 +369,25 @@
 .vt-user-meta .email {
   font-size: 11.5px;
   font-weight: 600;
+  color: var(--vt-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.vt-user-meta .role {
-  font-size: 10px;
-  color: #b9b3a6;
-}
 .vt-logout-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 9px;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #f3efe8;
-  opacity: .75;
+  color: var(--vt-muted);
   flex-shrink: 0;
   background: transparent;
   border: none;
   cursor: pointer;
 }
-.vt-logout-btn:hover { opacity: 1; background: rgba(255, 255, 255, .12); }
+.vt-logout-btn:hover { color: var(--vt-red); background: var(--vt-line); }
 
 /* Animação do botão Salvar (Captações) — portada literalmente do */
 /* .form-actions/.save-wrap/.save-truck do index.html original.    */

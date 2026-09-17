@@ -10,6 +10,13 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-17 — Cartão de usuário do rodapé refeito
+
+- Trocado o bloco escuro fixo (que não seguia o tema claro/escuro) por uma
+  linha divisória simples, avatar circular com o vermelho da marca, sem a
+  linha "Captação Inteligente" repetida (já está na logo, acima). Três
+  alternativas visuais discutidas antes de escolher esta.
+
 ## 2026-09-16 — Enter avança etapa na Captação manual
 
 - Pressionar Enter num campo de texto avança pra próxima etapa (ou salva,

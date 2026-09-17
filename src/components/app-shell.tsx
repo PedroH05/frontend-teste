@@ -162,7 +162,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div className="email" title={userEmail}>
                 {userEmail || 'Sessão ativa'}
               </div>
-              <div className="role">Captação Inteligente</div>
             </div>
             <button
               type="button"
