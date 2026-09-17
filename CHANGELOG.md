@@ -10,6 +10,11 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-17 — Histórico: "Registrado em" também vira ordenável
+
+- Clica no cabeçalho pra inverter mais recente ↔ mais antigo primeiro,
+  mesma mecânica que a Carteira ganhou pouco antes.
+
 ## 2026-09-17 — Coluna "Registrado em" na Carteira, ordenável
 
 - A tabela de Processos não mostrava quando o processo foi feito (só o

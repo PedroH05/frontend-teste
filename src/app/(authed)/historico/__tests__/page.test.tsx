@@ -156,4 +156,22 @@ describe('HistoricoPage', () => {
     expect(screen.getByText('HBCN066408')).toBeInTheDocument();
     expect(screen.getByText('BL 3')).toBeInTheDocument();
   });
+
+  it('clicar em "Registrado em" inverte mais recente ↔ mais antigo primeiro (pedido 17/09/2026)', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce([
+      base({ id: 1, cli: 'ANTIGA', createdAt: '2026-09-01T00:00:00.000Z' }),
+      base({ id: 2, cli: 'RECENTE', createdAt: '2026-09-10T00:00:00.000Z' }),
+    ]);
+    render(<HistoricoPage />);
+    await screen.findByText('RECENTE');
+
+    const linhasIniciais = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    expect(linhasIniciais[0]).toContain('RECENTE'); // padrão: mais recente primeiro
+
+    await user.click(screen.getByRole('columnheader', { name: /Registrado em/ }));
+
+    const linhasInvertidas = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    expect(linhasInvertidas[0]).toContain('ANTIGA'); // depois de clicar: mais antigo primeiro
+  });
 });

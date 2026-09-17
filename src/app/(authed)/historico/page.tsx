@@ -64,6 +64,10 @@ export default function HistoricoPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [dia, setDia] = useState<Dia>('tudo');
+  // Único critério de ordenação da tela hoje (Registrado em) — 1 = mais
+  // recente primeiro (padrão, igual sempre foi), -1 = mais antigo primeiro.
+  // Pedido 17/09/2026, igual ao que já existe na Carteira.
+  const [sortDir, setSortDir] = useState<1 | -1>(1);
   const [dataSel, setDataSel] = useState('');
   const [statusFiltro, setStatusFiltro] = useState<StatusFiltro>('todos');
   const [busca, setBusca] = useState('');
@@ -110,7 +114,7 @@ export default function HistoricoPage() {
     // ficava perdida no fim de uma lista paginada, difícil de achar logo
     // depois de criar. Mudança deliberada de comportamento, ver
     // docs/DECISIONS.md.
-    rows.sort((a, b) => (b.createdAt < a.createdAt ? -1 : 1));
+    rows.sort((a, b) => (b.createdAt < a.createdAt ? -1 : 1) * sortDir);
     if (statusFiltro !== 'todos') {
       rows = rows.filter((c) => categoriaDe(c.stage) === statusFiltro);
     }
@@ -119,7 +123,7 @@ export default function HistoricoPage() {
       rows = rows.filter((c) => JSON.stringify(c).toLowerCase().includes(q));
     }
     return rows;
-  }, [captacoes, alvo, statusFiltro, busca]);
+  }, [captacoes, alvo, statusFiltro, busca, sortDir]);
 
   // Volta pra página 1 sempre que o filtro muda o conjunto exibido — senão
   // dá pra ficar numa página que não existe mais (ex.: filtrou e sobrou só
@@ -223,7 +227,22 @@ export default function HistoricoPage() {
           <Table>
             <TableHeader>
               <TableRow style={{ borderColor: 'var(--vt-line)' }}>
-                {['Status', 'Cliente / Referência', 'Registrado em', 'ETA', 'Regime', 'CE', 'BL', 'Navio', 'Despachante', 'Atracação → Parceiro'].map((h) => (
+                {['Status', 'Cliente / Referência'].map((h) => (
+                  <TableHead key={h} className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
+                    {h}
+                  </TableHead>
+                ))}
+                <TableHead
+                  className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
+                  style={{ color: 'var(--vt-red)' }}
+                  onClick={() => setSortDir((d) => (d === 1 ? -1 : 1))}
+                  title="Ordenar por data de registro"
+                >
+                  {/* sortDir 1 (padrão) = mais recente primeiro = ▼ (igual
+                      ao sentido ▲=crescente/mais antigo usado na Carteira) */}
+                  Registrado em <span>{sortDir === 1 ? '▼' : '▲'}</span>
+                </TableHead>
+                {['ETA', 'Regime', 'CE', 'BL', 'Navio', 'Despachante', 'Atracação → Parceiro'].map((h) => (
                   <TableHead key={h} className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
                     {h}
                   </TableHead>
