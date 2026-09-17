@@ -58,16 +58,30 @@ const STAGE_LABEL: Record<string, string> = {
 
 const PAGE_SIZE = 5;
 
+type SortKey = 'registrado' | 'eta';
+
 export default function HistoricoPage() {
   const router = useRouter();
   const [captacoes, setCaptacoes] = useState<Captacao[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [dia, setDia] = useState<Dia>('tudo');
-  // Único critério de ordenação da tela hoje (Registrado em) — 1 = mais
-  // recente primeiro (padrão, igual sempre foi), -1 = mais antigo primeiro.
-  // Pedido 17/09/2026, igual ao que já existe na Carteira.
-  const [sortDir, setSortDir] = useState<1 | -1>(1);
+  // Dois critérios de ordenação: Registrado em (padrão) e ETA — pedido
+  // 17/09/2026 (antes só dava pra ordenar por Registrado em, ETA não tinha
+  // opção nenhuma). sortDir 1 = crescente (mais antigo/ETA mais distante
+  // primeiro), -1 = decrescente (mais recente/ETA mais próxima primeiro) —
+  // mesma convenção da Carteira. Troca de coluna sempre começa
+  // decrescente, igual já era o padrão de "Registrado em".
+  const [sortKey, setSortKey] = useState<SortKey>('registrado');
+  const [sortDir, setSortDir] = useState<1 | -1>(-1);
+
+  function toggleSort(k: SortKey) {
+    if (sortKey === k) setSortDir((d) => (d === 1 ? -1 : 1));
+    else {
+      setSortKey(k);
+      setSortDir(-1);
+    }
+  }
   const [dataSel, setDataSel] = useState('');
   const [statusFiltro, setStatusFiltro] = useState<StatusFiltro>('todos');
   const [busca, setBusca] = useState('');
@@ -108,13 +122,20 @@ export default function HistoricoPage() {
         return d && !Number.isNaN(d.getTime()) && d.toDateString() === alvo.toDateString();
       });
     }
-    // Sempre por data de registro, mais recente primeiro — inclusive em
+    // Por padrão, data de registro mais recente primeiro — inclusive em
     // "Tudo". O original ordenava "Tudo" por ETA (index.html:1551), mas
     // pedido do Pedro em 16/09/2026: captação sem ETA (ou ETA distante)
     // ficava perdida no fim de uma lista paginada, difícil de achar logo
     // depois de criar. Mudança deliberada de comportamento, ver
-    // docs/DECISIONS.md.
-    rows.sort((a, b) => (b.createdAt < a.createdAt ? -1 : 1) * sortDir);
+    // docs/DECISIONS.md. Ordenar por ETA continua disponível clicando na
+    // coluna (pedido 17/09/2026) — sem ETA conta como o valor mais antigo,
+    // então continua indo pro fim independente da direção.
+    const valorDeOrdenacao = (c: Captacao) => (sortKey === 'eta' ? (c.eta ?? '') : c.createdAt);
+    rows.sort((a, b) => {
+      const va = valorDeOrdenacao(a);
+      const vb = valorDeOrdenacao(b);
+      return (va < vb ? -1 : va > vb ? 1 : 0) * sortDir;
+    });
     if (statusFiltro !== 'todos') {
       rows = rows.filter((c) => categoriaDe(c.stage) === statusFiltro);
     }
@@ -123,16 +144,22 @@ export default function HistoricoPage() {
       rows = rows.filter((c) => JSON.stringify(c).toLowerCase().includes(q));
     }
     return rows;
-  }, [captacoes, alvo, statusFiltro, busca, sortDir]);
+  }, [captacoes, alvo, statusFiltro, busca, sortKey, sortDir]);
 
   // Volta pra página 1 sempre que o filtro muda o conjunto exibido — senão
   // dá pra ficar numa página que não existe mais (ex.: filtrou e sobrou só
   // 1 página, mas você tava na 4). Ajuste durante o render (não em efeito)
   // pra não gerar uma renderização em cascata — ver
   // https://react.dev/learn/you-might-not-need-an-effect.
-  const [filtroAnterior, setFiltroAnterior] = useState({ alvo, statusFiltro, busca });
-  if (filtroAnterior.alvo !== alvo || filtroAnterior.statusFiltro !== statusFiltro || filtroAnterior.busca !== busca) {
-    setFiltroAnterior({ alvo, statusFiltro, busca });
+  const [filtroAnterior, setFiltroAnterior] = useState({ alvo, statusFiltro, busca, sortKey, sortDir });
+  if (
+    filtroAnterior.alvo !== alvo ||
+    filtroAnterior.statusFiltro !== statusFiltro ||
+    filtroAnterior.busca !== busca ||
+    filtroAnterior.sortKey !== sortKey ||
+    filtroAnterior.sortDir !== sortDir
+  ) {
+    setFiltroAnterior({ alvo, statusFiltro, busca, sortKey, sortDir });
     setPagina(1);
   }
 
@@ -232,17 +259,25 @@ export default function HistoricoPage() {
                     {h}
                   </TableHead>
                 ))}
-                <TableHead
-                  className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
-                  style={{ color: 'var(--vt-red)' }}
-                  onClick={() => setSortDir((d) => (d === 1 ? -1 : 1))}
-                  title="Ordenar por data de registro"
-                >
-                  {/* sortDir 1 (padrão) = mais recente primeiro = ▼ (igual
-                      ao sentido ▲=crescente/mais antigo usado na Carteira) */}
-                  Registrado em <span>{sortDir === 1 ? '▼' : '▲'}</span>
-                </TableHead>
-                {['ETA', 'Regime', 'CE', 'BL', 'Navio', 'Despachante', 'Atracação → Parceiro'].map((h) => (
+                {(
+                  [
+                    ['registrado', 'Registrado em'],
+                    ['eta', 'ETA'],
+                  ] as [SortKey, string][]
+                ).map(([key, label]) => (
+                  <TableHead
+                    key={key}
+                    className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
+                    style={{ color: sortKey === key ? 'var(--vt-red)' : 'var(--vt-muted)' }}
+                    onClick={() => toggleSort(key)}
+                  >
+                    {label}{' '}
+                    <span style={{ opacity: sortKey === key ? 1 : 0.35 }}>
+                      {sortKey === key ? (sortDir === 1 ? '▲' : '▼') : '↕'}
+                    </span>
+                  </TableHead>
+                ))}
+                {['Regime', 'CE', 'BL', 'Navio', 'Despachante', 'Atracação → Parceiro'].map((h) => (
                   <TableHead key={h} className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
                     {h}
                   </TableHead>

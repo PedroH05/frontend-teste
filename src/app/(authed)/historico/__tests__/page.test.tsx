@@ -185,4 +185,26 @@ describe('HistoricoPage', () => {
     const linhasInvertidas = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
     expect(linhasInvertidas[0]).toContain('ANTIGA'); // depois de clicar: mais antigo primeiro
   });
+
+  it('dá pra ordenar por ETA também, não só por Registrado em (pedido 17/09/2026)', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce([
+      base({ id: 1, cli: 'ETA-DISTANTE', eta: '2026-12-31', createdAt: '2026-09-05T00:00:00.000Z' }),
+      base({ id: 2, cli: 'ETA-PROXIMA', eta: '2026-09-20', createdAt: '2026-09-01T00:00:00.000Z' }),
+    ]);
+    render(<HistoricoPage />);
+    await screen.findByText('ETA-DISTANTE');
+
+    await user.click(screen.getByRole('columnheader', { name: /^ETA/ }));
+
+    // 1º clique na coluna ETA: mais recente/distante primeiro (padrão de toda troca de coluna)
+    let linhas = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    expect(linhas[0]).toContain('ETA-DISTANTE');
+
+    await user.click(screen.getByRole('columnheader', { name: /^ETA/ }));
+
+    // 2º clique: inverte — ETA mais próxima primeiro
+    linhas = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    expect(linhas[0]).toContain('ETA-PROXIMA');
+  });
 });
