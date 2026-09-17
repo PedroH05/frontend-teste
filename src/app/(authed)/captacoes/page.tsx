@@ -412,8 +412,11 @@ function CaptacoesForm() {
         <div
           className="absolute top-[13px] left-0 h-[2px] transition-[width]"
           style={{
+            // Acompanha a etapa atual, não a mais distante já visitada —
+            // antes ficava parada no ponto mais longe mesmo voltando pra
+            // uma etapa anterior. Pedido 17/09/2026.
             background: 'var(--vt-c-efet)',
-            width: `${(Math.max(0, ...[...visited]) / (STEPS.length - 1)) * 100}%`,
+            width: `${(step / (STEPS.length - 1)) * 100}%`,
           }}
         />
         {STEPS.map((label, i) => {

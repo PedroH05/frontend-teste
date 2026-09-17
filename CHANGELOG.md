@@ -10,6 +10,12 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-17 — Captação manual: linha de progresso acompanha onde você está
+
+- A linha verde ficava parada no ponto mais distante já visitado — se
+  voltasse pra uma etapa anterior, ela continuava lá na frente. Agora
+  acompanha a etapa atual.
+
 ## 2026-09-17 — Captação manual: cor real de progresso, aviso antes de sair
 
 - A bolinha de cada etapa ficava verde só por ter sido visitada, mesmo
