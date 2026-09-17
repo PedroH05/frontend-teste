@@ -10,6 +10,12 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-17 — Botões "Anterior"/"Próxima" mais visíveis
+
+- Estavam só com o vidro fosco, sem borda nem sombra — apagados demais.
+  Ganharam borda, sombra e cor de texto explícita, igual ao padrão já usado
+  em outros botões secundários do app.
+
 ## 2026-09-17 — Paginação reduzida pra 5 (Carteira e Histórico)
 
 - Era 10, pra teste com dado real. Ver `docs/ARCHITECTURE.md`.

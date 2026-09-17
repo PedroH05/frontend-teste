@@ -348,7 +348,7 @@ export default function HistoricoPage() {
               <div className="flex items-center gap-1.5">
                 <Button
                   variant="ghost"
-                  className="vt-glass-strong rounded-[9px] px-2.5 py-1 text-[12px] font-semibold"
+                  className="vt-glass-strong rounded-[9px] border border-[var(--vt-line)] px-2.5 py-1 text-[12px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px disabled:opacity-40"
                   disabled={pagina <= 1}
                   onClick={() => setPagina((p) => Math.max(1, p - 1))}
                 >
@@ -356,7 +356,7 @@ export default function HistoricoPage() {
                 </Button>
                 <Button
                   variant="ghost"
-                  className="vt-glass-strong rounded-[9px] px-2.5 py-1 text-[12px] font-semibold"
+                  className="vt-glass-strong rounded-[9px] border border-[var(--vt-line)] px-2.5 py-1 text-[12px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px disabled:opacity-40"
                   disabled={pagina >= totalPaginas}
                   onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
                 >
