@@ -69,6 +69,20 @@ describe('CarteiraPage', () => {
     expect(screen.getByText('Efetivado')).toBeInTheDocument();
   });
 
+  it('por padrão mostra o registro mais recente primeiro (pedido 17/09/2026)', async () => {
+    filaApi('/carteira', {
+      rows: [
+        row({ capId: 1, cli: 'ANTIGO', eta: '2026-09-30', createdAt: '2026-09-01T00:00:00.000Z' }),
+        row({ capId: 2, cli: 'RECENTE', eta: '2026-12-31', createdAt: '2026-09-10T00:00:00.000Z' }),
+      ],
+    });
+    render(<CarteiraPage />);
+    await screen.findByText('ANTIGO');
+
+    const linhas = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    expect(linhas[0]).toContain('RECENTE'); // registrado por último, aparece primeiro
+  });
+
   it('mostra "Registrado em" com a data em que o processo foi feito (pedido 17/09/2026)', async () => {
     filaApi('/carteira', { rows: [row({ createdAt: '2026-09-05T14:30:00.000Z' })] });
     render(<CarteiraPage />);

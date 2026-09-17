@@ -10,6 +10,11 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-17 — Carteira: padrão passa a ser o registro mais recente
+
+- Antes ordenava por ETA mais urgente primeiro. Continua dando pra ordenar
+  por qualquer coluna clicando nela — só o padrão ao abrir a tela mudou.
+
 ## 2026-09-17 — Paginação em Clientes; Carteira mostra apelido do cliente
 
 - Clientes ganhou paginação (5 por página), mesmo padrão da Carteira e do

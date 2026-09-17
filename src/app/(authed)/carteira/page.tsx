@@ -55,8 +55,10 @@ export default function CarteiraPage() {
   function toggleChip(v: typeof chipFiltro) {
     setChipFiltro((f) => (f === v ? null : v));
   }
-  const [sortKey, setSortKey] = useState<SortKey>('dias');
-  const [sortDir, setSortDir] = useState<1 | -1>(1);
+  // Padrão: registro mais recente primeiro — pedido 17/09/2026 (antes o
+  // padrão era ETA mais urgente primeiro).
+  const [sortKey, setSortKey] = useState<SortKey>('registrado');
+  const [sortDir, setSortDir] = useState<1 | -1>(-1);
 
   function toggleSort(k: SortKey) {
     if (sortKey === k) setSortDir((d) => (d === 1 ? -1 : 1));
