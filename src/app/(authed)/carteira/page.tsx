@@ -520,7 +520,6 @@ export default function CarteiraPage() {
         <div className="vt-glass grid grid-cols-2 gap-px overflow-hidden sm:grid-cols-5" style={{ background: 'var(--vt-line)' }}>
           {BANDS.map((b) => {
             const n = contagens[b.k] ?? 0;
-            const pct = rows.length ? Math.round((n / rows.length) * 100) : 0;
             const active = filterBand === b.k;
             return (
               <button
@@ -533,9 +532,6 @@ export default function CarteiraPage() {
                   boxShadow: active ? `inset 0 -3px 0 var(--vt-c-${b.k})` : undefined,
                 }}
               >
-                <span className="absolute top-3 right-3 text-[9.5px] font-bold" style={{ color: 'var(--vt-muted2)' }}>
-                  {rows.length ? `${pct}%` : ''}
-                </span>
                 <div className="text-[25px] leading-none font-extrabold tracking-tight" style={{ color: `var(--vt-c-${b.k})` }}>
                   {n}
                 </div>

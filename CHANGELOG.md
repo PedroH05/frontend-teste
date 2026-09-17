@@ -10,6 +10,13 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-17 — Carteira: sem porcentagem nos blocos de risco, ETA com ano
+
+- Tirada a porcentagem (canto superior direito) dos 5 blocos de risco —
+  ficava só o número mesmo.
+- ETA na Carteira agora mostra o ano (`DD/MM/AAAA`) — antes só `DD/MM`,
+  diferente do Histórico. Padronizado nas duas telas.
+
 ## 2026-09-17 — Avatar do rodapé virou um indicador de sessão ativa
 
 - Corrigido: o círculo mostrava a inicial do e-mail, mas caía num

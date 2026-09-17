@@ -41,10 +41,13 @@ export function banda(r: CockpitRow): Banda {
   return { k: 'prog', t: 'PROGRAMADO', cls: 'prog', pr: 6 };
 }
 
+// Sem ano (DD/MM) até 17/09/2026 — diferente do Histórico, que sempre
+// mostrou DD/MM/AAAA (ver historico/page.tsx, formatData). Padronizado
+// pro mesmo formato nas duas telas.
 export function fmtEta(e: string): string {
   if (!e) return '—';
-  const [, m, d] = e.slice(0, 10).split('-');
-  return `${d}/${m}`;
+  const [y, m, d] = e.slice(0, 10).split('-');
+  return `${d}/${m}/${y}`;
 }
 
 export function dLabel(d: number): string {
