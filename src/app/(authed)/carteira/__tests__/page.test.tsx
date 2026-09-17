@@ -155,6 +155,20 @@ describe('CarteiraPage', () => {
     expect(await screen.findByText(/Página 1 de/)).toBeInTheDocument();
   });
 
+  it('busca ignora espaço no final (pedido 17/09/2026)', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce({ rows: [row({ bl: 'HBCN066406' })] });
+    render(<CarteiraPage />);
+    await screen.findByText('TECNO'); // cliente do row() padrão
+
+    // BL não aparece como texto na tabela da Carteira (só no Histórico) —
+    // busca por ele com espaço no final e confere que a linha continua lá.
+    await user.type(screen.getByPlaceholderText('buscar cliente, BL, navio…'), 'HBCN066406 ');
+
+    expect(screen.getByText('TECNO')).toBeInTheDocument();
+    expect(screen.queryByText('Nenhum processo com este filtro')).not.toBeInTheDocument();
+  });
+
   it('importa uma planilha e mostra o resumo estruturado, recarregando a carteira', async () => {
     const user = userEvent.setup();
     apiFetchMock

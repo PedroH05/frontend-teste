@@ -119,7 +119,7 @@ export default function HistoricoPage() {
       rows = rows.filter((c) => categoriaDe(c.stage) === statusFiltro);
     }
     if (busca) {
-      const q = busca.toLowerCase();
+      const q = busca.trim().toLowerCase();
       rows = rows.filter((c) => JSON.stringify(c).toLowerCase().includes(q));
     }
     return rows;

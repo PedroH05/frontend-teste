@@ -141,6 +141,17 @@ describe('HistoricoPage', () => {
     expect(apiFetchMock).toHaveBeenCalledWith('/captacoes/1', { method: 'DELETE' });
   });
 
+  it('busca ignora espaço no final (pedido 17/09/2026)', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce([base({ id: 1, bl: 'HBCN066406' })]);
+    render(<HistoricoPage />);
+    await screen.findByText('HBCN066406');
+
+    await user.type(screen.getByPlaceholderText('buscar cliente, BL, navio…'), 'HBCN066406 ');
+
+    expect(screen.getByText('HBCN066406')).toBeInTheDocument();
+  });
+
   it('múltiplos BL mostram badge "+N" que abre o drawer com a lista completa', async () => {
     const user = userEvent.setup();
     apiFetchMock.mockResolvedValueOnce([

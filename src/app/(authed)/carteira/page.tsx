@@ -128,7 +128,7 @@ export default function CarteiraPage() {
     else if (chipFiltro === 'semdesp') list = list.filter(({ r }) => !r.regime || r.regime === 'AGUARDANDO');
     else if (chipFiltro === 'aluzen') list = list.filter(({ r }) => r.cli.toLowerCase().includes('aluzen'));
     if (busca) {
-      const q = busca.toLowerCase();
+      const q = busca.trim().toLowerCase();
       list = list.filter(({ r }) => JSON.stringify(r).toLowerCase().includes(q));
     }
     const val = (item: (typeof list)[number]): string | number => {

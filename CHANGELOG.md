@@ -10,6 +10,11 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-17 — Busca ignora espaço no final (Carteira e Histórico)
+
+- Um espaço sobrando no fim da busca (BL, CE etc.) fazia não achar nada,
+  mesmo o valor existindo. Clientes já ignorava; Carteira e Histórico não.
+
 ## 2026-09-17 — Botão "Sair" na Captação manual
 
 - Não tinha jeito de sair sem salvar além de clicar num item do menu. Novo
