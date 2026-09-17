@@ -10,6 +10,17 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-17 — Paginação em Clientes; Carteira mostra apelido do cliente
+
+- Clientes ganhou paginação (5 por página), mesmo padrão da Carteira e do
+  Histórico.
+- Carteira mostra o apelido cadastrado do cliente em vez do texto digitado
+  por extenso (ex.: "HUESKER LTDA" → "HUESKER"), deixando a tabela mais
+  compacta. Casamento por CNPJ raiz primeiro, senão por prefixo do
+  apelido; sem casamento nenhum, mantém o texto original — nunca esconde
+  dado. Passa o mouse pra ver o texto original completo. Ver
+  `src/lib/apelido.ts`.
+
 ## 2026-09-17 — Histórico: ETA também vira ordenável
 
 - Só dava pra ordenar por "Registrado em". Coluna ETA agora tem a mesma

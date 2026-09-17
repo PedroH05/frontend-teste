@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import CarteiraPage from '../page';
 import type { CockpitRow } from '@/lib/types';
 
@@ -9,10 +9,26 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/carteira',
 }));
 
-const apiFetchMock = vi.fn();
+// Mock por ROTA, não por ordem de chamada — a Carteira busca /carteira e
+// /clientes em paralelo (apelido do cliente, ver lib/apelido.ts), então uma
+// fila única (mockResolvedValueOnce em sequência) desalinha sempre que as
+// duas chamadas acontecem numa ordem diferente da esperada pelo teste.
+const filas: Record<string, unknown[]> = {};
+function filaApi(path: string, valor: unknown) {
+  (filas[path] ??= []).push(valor);
+}
+const apiFetchMock = vi.fn((path: string) => {
+  const fila = filas[path];
+  if (fila?.length) {
+    const proximo = fila.shift();
+    return proximo instanceof Error ? Promise.reject(proximo) : Promise.resolve(proximo);
+  }
+  if (path === '/clientes') return Promise.resolve([]); // sem apelido, mostra o texto original
+  return Promise.resolve(undefined);
+});
 vi.mock('@/lib/api', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api')>('@/lib/api');
-  return { ...actual, apiFetch: (...args: unknown[]) => apiFetchMock(...args) };
+  return { ...actual, apiFetch: (...args: unknown[]) => apiFetchMock(...(args as [string])) };
 });
 
 function row(overrides: Partial<CockpitRow>): CockpitRow {
@@ -38,8 +54,13 @@ function row(overrides: Partial<CockpitRow>): CockpitRow {
 }
 
 describe('CarteiraPage', () => {
+  afterEach(() => {
+    for (const k of Object.keys(filas)) delete filas[k];
+    apiFetchMock.mockClear();
+  });
+
   it('mostra as 5 faixas de risco com a contagem correta', async () => {
-    apiFetchMock.mockResolvedValueOnce({
+    filaApi('/carteira', {
       rows: [row({ stage: 'MANIFESTADA_DOCS' }), row({ stage: 'EFETIVA', capId: 2 })],
     });
     render(<CarteiraPage />);
@@ -49,7 +70,7 @@ describe('CarteiraPage', () => {
   });
 
   it('mostra "Registrado em" com a data em que o processo foi feito (pedido 17/09/2026)', async () => {
-    apiFetchMock.mockResolvedValueOnce({ rows: [row({ createdAt: '2026-09-05T14:30:00.000Z' })] });
+    filaApi('/carteira', { rows: [row({ createdAt: '2026-09-05T14:30:00.000Z' })] });
     render(<CarteiraPage />);
 
     expect(await screen.findByText('05/09/2026')).toBeInTheDocument();
@@ -58,7 +79,7 @@ describe('CarteiraPage', () => {
 
   it('ordena por "Registrado em" ao clicar no cabeçalho — mais recente/mais antigo', async () => {
     const user = userEvent.setup();
-    apiFetchMock.mockResolvedValueOnce({
+    filaApi('/carteira', {
       rows: [
         row({ capId: 1, cli: 'ANTIGO', createdAt: '2026-09-01T00:00:00.000Z' }),
         row({ capId: 2, cli: 'RECENTE', createdAt: '2026-09-10T00:00:00.000Z' }),
@@ -78,7 +99,7 @@ describe('CarteiraPage', () => {
 
   it('alerta minimizável esconde e mostra o texto', async () => {
     const user = userEvent.setup();
-    apiFetchMock.mockResolvedValueOnce({
+    filaApi('/carteira', {
       rows: [row({ regime: '', eta: '2026-12-01', stage: 'NENHUM', capId: null })],
     });
     render(<CarteiraPage />);
@@ -92,7 +113,7 @@ describe('CarteiraPage', () => {
 
   it('busca reconhece um código de container e oferece rastreio', async () => {
     const user = userEvent.setup();
-    apiFetchMock.mockResolvedValueOnce({ rows: [] });
+    filaApi('/carteira', { rows: [] });
     render(<CarteiraPage />);
 
     await screen.findByText('Processos');
@@ -108,7 +129,7 @@ describe('CarteiraPage', () => {
 
   it('busca por palavra-chave "crítico" filtra a lista de risco', async () => {
     const user = userEvent.setup();
-    apiFetchMock.mockResolvedValueOnce({
+    filaApi('/carteira', {
       rows: [row({ stage: 'MANIFESTADA_DOCS', cli: 'ALUZEN', ref: 'ALUZEN 002' })],
     });
     render(<CarteiraPage />);
@@ -125,7 +146,7 @@ describe('CarteiraPage', () => {
     const rows = Array.from({ length: 6 }, (_, i) =>
       row({ capId: i + 1, cli: `CLIENTE${i + 1}`, ref: `REF${i + 1}` }),
     );
-    apiFetchMock.mockResolvedValueOnce({ rows });
+    filaApi('/carteira', { rows });
     render(<CarteiraPage />);
 
     await screen.findByText('CLIENTE1');
@@ -143,7 +164,7 @@ describe('CarteiraPage', () => {
   it('volta pra página 1 quando um filtro muda o conjunto exibido', async () => {
     const user = userEvent.setup();
     const rows = Array.from({ length: 6 }, (_, i) => row({ capId: i + 1, cli: `CLIENTE${i + 1}` }));
-    apiFetchMock.mockResolvedValueOnce({ rows });
+    filaApi('/carteira', { rows });
     render(<CarteiraPage />);
 
     await screen.findByText('CLIENTE1');
@@ -157,7 +178,7 @@ describe('CarteiraPage', () => {
 
   it('busca ignora espaço no final (pedido 17/09/2026)', async () => {
     const user = userEvent.setup();
-    apiFetchMock.mockResolvedValueOnce({ rows: [row({ bl: 'HBCN066406' })] });
+    filaApi('/carteira', { rows: [row({ bl: 'HBCN066406' })] });
     render(<CarteiraPage />);
     await screen.findByText('TECNO'); // cliente do row() padrão
 
@@ -171,10 +192,9 @@ describe('CarteiraPage', () => {
 
   it('importa uma planilha e mostra o resumo estruturado, recarregando a carteira', async () => {
     const user = userEvent.setup();
-    apiFetchMock
-      .mockResolvedValueOnce({ rows: [] }) // load() inicial
-      .mockResolvedValueOnce({ processados: 3, porCnpj: 2, provaveis: 1, ignorados: 5 }) // import
-      .mockResolvedValueOnce({ rows: [row({})] }); // load() depois do import
+    filaApi('/carteira', { rows: [] }); // load() inicial
+    filaApi('/import/logcomex', { processados: 3, porCnpj: 2, provaveis: 1, ignorados: 5 });
+    filaApi('/carteira', { rows: [row({})] }); // load() depois do import
     render(<CarteiraPage />);
 
     await screen.findByText('Processos');
@@ -192,5 +212,23 @@ describe('CarteiraPage', () => {
     // recarregou a carteira depois de importar (última chamada é GET /carteira de novo)
     const ultimaChamada = apiFetchMock.mock.calls.at(-1);
     expect(ultimaChamada?.[0]).toBe('/carteira');
+  });
+
+  it('mostra o apelido cadastrado em vez do nome digitado por extenso (pedido 17/09/2026)', async () => {
+    filaApi('/carteira', { rows: [row({ cli: 'HUESKER LTDA' })] });
+    filaApi('/clientes', [
+      { id: 1, name: 'HUESKER BRASIL LTDA', cnpj: null, cnpjRaiz: null, aliases: ['HUESKER'], ativo: true },
+    ]);
+    render(<CarteiraPage />);
+
+    expect(await screen.findByText('HUESKER')).toBeInTheDocument();
+    expect(screen.queryByText('HUESKER LTDA')).not.toBeInTheDocument();
+  });
+
+  it('sem casamento de apelido, mostra o texto original (nunca esconde dado)', async () => {
+    filaApi('/carteira', { rows: [row({ cli: 'SEM CADASTRO' })] });
+    render(<CarteiraPage />);
+
+    expect(await screen.findByText('SEM CADASTRO')).toBeInTheDocument();
   });
 });

@@ -159,4 +159,13 @@ do `(authed)/layout.tsx`.
   Na Carteira (16/09/2026, pedido direto) foi puro pedido de UX pra tabela
   de Processos, sem relação com performance. Nas duas, a página volta pra 1
   sempre que um filtro muda o conjunto exibido (ajuste durante o render,
-  não em efeito — ver comentário no código).
+  não em efeito — ver comentário no código). Clientes ganhou o mesmo
+  padrão em 17/09/2026.
+- **Carteira busca `/clientes` além de `/carteira`** (17/09/2026), só pra
+  trocar o nome exibido do cliente pelo apelido cadastrado (`lib/apelido.ts`)
+  — o campo `cli` da captação/embarque é texto livre, às vezes vem por
+  extenso. Busca própria, silenciosa (falha não trava a tela, só mantém o
+  texto original). Nos testes, o mock de `apiFetch` precisou virar
+  path-aware (responde pela rota pedida, não pela ordem de chamada) — duas
+  chamadas em paralelo quebravam a fila de `mockResolvedValueOnce` de
+  qualquer teste que não soubesse da segunda chamada.

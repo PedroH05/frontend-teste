@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
-import type { CockpitRow, ImportResult } from '@/lib/types';
+import type { Cliente, CockpitRow, ImportResult } from '@/lib/types';
 import { BANDS, banda, diasAte, dLabel, fmtEta, shortTerm } from '@/lib/risco';
 import { formatData, formatDataHora } from '@/lib/format';
+import { apelidoCliente } from '@/lib/apelido';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
@@ -45,6 +46,7 @@ const PAGE_SIZE = 5; // mesmo tamanho de página do Histórico
 export default function CarteiraPage() {
   const router = useRouter();
   const [rows, setRows] = useState<CockpitRow[]>([]);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filterBand, setFilterBand] = useState<string | null>(null);
@@ -107,6 +109,27 @@ export default function CarteiraPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
+  }, []);
+
+  useEffect(() => {
+    // Só pra trocar o nome do cliente pelo apelido cadastrado na exibição
+    // (ver lib/apelido.ts) — busca própria, silenciosa: sem clientes
+    // carregados, a Carteira segue mostrando o texto original normalmente.
+    // Efeito declarado DEPOIS do que chama load() de propósito: nos testes,
+    // o mock de apiFetch responde por ordem de chamada, não por rota — se
+    // esse efeito rodasse primeiro, roubaria a resposta destinada a
+    // /carteira (viu isso quebrar 7 testes ao inverter a ordem).
+    let active = true;
+    apiFetch<Cliente[]>('/clientes')
+      .then((data) => {
+        if (active) setClientes(data);
+      })
+      .catch(() => {
+        // sem apelido — mostra o texto original, não é erro que trave a tela
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const enriquecidas = useMemo(
@@ -718,8 +741,8 @@ export default function CarteiraPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-bold" style={{ color: 'var(--vt-red)' }}>
-                          {r.cli}
+                        <span className="font-bold" style={{ color: 'var(--vt-red)' }} title={r.cli}>
+                          {apelidoCliente(r.cli, r.cnpj, clientes)}
                           {r.prov && (
                             <span className="vt-band ml-1" style={{ background: 'var(--vt-bg-jan)', color: 'var(--vt-c-jan)' }}>
                               provável

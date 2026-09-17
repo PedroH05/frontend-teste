@@ -71,6 +71,8 @@ function AliasChips({ value, onChange }: { value: string[]; onChange: (v: string
 
 type EditForm = { name: string; cnpj: string; aliases: string[] };
 
+const PAGE_SIZE = 5; // mesmo tamanho da Carteira/Histórico — pedido 17/09/2026
+
 export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +86,7 @@ export default function ClientesPage() {
   const [editForm, setEditForm] = useState<EditForm>({ name: '', cnpj: '', aliases: [] });
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState('');
+  const [pagina, setPagina] = useState(1);
 
   async function load() {
     setLoading(true);
@@ -114,6 +117,19 @@ export default function ClientesPage() {
         c.aliases.some((a) => a.toLowerCase().includes(q)),
     );
   }, [clientes, busca]);
+
+  // Volta pra página 1 quando a busca muda o conjunto exibido — mesmo
+  // padrão da Carteira/Histórico. Ajuste durante o render, não em efeito.
+  const [buscaAnterior, setBuscaAnterior] = useState(busca);
+  if (buscaAnterior !== busca) {
+    setBuscaAnterior(busca);
+    setPagina(1);
+  }
+  const totalPaginas = Math.max(1, Math.ceil(clientesFiltrados.length / PAGE_SIZE));
+  const clientesPagina = useMemo(
+    () => clientesFiltrados.slice((pagina - 1) * PAGE_SIZE, pagina * PAGE_SIZE),
+    [clientesFiltrados, pagina],
+  );
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -284,7 +300,7 @@ export default function ClientesPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                clientesFiltrados.map((c) =>
+                clientesPagina.map((c) =>
                   editingId === c.id ? (
                     <TableRow key={c.id} style={{ borderColor: 'var(--vt-line2)', background: 'var(--vt-bg-jan)' }}>
                       <TableCell>
@@ -349,6 +365,34 @@ export default function ClientesPage() {
               )}
             </TableBody>
           </Table>
+          {!loading && clientesFiltrados.length > 0 && (
+            <div
+              className="flex items-center justify-between px-[18px] py-3 text-[12px]"
+              style={{ borderTop: '1px solid var(--vt-line2)', color: 'var(--vt-muted)' }}
+            >
+              <span>
+                Página {pagina} de {totalPaginas} · {clientesFiltrados.length} clientes
+              </span>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="ghost"
+                  className="vt-glass-strong rounded-[9px] border border-[var(--vt-line)] px-2.5 py-1 text-[12px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px disabled:opacity-40"
+                  disabled={pagina <= 1}
+                  onClick={() => setPagina((p) => Math.max(1, p - 1))}
+                >
+                  ‹ Anterior
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="vt-glass-strong rounded-[9px] border border-[var(--vt-line)] px-2.5 py-1 text-[12px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px disabled:opacity-40"
+                  disabled={pagina >= totalPaginas}
+                  onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+                >
+                  Próxima ›
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
   );

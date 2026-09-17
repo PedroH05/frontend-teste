@@ -91,4 +91,28 @@ describe('ClientesPage', () => {
     );
     expect(await screen.findByText('TECNO AMERICA')).toBeInTheDocument();
   });
+
+  it('pagina de 5 em 5, igual à Carteira e ao Histórico (pedido 17/09/2026)', async () => {
+    const user = userEvent.setup();
+    const clientes = Array.from({ length: 6 }, (_, i) => ({
+      id: i + 1,
+      name: `CLIENTE${i + 1}`,
+      cnpj: null,
+      cnpjRaiz: null,
+      aliases: [],
+      ativo: true,
+    }));
+    apiFetchMock.mockResolvedValueOnce(clientes);
+    render(<ClientesPage />);
+
+    await screen.findByText('CLIENTE1');
+    expect(screen.getByText('CLIENTE5')).toBeInTheDocument();
+    expect(screen.queryByText('CLIENTE6')).not.toBeInTheDocument();
+    expect(screen.getByText(/Página 1 de 2/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Próxima ›' }));
+
+    expect(screen.getByText('CLIENTE6')).toBeInTheDocument();
+    expect(screen.queryByText('CLIENTE1')).not.toBeInTheDocument();
+  });
 });
