@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Captacao, CaptacaoInput } from '@/lib/types';
 import { cleanDesp } from '@/lib/despachante';
@@ -79,6 +79,17 @@ function RecapSection({
   );
 }
 
+// Quão preenchida está uma etapa já visitada — pedido 17/09/2026: a
+// bolinha ficava verde só por ter sido visitada, mesmo vazia. `boolean`
+// conta como preenchido só quando `true` (ex.: doc recebido marcado).
+function contarPreenchidos(campos: unknown[]): { preenchidos: number; total: number } {
+  const preenchidos = campos.filter((v) => {
+    if (typeof v === 'boolean') return v;
+    return v !== undefined && v !== null && String(v).trim() !== '';
+  }).length;
+  return { preenchidos, total: campos.length };
+}
+
 const REGIMES = ['DTA', 'DUIMP', 'DI', 'DAC', 'AGUARDANDO'];
 const ATRACACOES = ['Santos Brasil', 'BTP', 'DPW', 'ECOPORTO'];
 const PARCEIROS = ['ECOPORTO', 'MOVECTA', 'DPW'];
@@ -108,6 +119,7 @@ export default function CaptacoesPage() {
 
 function CaptacoesForm() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
   const [step, setStep] = useState(0);
@@ -139,6 +151,10 @@ function CaptacoesForm() {
     return Object.values(prefill).some(Boolean) ? prefill : initialForm;
   });
   const [status, setStatus] = useState<'PENDENTE' | 'EFETIVA'>('PENDENTE');
+  // Instantâneo do formulário assim que ele fica pronto pra edição — pra
+  // saber se algo mudou (ver isDirty/aviso de saída abaixo). Fica `null`
+  // (não compara nada ainda) enquanto uma edição existente está carregando.
+  const [baseline, setBaseline] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(!!editId);
@@ -183,6 +199,15 @@ function CaptacoesForm() {
     if (key === 'cli' && error === 'Informe ao menos o cliente.') setError('');
   }
 
+  // Instantâneo pra uma captação nova — pra edição, o efeito abaixo faz
+  // isso de novo assim que o dado real chegar (aqui `form`/`status` ainda
+  // são o placeholder vazio de antes de carregar).
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- só na montagem, captura o valor inicial (prefill ou vazio)
+    if (!editId) setBaseline(JSON.stringify({ form, status }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só na montagem, de propósito
+  }, []);
+
   // Modo edição: carrega a captação existente e preenche o formulário.
   // Não existe GET /captacoes/:id — busca a lista e acha pelo id, mesmo
   // padrão do original (editProcess() achava no array DATA já carregado).
@@ -196,7 +221,7 @@ function CaptacoesForm() {
           setError('Captação não encontrada.');
           return;
         }
-        setForm({
+        const loadedForm: FormState = {
           cli: c.cli ?? '',
           referencia: c.referencia ?? '',
           eta: c.eta ? c.eta.slice(0, 10) : undefined,
@@ -215,8 +240,11 @@ function CaptacoesForm() {
           docCe: c.docCe ?? false,
           docPl: c.docPl ?? false,
           prejuizoPublico: c.prejuizoPublico ?? false,
-        });
-        setStatus(c.stage === 'EFETIVA' ? 'EFETIVA' : 'PENDENTE');
+        };
+        const loadedStatus = c.stage === 'EFETIVA' ? 'EFETIVA' : 'PENDENTE';
+        setForm(loadedForm);
+        setStatus(loadedStatus);
+        setBaseline(JSON.stringify({ form: loadedForm, status: loadedStatus }));
       } catch (err) {
         setError(err instanceof ApiError ? err.message : 'Erro ao carregar captação');
       } finally {
@@ -224,6 +252,44 @@ function CaptacoesForm() {
       }
     })();
   }, [editId]);
+
+  const isDirty = baseline !== null && JSON.stringify({ form, status }) !== baseline;
+
+  // Aviso antes de sair com dado digitado e não salvo — pedido 17/09/2026:
+  // clicar sem querer num item do menu (ou fechar/atualizar a aba) descartava
+  // tudo sem perguntar nada. Duas partes:
+  //  · beforeunload cobre fechar a aba, atualizar (F5) ou digitar outra URL —
+  //    é o único jeito de interceptar isso, e o texto do aviso é do próprio
+  //    navegador, não dá pra customizar.
+  //  · clique em captura no documento cobre navegação interna (Link da
+  //    barra lateral) — o Next troca de tela sem "descarregar" a página,
+  //    então beforeunload sozinho não pega esse caso.
+  // Não cobre voltar/avançar pelo navegador (sem clique nem descarregar a
+  // página pra interceptar) — limitação conhecida.
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (!isDirty) return;
+      e.preventDefault();
+      e.returnValue = '';
+    }
+    function handleLinkClick(e: MouseEvent) {
+      if (!isDirty) return;
+      const anchor = (e.target as HTMLElement).closest('a[href]') as HTMLAnchorElement | null;
+      if (!anchor) return;
+      const destino = new URL(anchor.href, window.location.origin);
+      if (destino.pathname === pathname) return; // mesma página — sem risco
+      if (!window.confirm('Você tem dados digitados nesta captação que ainda não foram salvos. Sair mesmo assim?')) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('click', handleLinkClick, true);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('click', handleLinkClick, true);
+    };
+  }, [isDirty, pathname]);
 
   // Enter num campo de texto avança pra próxima etapa (ou salva, na última
   // com campo) — antes só dava pra avançar clicando em "Próximo". Só reage
@@ -271,6 +337,7 @@ function CaptacoesForm() {
           body: JSON.stringify(payload),
         });
       }
+      setBaseline(JSON.stringify({ form, status })); // salvou — não é mais "sujo"
       await shipDone;
       router.push('/historico');
     } catch (err) {
@@ -295,6 +362,29 @@ function CaptacoesForm() {
   }
 
   const showDocs = status !== 'EFETIVA';
+
+  // 'todos' (verde) / 'parcial' (amarelo) / 'nenhum' (vermelho) — só chamado
+  // pra etapas já visitadas (ver render do stepper). Revisão não tem campo
+  // próprio pra editar, então conta como completa sempre que alcançada.
+  function completudeStep(i: number): 'todos' | 'parcial' | 'nenhum' {
+    const campos: unknown[] =
+      i === 0
+        ? [form.cnpj, form.cli, form.referencia]
+        : i === 1
+          ? [form.eta, form.navio, form.quantidade, form.container]
+          : i === 2
+            ? [form.ce, form.regime, form.bl, form.despachante]
+            : i === 3
+              ? [form.terminalDescarga, form.terminalCaptado]
+              : i === 4
+                ? showDocs
+                  ? [form.observacao, form.docBl, form.docCe, form.docPl, form.prejuizoPublico]
+                  : [form.observacao, form.prejuizoPublico]
+                : [];
+    if (campos.length === 0) return 'todos';
+    const { preenchidos, total } = contarPreenchidos(campos);
+    return preenchidos === total ? 'todos' : preenchidos === 0 ? 'nenhum' : 'parcial';
+  }
 
   const glassBtn =
     'vt-glass-strong rounded-[11px] border border-[var(--vt-line)] px-3.5 py-2 text-[12.5px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px';
@@ -328,7 +418,18 @@ function CaptacoesForm() {
         />
         {STEPS.map((label, i) => {
           const hasError = i === 0 && error === 'Informe ao menos o cliente.';
-          const state = hasError ? 'error' : i === step ? 'active' : visited.has(i) ? 'done' : 'pending';
+          const completude = visited.has(i) && i !== step ? completudeStep(i) : null;
+          const state = hasError
+            ? 'error'
+            : i === step
+              ? 'active'
+              : completude === 'todos'
+                ? 'done'
+                : completude === 'parcial'
+                  ? 'parcial'
+                  : completude === 'nenhum'
+                    ? 'nenhum'
+                    : 'pending';
           return (
             <button
               key={label}
@@ -341,11 +442,15 @@ function CaptacoesForm() {
                 style={
                   state === 'done'
                     ? { background: 'var(--vt-c-efet)', borderColor: 'var(--vt-c-efet)', color: '#fff' }
-                    : state === 'active'
-                      ? { background: 'var(--vt-red)', borderColor: 'var(--vt-red)', color: '#fff', boxShadow: '0 0 0 4px rgba(192,24,41,.15)' }
-                      : state === 'error'
-                        ? { background: '#fff', borderColor: 'var(--vt-red)', color: 'var(--vt-red)' }
-                        : { background: '#fff', borderColor: 'var(--vt-line)', color: 'var(--vt-muted2)' }
+                    : state === 'parcial'
+                      ? { background: 'var(--vt-c-jan)', borderColor: 'var(--vt-c-jan)', color: '#fff' }
+                      : state === 'nenhum'
+                        ? { background: 'var(--vt-c-prej)', borderColor: 'var(--vt-c-prej)', color: '#fff' }
+                        : state === 'active'
+                          ? { background: 'var(--vt-red)', borderColor: 'var(--vt-red)', color: '#fff', boxShadow: '0 0 0 4px rgba(192,24,41,.15)' }
+                          : state === 'error'
+                            ? { background: '#fff', borderColor: 'var(--vt-red)', color: 'var(--vt-red)' }
+                            : { background: '#fff', borderColor: 'var(--vt-line)', color: 'var(--vt-muted2)' }
                 }
               >
                 {state === 'done' ? '✓' : state === 'error' ? '!' : i + 1}

@@ -10,7 +10,16 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
-## 2026-09-17 — Histórico: "Registrado em" também vira ordenável
+## 2026-09-17 — Captação manual: cor real de progresso, aviso antes de sair
+
+- A bolinha de cada etapa ficava verde só por ter sido visitada, mesmo
+  vazia. Agora reflete o preenchimento de verdade: verde (todos os campos),
+  amarelo (parte), vermelho (nenhum). Revisão não tem campo próprio, conta
+  como completa ao ser alcançada.
+- Sair da tela (clicar num item do menu, fechar/atualizar a aba) com dado
+  digitado e não salvo agora avisa antes de descartar. Não cobre
+  voltar/avançar pelo navegador — limitação conhecida, ver comentário no
+  código.
 
 - Clica no cabeçalho pra inverter mais recente ↔ mais antigo primeiro,
   mesma mecânica que a Carteira ganhou pouco antes.

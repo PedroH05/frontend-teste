@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import CaptacoesPage from '../page';
@@ -68,5 +68,60 @@ describe('CaptacoesPage', () => {
 
     expect(await screen.findByLabelText('ETA')).toBeInTheDocument(); // passo 2 (Carga)
     expect(screen.queryByLabelText('Cliente')).not.toBeInTheDocument();
+  });
+
+  it('bolinha da etapa fica amarela (parcial) ou verde (completa) conforme o preenchimento — pedido 17/09/2026', async () => {
+    const user = userEvent.setup();
+    render(<CaptacoesPage />);
+
+    // só "Cliente" preenchido dos 3 campos da etapa 1 (cnpj, cli, referencia)
+    await user.type(screen.getByLabelText('Cliente'), 'TECNO');
+    await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+
+    const botaoEtapa1 = screen.getByRole('button', { name: /Identificação/ });
+    expect(botaoEtapa1.querySelector('span')).toHaveStyle({ background: 'var(--vt-c-jan)' });
+    expect(botaoEtapa1.querySelector('span')?.textContent).toBe('1'); // parcial não vira ✓
+
+    await user.click(screen.getByRole('button', { name: '‹ Anterior' }));
+    await user.type(screen.getByLabelText('Referência'), 'REF001');
+    await user.type(screen.getByLabelText('CNPJ do cliente'), '12.345.678/0001-99');
+    await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+
+    expect(botaoEtapa1.querySelector('span')).toHaveStyle({ background: 'var(--vt-c-efet)' });
+    expect(botaoEtapa1.querySelector('span')?.textContent).toBe('✓');
+  });
+
+  it('avisa antes de sair da tela clicando num link, se tiver dado digitado não salvo — pedido 17/09/2026', async () => {
+    const user = userEvent.setup();
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<CaptacoesPage />);
+    await user.type(screen.getByLabelText('Cliente'), 'TECNO');
+
+    const link = document.createElement('a');
+    link.href = '/carteira';
+    document.body.appendChild(link);
+    const naoCancelado = fireEvent.click(link);
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(naoCancelado).toBe(false); // clique foi bloqueado (preventDefault)
+
+    document.body.removeChild(link);
+    confirmSpy.mockRestore();
+  });
+
+  it('não avisa ao clicar num link se nada foi digitado ainda', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm');
+    render(<CaptacoesPage />);
+
+    const link = document.createElement('a');
+    link.href = '/carteira';
+    link.addEventListener('click', (e) => e.preventDefault()); // evita jsdom tentar navegar de verdade
+    document.body.appendChild(link);
+    fireEvent.click(link);
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+
+    document.body.removeChild(link);
+    confirmSpy.mockRestore();
   });
 });
