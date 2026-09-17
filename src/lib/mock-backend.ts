@@ -72,6 +72,7 @@ function syncCockpitRow(cap: Captacao) {
           ? 'MANIFESTADA_DOCS'
           : 'MANIFESTADA_PARC',
     capId: cap.id,
+    createdAt: cap.createdAt,
   };
   if (existing) {
     Object.assign(existing, row);

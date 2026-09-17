@@ -7,6 +7,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 import type { Captacao } from '@/lib/types';
 import { splitBls } from '@/lib/bl-split';
 import { shortTerm } from '@/lib/risco';
+import { formatData, formatDataHora } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
@@ -48,25 +49,6 @@ function categoriaDe(stage: string | null): Exclude<StatusFiltro, 'todos'> {
   if (stage === 'SAIU_TERMINAL') return 'conc';
   if (stage === 'EFETIVA') return 'efet';
   return 'and';
-}
-
-function formatDataHora(v: string | null): string {
-  if (!v) return '—';
-  const d = new Date(v);
-  return Number.isNaN(d.getTime())
-    ? '—'
-    : d.toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-}
-
-function formatData(v: string | null): string {
-  if (!v) return '—';
-  return v.slice(0, 10).split('-').reverse().join('/');
 }
 
 const STAGE_LABEL: Record<string, string> = {

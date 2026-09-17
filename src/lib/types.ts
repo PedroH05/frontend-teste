@@ -70,6 +70,7 @@ export interface CockpitRow {
   stage: 'NENHUM' | 'SAIU' | 'EFETIVA' | 'MANIFESTADA_DOCS' | 'MANIFESTADA_PARC';
   capId: number | null;
   prov?: boolean;
+  createdAt: string | null;
 }
 
 // Corpo aceito por POST/PATCH /captacoes — ver

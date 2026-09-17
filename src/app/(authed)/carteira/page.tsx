@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { CockpitRow, ImportResult } from '@/lib/types';
 import { BANDS, banda, diasAte, dLabel, fmtEta, shortTerm } from '@/lib/risco';
+import { formatData, formatDataHora } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
@@ -628,6 +629,28 @@ export default function CarteiraPage() {
                   [
                     ['pr', 'Risco'],
                     ['cli', 'Cliente / Ref.'],
+                  ] as [SortKey, string][]
+                ).map(([key, label]) => (
+                  <TableHead
+                    key={key}
+                    className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
+                    style={{ color: sortKey === key ? 'var(--vt-red)' : 'var(--vt-muted)' }}
+                    onClick={() => toggleSort(key)}
+                  >
+                    {label}{' '}
+                    <span style={{ opacity: sortKey === key ? 1 : 0.35 }}>
+                      {sortKey === key ? (sortDir === 1 ? '▲' : '▼') : '↕'}
+                    </span>
+                  </TableHead>
+                ))}
+                {/* Não é sortable — não tem chave própria no join, é só a
+                    data crua da captação/embarque (ver createdAt em
+                    GET /carteira). Mesmo lugar que no Histórico. */}
+                <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
+                  Registrado em
+                </TableHead>
+                {(
+                  [
                     ['dias', 'ETA / Prazo'],
                     ['regime', 'Regime'],
                     ['desp', 'Despachante'],
@@ -664,13 +687,13 @@ export default function CarteiraPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center" style={{ color: 'var(--vt-muted)' }}>
+                  <TableCell colSpan={9} className="text-center" style={{ color: 'var(--vt-muted)' }}>
                     Carregando…
                   </TableCell>
                 </TableRow>
               ) : linhas.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8}>
+                  <TableCell colSpan={9}>
                     <EmptyState
                       title={busca || filterBand || chipFiltro ? 'Nenhum processo com este filtro' : 'Radar vazio'}
                       subtitle={
@@ -701,6 +724,9 @@ export default function CarteiraPage() {
                           {r.ref.replace(r.cli, '').trim() || r.ref}
                         </span>
                       </div>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs whitespace-nowrap" title={formatDataHora(r.createdAt)}>
+                      {formatData(r.createdAt)}
                     </TableCell>
                     <TableCell className="font-mono text-xs">
                       {fmtEta(r.eta)} · {dLabel(d)}

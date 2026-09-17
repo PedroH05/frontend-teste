@@ -32,6 +32,7 @@ function row(overrides: Partial<CockpitRow>): CockpitRow {
     parc: 'ECOPORTO',
     stage: 'MANIFESTADA_PARC',
     capId: 1,
+    createdAt: '2026-09-01T10:00:00.000Z',
     ...overrides,
   };
 }
@@ -45,6 +46,14 @@ describe('CarteiraPage', () => {
 
     expect(await screen.findByText('Crítico')).toBeInTheDocument();
     expect(screen.getByText('Efetivado')).toBeInTheDocument();
+  });
+
+  it('mostra "Registrado em" com a data em que o processo foi feito (pedido 17/09/2026)', async () => {
+    apiFetchMock.mockResolvedValueOnce({ rows: [row({ createdAt: '2026-09-05T14:30:00.000Z' })] });
+    render(<CarteiraPage />);
+
+    expect(await screen.findByText('05/09/2026')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Registrado em' })).toBeInTheDocument();
   });
 
   it('alerta minimizável esconde e mostra o texto', async () => {
