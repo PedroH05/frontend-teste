@@ -4,8 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 import CaptacoesPage from '../page';
 
 const pushMock = vi.fn();
+const backMock = vi.fn();
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: pushMock }),
+  useRouter: () => ({ push: pushMock, back: backMock }),
   useSearchParams: () => new URLSearchParams(),
   usePathname: () => '/captacoes',
 }));
@@ -122,6 +123,30 @@ describe('CaptacoesPage', () => {
     expect(confirmSpy).not.toHaveBeenCalled();
 
     document.body.removeChild(link);
+    confirmSpy.mockRestore();
+  });
+
+  it('botão "Sair" volta sem perguntar quando nada foi digitado — pedido 17/09/2026', async () => {
+    const user = userEvent.setup();
+    render(<CaptacoesPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Sair' }));
+
+    expect(backMock).toHaveBeenCalled();
+  });
+
+  it('botão "Sair" confirma antes de sair quando há dado digitado não salvo', async () => {
+    const user = userEvent.setup();
+    backMock.mockClear(); // isola do teste anterior, que já chamou back()
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<CaptacoesPage />);
+    await user.type(screen.getByLabelText('Cliente'), 'TECNO');
+
+    await user.click(screen.getByRole('button', { name: 'Sair' }));
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(backMock).not.toHaveBeenCalled(); // cancelou no confirm — não navega
+
     confirmSpy.mockRestore();
   });
 });

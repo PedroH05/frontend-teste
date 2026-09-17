@@ -348,6 +348,17 @@ function CaptacoesForm() {
     }
   }
 
+  // Botão "Sair" — pedido 17/09/2026: não tinha jeito de sair sem salvar
+  // além de clicar num item do menu (que já avisa se tem dado não salvo).
+  // Não é um <a>, então não passa pelo guarda de clique em link — confirma
+  // aqui do mesmo jeito.
+  function handleExit() {
+    if (isDirty && !confirm('Você tem dados digitados nesta captação que ainda não foram salvos. Sair mesmo assim?')) {
+      return;
+    }
+    router.back();
+  }
+
   async function handleDelete() {
     if (!editId) return;
     if (!confirm('Excluir este processo? Esta ação não pode ser desfeita.')) return;
@@ -809,9 +820,14 @@ function CaptacoesForm() {
       )}
 
       <div className="flex items-center justify-between">
-        <Button variant="ghost" className={glassBtn} onClick={() => goToStep(Math.max(0, step - 1))} disabled={step === 0}>
-          ‹ Anterior
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" className={glassBtn} onClick={handleExit}>
+            Sair
+          </Button>
+          <Button variant="ghost" className={glassBtn} onClick={() => goToStep(Math.max(0, step - 1))} disabled={step === 0}>
+            ‹ Anterior
+          </Button>
+        </div>
         <div className="flex items-center gap-2">
           {editId && (
             <Button

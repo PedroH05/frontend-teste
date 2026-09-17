@@ -10,6 +10,12 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 - Tamanho de página (Histórico e Carteira) reduzido de 12 para **10**, a
   pedido, logo em seguida.
 
+## 2026-09-17 — Botão "Sair" na Captação manual
+
+- Não tinha jeito de sair sem salvar além de clicar num item do menu. Novo
+  botão "Sair" (ao lado de "Anterior") volta pra tela de onde veio; se
+  tiver dado digitado não salvo, confirma antes, igual ao aviso do menu.
+
 ## 2026-09-17 — Captação manual: linha de progresso acompanha onde você está
 
 - A linha verde ficava parada no ponto mais distante já visitado — se
