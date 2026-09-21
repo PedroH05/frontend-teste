@@ -223,7 +223,10 @@ export default function CarteiraPage() {
       const isCont = /^[A-Z]{4}\d{7}$/.test(code);
       const url = isCont ? TT_CONTAINER(code) : TT_BOL(code);
       const hit = enriquecidas.find(
-        ({ r }) => (r.cont || '').toUpperCase().includes(code) || (r.bl || '').toUpperCase() === code,
+        ({ r }) =>
+          (r.cont || '').toUpperCase().includes(code) ||
+          (r.bl || '').toUpperCase() === code ||
+          (r.blCap || '').toUpperCase() === code,
       );
       setAskAnswer(
         <div>

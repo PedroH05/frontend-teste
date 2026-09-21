@@ -71,6 +71,8 @@ export interface CockpitRow {
   capId: number | null;
   prov?: boolean;
   createdAt: string | null;
+  blCap?: string;
+  ceCap?: string;
 }
 
 // Corpo aceito por POST/PATCH /captacoes — ver

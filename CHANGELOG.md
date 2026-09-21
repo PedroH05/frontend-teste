@@ -3,6 +3,13 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-21 — Carteira: busca acha pelo HBL digitado na captação
+
+- Quando o BL do embarque era diferente do digitado na captação (casamento
+  por CE), a busca por HBL não achava. A API agora manda `blCap`/`ceCap` e a
+  busca (e o "Rastrear") passam a considerá-los. Depende do deploy do
+  backend.
+
 ## 2026-09-16 — Paginação na tabela de Processos da Carteira
 
 - Mesmo tamanho e padrão visual do Histórico. Pedido direto, sem relação

@@ -204,6 +204,20 @@ describe('CarteiraPage', () => {
     expect(screen.queryByText('Nenhum processo com este filtro')).not.toBeInTheDocument();
   });
 
+  it('busca acha pelo HBL digitado na captação mesmo quando o BL do embarque é outro', async () => {
+    const user = userEvent.setup();
+    filaApi('/carteira', {
+      rows: [row({ cli: 'CASADO', bl: 'BL-EMBARQUE', blCap: 'HBL-DIGITADO', ceCap: 'CE1' })],
+    });
+    render(<CarteiraPage />);
+    await screen.findByText('CASADO');
+
+    await user.type(screen.getByPlaceholderText('buscar cliente, BL, navio…'), 'HBL-DIGITADO');
+
+    expect(screen.getByText('CASADO')).toBeInTheDocument();
+    expect(screen.queryByText('Nenhum processo com este filtro')).not.toBeInTheDocument();
+  });
+
   it('importa uma planilha e mostra o resumo estruturado, recarregando a carteira', async () => {
     const user = userEvent.setup();
     filaApi('/carteira', { rows: [] }); // load() inicial
