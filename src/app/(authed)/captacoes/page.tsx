@@ -1,10 +1,10 @@
 'use client';
 
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
-import type { Captacao, CaptacaoInput } from '@/lib/types';
-import { cleanDesp } from '@/lib/despachante';
+import type { Captacao, CaptacaoInput, Cliente } from '@/lib/types';
+import { cleanDesp, DESPACHANTES_PADRAO } from '@/lib/despachante';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -253,6 +253,47 @@ function CaptacoesForm() {
     })();
   }, [editId]);
 
+  // Clientes cadastrados — só pra sugerir nome e pré-preencher CNPJ ao
+  // selecionar (pedido 22/09/2026); busca própria, silenciosa (falha não
+  // trava a tela, cliente continua digitável livremente).
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  useEffect(() => {
+    let active = true;
+    apiFetch<Cliente[]>('/clientes')
+      .then((data) => {
+        if (active) setClientes(data);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+  const [sugestaoAberta, setSugestaoAberta] = useState(false);
+  const sugestoesCliente = useMemo(() => {
+    const q = (form.cli ?? '').trim().toLowerCase();
+    if (!q) return [];
+    return clientes
+      .filter(
+        (c) => c.name.toLowerCase().includes(q) || c.aliases.some((a) => a.toLowerCase().includes(q)),
+      )
+      .slice(0, 6);
+  }, [clientes, form.cli]);
+
+  function selecionarCliente(c: Cliente) {
+    setForm((f) => ({ ...f, cli: c.aliases[0] || c.name, cnpj: c.cnpj || f.cnpj }));
+    setSugestaoAberta(false);
+  }
+
+  // Despachante: select com as 4 opções do sistema antigo (`DESPACHANTES_PADRAO`)
+  // + "+ novo despachante" pra qualquer outro nome — campo de texto livre foi
+  // regressão da migração, ver `lib/despachante.ts`. `despachanteEhCustom`
+  // recalcula a cada render (cobre o valor chegar depois, no modo edição, sem
+  // precisar de efeito); `mostrarDespCustom` só guarda o clique explícito em
+  // "+ novo despachante" antes de haver texto digitado.
+  const despachanteEhCustom = !!form.despachante && !DESPACHANTES_PADRAO.includes(form.despachante);
+  const [mostrarDespCustom, setMostrarDespCustom] = useState(false);
+  const exibirDespCustom = mostrarDespCustom || despachanteEhCustom;
+
   const isDirty = baseline !== null && JSON.stringify({ form, status }) !== baseline;
 
   // Aviso antes de sair com dado digitado e não salvo — pedido 17/09/2026:
@@ -495,21 +536,55 @@ function CaptacoesForm() {
               />
             </FieldContent>
           </Field>
-          <Field>
+          <Field className="relative">
             <FieldLabel htmlFor="cli">
               Cliente {error === 'Informe ao menos o cliente.' && <span style={{ color: 'var(--vt-c-prej)' }}>*</span>}
             </FieldLabel>
             <FieldContent>
               <Input
                 id="cli"
+                autoComplete="off"
                 value={form.cli ?? ''}
-                onChange={(e) => set('cli', e.target.value)}
+                onChange={(e) => {
+                  set('cli', e.target.value);
+                  setSugestaoAberta(true);
+                }}
+                onFocus={() => setSugestaoAberta(true)}
+                onBlur={() => setTimeout(() => setSugestaoAberta(false), 150)}
                 style={error === 'Informe ao menos o cliente.' ? { borderColor: 'var(--vt-c-prej)', background: 'rgba(192,24,41,.04)' } : undefined}
               />
               {error === 'Informe ao menos o cliente.' && (
                 <span className="text-[10.5px] font-semibold" style={{ color: 'var(--vt-c-prej)' }}>
                   Campo obrigatório
                 </span>
+              )}
+              {sugestaoAberta && sugestoesCliente.length > 0 && (
+                <ul
+                  className="vt-glass-strong absolute top-full left-0 z-10 mt-1 w-full overflow-hidden rounded-[9px] border border-[var(--vt-line)] shadow-[var(--vt-sh)]"
+                  role="listbox"
+                >
+                  {sugestoesCliente.map((c) => (
+                    <li key={c.id}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={false}
+                        className="w-full px-3 py-1.5 text-left text-[12px] font-semibold hover:bg-[color-mix(in_srgb,var(--vt-red)_8%,transparent)]"
+                        style={{ color: 'var(--vt-ink)' }}
+                        // onMouseDown (não onClick) dispara antes do onBlur do
+                        // input, senão a lista some antes do clique registrar.
+                        onMouseDown={() => selecionarCliente(c)}
+                      >
+                        {c.aliases[0] || c.name}
+                        {c.cnpj && (
+                          <span className="ml-1.5 font-normal" style={{ color: 'var(--vt-muted2)' }}>
+                            {c.cnpj}
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
             </FieldContent>
           </Field>
@@ -614,11 +689,39 @@ function CaptacoesForm() {
           <Field className="sm:col-span-3">
             <FieldLabel htmlFor="despachante">Despachante</FieldLabel>
             <FieldContent>
-              <Input
-                id="despachante"
-                value={form.despachante ?? ''}
-                onChange={(e) => set('despachante', e.target.value)}
-              />
+              <Select
+                value={exibirDespCustom ? '__new' : form.despachante || undefined}
+                onValueChange={(v) => {
+                  if (v === '__new') {
+                    setMostrarDespCustom(true);
+                    set('despachante', despachanteEhCustom ? form.despachante : '');
+                  } else {
+                    setMostrarDespCustom(false);
+                    set('despachante', v as string);
+                  }
+                }}
+              >
+                <SelectTrigger id="despachante">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DESPACHANTES_PADRAO.map((d) => (
+                    <SelectItem key={d} value={d}>
+                      {d}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="__new">+ novo despachante…</SelectItem>
+                </SelectContent>
+              </Select>
+              {exibirDespCustom && (
+                <Input
+                  className="mt-1.5"
+                  placeholder="Nome do despachante"
+                  aria-label="Nome do novo despachante"
+                  value={form.despachante ?? ''}
+                  onChange={(e) => set('despachante', e.target.value)}
+                />
+              )}
             </FieldContent>
           </Field>
         </div>

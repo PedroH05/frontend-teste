@@ -3,6 +3,20 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-22 — Captação manual: cliente sugerido, CNPJ automático, despachante vira select
+
+- Pedido: "colocar opção de selecionar o despachante, em vez de digitar" e
+  "colocar preenchimento de CNPJ apos selecionar o CLIENTE".
+- **Cliente:** ao digitar, aparece uma lista de clientes cadastrados que
+  batem por nome ou apelido; selecionar um preenche o CNPJ automaticamente
+  a partir do cadastro. Continua sendo texto livre — cliente não cadastrado
+  não é bloqueado, só não tem sugestão nem preenchimento automático.
+- **Despachante:** virou `Select` com as 4 opções do sistema antigo
+  (LOGMAIS, NIRRON, ATHENA, AUDAZ) + "+ novo despachante" pra digitar
+  qualquer outro nome — a migração tinha isso como campo de texto livre,
+  sem querer, perdendo o select do original. Ver `docs/ARCHITECTURE.md`
+  (limitação de teste conhecida do popup em jsdom).
+
 ## 2026-09-21 — Carteira: busca acha pelo HBL digitado na captação
 
 - Quando o BL do embarque era diferente do digitado na captação (casamento

@@ -169,3 +169,17 @@ do `(authed)/layout.tsx`.
   path-aware (responde pela rota pedida, não pela ordem de chamada) — duas
   chamadas em paralelo quebravam a fila de `mockResolvedValueOnce` de
   qualquer teste que não soubesse da segunda chamada.
+- **Captação manual também busca `/clientes`** (22/09/2026), pra sugerir
+  cliente cadastrado (nome/apelido) enquanto digita e pré-preencher o CNPJ
+  ao escolher uma sugestão — campo continua livre pra digitar qualquer
+  nome não cadastrado, nunca trava a tela.
+- **Despachante virou `Select` com as 4 opções do sistema antigo**
+  (`LOGMAIS`/`NIRRON`/`ATHENA`/`AUDAZ`, `lib/despachante.ts`) + "+ novo
+  despachante" pra digitar outro nome — a migração tinha isso como campo de
+  texto livre, uma regressão do `<select>` original. **Limitação de teste
+  conhecida:** o popup desse `Select` (`@base-ui/react`) não abre via
+  clique em jsdom (sem layout real — a mesma limitação já valia,
+  silenciosamente, pros selects de Regime/Atracação/Parceiro, nenhum
+  testado dessa forma). A cobertura em
+  `captacoes/__tests__/page.test.tsx` usa o prefill por query string pra
+  exercitar o valor inicial em vez de abrir o popup.
