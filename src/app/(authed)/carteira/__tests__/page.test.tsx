@@ -83,32 +83,60 @@ describe('CarteiraPage', () => {
     expect(linhas[0]).toContain('RECENTE'); // registrado por último, aparece primeiro
   });
 
-  it('mostra "Registrado em" com a data em que o processo foi feito (pedido 17/09/2026)', async () => {
-    filaApi('/carteira', { rows: [row({ createdAt: '2026-09-05T14:30:00.000Z' })] });
-    render(<CarteiraPage />);
+  // A coluna "Registrado em" saiu da tabela (pedido 23/09/2026: só Status,
+  // Cliente/Ref., ETA e Atracação → Parceiro ficam visíveis) — o dado
+  // continua existindo, só que agora dentro do drawer de detalhe. Ver os
+  // testes de drawer logo abaixo.
 
-    expect(await screen.findByText('05/09/2026')).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: /Registrado em/ })).toBeInTheDocument();
-  });
-
-  it('ordena por "Registrado em" ao clicar no cabeçalho — mais recente/mais antigo', async () => {
+  it('clicar na linha abre o drawer com os campos agrupados nas seções do formulário (pedido 23/09/2026)', async () => {
     const user = userEvent.setup();
     filaApi('/carteira', {
       rows: [
-        row({ capId: 1, cli: 'ANTIGO', createdAt: '2026-09-01T00:00:00.000Z' }),
-        row({ capId: 2, cli: 'RECENTE', createdAt: '2026-09-10T00:00:00.000Z' }),
+        row({
+          cli: 'TECNO',
+          cnpj: '12.345.678/0001-99',
+          createdAt: '2026-09-05T14:30:00.000Z',
+          navio: 'MSC AMALFI',
+          atrac: 'Santos Brasil',
+          parc: 'ECOPORTO',
+        }),
       ],
     });
     render(<CarteiraPage />);
-    await screen.findByText('ANTIGO');
+    await screen.findByText('TECNO');
 
-    await user.click(screen.getByRole('columnheader', { name: /Registrado em/ }));
-    let clientes = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
-    expect(clientes[0]).toContain('ANTIGO'); // 1º clique: crescente (mais antigo primeiro)
+    await user.click(screen.getByText('TECNO'));
 
-    await user.click(screen.getByRole('columnheader', { name: /Registrado em/ }));
-    clientes = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
-    expect(clientes[0]).toContain('RECENTE'); // 2º clique: inverte (mais recente primeiro)
+    expect(await screen.findByText('Identificação')).toBeInTheDocument();
+    expect(screen.getByText('Carga')).toBeInTheDocument();
+    expect(screen.getByText('Aduana')).toBeInTheDocument();
+    expect(screen.getByText('Terminal')).toBeInTheDocument();
+    expect(screen.getByText('Situação')).toBeInTheDocument();
+    expect(screen.getByText('12.345.678/0001-99')).toBeInTheDocument();
+    expect(screen.getByText(/^05\/09\/2026/)).toBeInTheDocument(); // "Registrado em" dentro do drawer
+  });
+
+  it('clicar em editar/excluir não abre o drawer (pedido 23/09/2026)', async () => {
+    const user = userEvent.setup();
+    filaApi('/carteira', { rows: [row({ cli: 'TECNO' })] });
+    render(<CarteiraPage />);
+    await screen.findByText('TECNO');
+
+    await user.click(screen.getByTitle('Editar'));
+
+    expect(screen.queryByText('Identificação')).not.toBeInTheDocument();
+  });
+
+  it('tecla Enter na linha abre o drawer, igual ao clique (pedido 23/09/2026)', async () => {
+    const user = userEvent.setup();
+    filaApi('/carteira', { rows: [row({ cli: 'TECNO' })] });
+    render(<CarteiraPage />);
+    await screen.findByText('TECNO');
+
+    screen.getByText('TECNO').closest('tr')!.focus();
+    await user.keyboard('{Enter}');
+
+    expect(await screen.findByText('Identificação')).toBeInTheDocument();
   });
 
   it('alerta minimizável esconde e mostra o texto', async () => {

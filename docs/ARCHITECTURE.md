@@ -169,6 +169,23 @@ do `(authed)/layout.tsx`.
   path-aware (responde pela rota pedida, não pela ordem de chamada) — duas
   chamadas em paralelo quebravam a fila de `mockResolvedValueOnce` de
   qualquer teste que não soubesse da segunda chamada.
+- **Carteira: tabela reduzida a 4 colunas + drawer de detalhe** (23/09/2026)
+  — a tabela de Processos tinha 9 colunas (scroll horizontal) com tamanho de
+  fonte inconsistente entre elas. Agora mostra só Status, Cliente/Ref., ETA
+  e Atracação → Parceiro; clicar em qualquer ponto da linha (menos nos
+  ícones de editar/excluir) abre `components/ui/drawer.tsx` de baixo pra
+  cima com todos os campos, agrupados nas mesmas 5 seções do formulário de
+  captação (Identificação, Carga, Aduana, Terminal, Situação) — ver
+  `Campo`/`Grupo` em `carteira/page.tsx`. A linha não usa `role="button"`
+  (isso sobrescreveria o role nativo `row` da tabela e quebraria
+  `getAllByRole('row')` nos testes e em qualquer leitor de tela); fica só
+  com `tabIndex`/`onKeyDown` pra ficar focável e operável por teclado.
+  Clique dentro de `RowActions` (editar/excluir) é ignorado pelo handler da
+  linha via `(e.target as HTMLElement).closest('button')`.
+  **Trade-off aceito:** Registrado em, Regime, Despachante e Navio perderam
+  o cabeçalho clicável pra ordenar (saíram da tabela) — só Status, Cliente
+  e ETA continuam ordenáveis pelo cabeçalho. O padrão de ordenação
+  "registrado mais recente primeiro" (17/09/2026) continua ativo por baixo.
 - **Captação manual também busca `/clientes`** (22/09/2026), pra sugerir
   cliente cadastrado (nome/apelido) enquanto digita e pré-preencher o CNPJ
   ao escolher uma sugestão — campo continua livre pra digitar qualquer

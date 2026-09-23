@@ -3,6 +3,25 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-23 — Carteira: 4 colunas + drawer de detalhe (fim do scroll horizontal)
+
+- Pedido: a tabela de Processos tinha 9 colunas e exigia rolar pros lados
+  pra ver tudo; o tamanho da fonte também variava de coluna pra coluna.
+- Tabela agora mostra só Status, Cliente/Ref., ETA e Atracação → Parceiro.
+  Clicar em qualquer ponto da linha abre um drawer de baixo pra cima
+  (`components/ui/drawer.tsx`, já existia no projeto) com todos os campos —
+  Regime, Despachante, Navio, CNPJ, CE, HBL, Container(s), Registrado em
+  etc. — organizados nas mesmas 5 seções do formulário de captação
+  (Identificação, Carga, Aduana, Terminal, Situação).
+- Editar/excluir continuam com ícone próprio no fim da linha
+  (`RowActions`) e não abrem o drawer ao serem clicados.
+- **Perdido de propósito:** não dá mais pra ordenar por Registrado em,
+  Regime, Despachante ou Navio direto pelo cabeçalho — essas colunas
+  saíram da tabela. Status, Cliente e ETA continuam ordenáveis. O padrão
+  de "mais recente primeiro" (17/09/2026) continua valendo por baixo, só
+  não tem mais cabeçalho pra trocar por Regime/Despachante/Navio. Se sentir
+  falta, ver `docs/ARCHITECTURE.md`.
+
 ## 2026-09-22 — Captação manual: cliente sugerido, CNPJ automático, despachante vira select
 
 - Pedido: "colocar opção de selecionar o despachante, em vez de digitar" e
