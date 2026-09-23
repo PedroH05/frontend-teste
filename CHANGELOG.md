@@ -3,6 +3,12 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-23 — Registrado em: vírgula trocada por hífen
+
+- `formatDataHora` (Carteira/Histórico) mostrava data e hora separadas por
+  vírgula (`18/09/2026, 14:30`, formato padrão do `toLocaleString('pt-BR')`)
+  — trocado por hífen (`18/09/2026 - 14:30`).
+
 ## 2026-09-23 — Carteira e Histórico: clicar no processo abre a Revisão (2ª rodada, sem drawer)
 
 - Volta atrás na ideia do drawer de detalhe (ver entradas abaixo, mesmo
