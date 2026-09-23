@@ -3,6 +3,21 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-23 — Carteira e Histórico: mesmo tamanho de fonte em toda célula
+
+- As células de dado tinham 4 tamanhos diferentes na mesma linha (14px sem
+  classe, 13.5px, 12px mono nas datas, 11px na referência). Padronizado
+  pra 13px em toda célula de dado (cliente, referência, Registrado em,
+  ETA, Despachante, Atracação → Parceiro), sem fonte monoespaçada nas
+  datas — hierarquia entre texto principal e secundário passa a vir só de
+  cor/peso, não de tamanho.
+- O badge de Status (`.vt-band`) ficou de fora de propósito — é o mesmo
+  componente usado em vários lugares do app (Dashboard, "provável" etc.);
+  mudar o tamanho dele mudaria essas outras telas também.
+- Cabeçalhos das colunas continuam no padrão de rótulo (11px maiúsculo) —
+  isso é convenção da aplicação inteira, não a inconsistência que foi
+  corrigida.
+
 ## 2026-09-23 — Registrado em: vírgula trocada por hífen
 
 - `formatDataHora` (Carteira/Histórico) mostrava data e hora separadas por

@@ -305,35 +305,35 @@ export default function HistoricoPage() {
                         {STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento'}
                       </span>
                     </TableCell>
-                    <TableCell className="max-w-[170px]">
+                    <TableCell className="max-w-[170px] text-[13px]">
                       <div className="flex flex-col gap-px">
                         <span
                           title={c.cli ?? undefined}
-                          className="truncate text-[13.5px] font-bold"
+                          className="truncate font-bold"
                           style={{ color: 'var(--vt-red)' }}
                         >
                           {c.cli}
                         </span>
                         <span
                           title={c.referencia ?? undefined}
-                          className="truncate text-[11px]"
+                          className="truncate"
                           style={{ color: 'var(--vt-muted)' }}
                         >
                           {c.referencia}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-xs whitespace-nowrap">
+                    <TableCell className="text-[13px] whitespace-nowrap">
                       {formatDataHora(c.createdAt)}
                     </TableCell>
-                    <TableCell className="font-mono text-xs">{formatData(c.eta)}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-[13px]">{formatData(c.eta)}</TableCell>
+                    <TableCell className="text-[13px]">
                       {despValido(c.despachante) ?? <span style={{ color: 'var(--vt-c-prej)', fontWeight: 600 }}>inválido</span>}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-[13px]">
                       {shortTerm(c.terminalDescarga) || '—'} <span style={{ color: 'var(--vt-red)', fontWeight: 700 }}>→</span> {shortTerm(c.terminalCaptado) || '—'}
                     </TableCell>
-                    <TableCell className="text-right" style={{ color: 'var(--vt-muted2)' }}>
+                    <TableCell className="text-right text-[13px]" style={{ color: 'var(--vt-muted2)' }}>
                       ›
                     </TableCell>
                   </TableRow>

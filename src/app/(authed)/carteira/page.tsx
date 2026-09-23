@@ -743,7 +743,7 @@ export default function CarteiraPage() {
                     <TableCell>
                       <span className={`vt-band b-${b.k}`}>{b.t}</span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-[13px]">
                       <div className="flex flex-col">
                         <span className="font-bold" style={{ color: 'var(--vt-red)' }} title={r.cli}>
                           {apelidoCliente(r.cli, r.cnpj, clientes)}
@@ -753,24 +753,24 @@ export default function CarteiraPage() {
                             </span>
                           )}
                         </span>
-                        <span className="text-[11px]" style={{ color: 'var(--vt-muted)' }}>
+                        <span style={{ color: 'var(--vt-muted)' }}>
                           {r.ref.replace(r.cli, '').trim() || r.ref}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-xs whitespace-nowrap" title={formatDataHora(r.createdAt)}>
+                    <TableCell className="text-[13px] whitespace-nowrap" title={formatDataHora(r.createdAt)}>
                       {formatData(r.createdAt)}
                     </TableCell>
-                    <TableCell className="font-mono text-xs">
+                    <TableCell className="text-[13px]">
                       {fmtEta(r.eta)} · {dLabel(d)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-[13px]">
                       {despValido(r.desp) ?? <span style={{ color: 'var(--vt-c-prej)', fontWeight: 600 }}>inválido</span>}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-[13px]">
                       {shortTerm(r.atrac) || '—'} <span style={{ color: 'var(--vt-red)', fontWeight: 700 }}>→</span> {shortTerm(r.parc) || '—'}
                     </TableCell>
-                    <TableCell className="text-right" style={{ color: 'var(--vt-muted2)' }}>
+                    <TableCell className="text-right text-[13px]" style={{ color: 'var(--vt-muted2)' }}>
                       ›
                     </TableCell>
                   </TableRow>

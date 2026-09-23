@@ -191,7 +191,11 @@ do `(authed)/layout.tsx`.
   **Trade-off aceito:** sem coluna de Ações, editar e excluir exigem entrar
   na Revisão primeiro — não tem mais atalho de um clique só na tabela.
   Regime, CE, BL e Navio (Histórico) e Regime (Carteira) não aparecem em
-  nenhuma das duas telas fora da Revisão.
+  nenhuma das duas telas fora da Revisão. Toda célula de dado nas duas
+  tabelas usa 13px, sem fonte monoespaçada nas datas — corrigido depois
+  (23/09/2026) porque tinha 4 tamanhos diferentes na mesma linha. O badge
+  de Status (`.vt-band`) fica de fora por ser componente compartilhado com
+  outras telas do app.
 - **Captação manual também busca `/clientes`** (22/09/2026), pra sugerir
   cliente cadastrado (nome/apelido) enquanto digita e pré-preencher o CNPJ
   ao escolher uma sugestão — campo continua livre pra digitar qualquer
