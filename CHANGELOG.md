@@ -3,6 +3,23 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-23 — Histórico: mesmo tratamento da Carteira (4 colunas + drawer)
+
+- Tabela tinha 10 colunas com scroll horizontal (Status, Cliente/Referência,
+  Registrado em, ETA, Regime, CE, BL, Navio, Despachante, Atracação →
+  Parceiro). Agora mostra só Status, Cliente/Referência, Registrado em e
+  ETA — as duas continuam ordenáveis pelo cabeçalho, do jeito que já eram.
+- Clicar em qualquer ponto da linha abre o mesmo tipo de drawer da Carteira,
+  com todos os campos (Regime, CE, HBL — todos os BLs juntos, sem mais
+  truncar/"+N" —, Navio, Despachante, Atracação/Parceiro, Observação, Docs
+  recebidos, Tabela pública) nas 5 seções do formulário de captação.
+- O antigo drawer "BLs deste processo" (badge "+N" quando tinha mais de um
+  BL) foi substituído por este — a lista de BLs agora mora dentro do campo
+  HBL do drawer principal, sem precisar de um segundo painel.
+- **Perdido de propósito:** não dá mais pra ordenar por Regime, CE, BL,
+  Navio ou Despachante direto pelo cabeçalho — saíram da tabela. Ver
+  `docs/ARCHITECTURE.md`.
+
 ## 2026-09-23 — Carteira: 4 colunas + drawer de detalhe (fim do scroll horizontal)
 
 - Pedido: a tabela de Processos tinha 9 colunas e exigia rolar pros lados

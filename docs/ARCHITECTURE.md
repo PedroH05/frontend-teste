@@ -186,6 +186,18 @@ do `(authed)/layout.tsx`.
   o cabeçalho clicável pra ordenar (saíram da tabela) — só Status, Cliente
   e ETA continuam ordenáveis pelo cabeçalho. O padrão de ordenação
   "registrado mais recente primeiro" (17/09/2026) continua ativo por baixo.
+- **Histórico: mesmo tratamento (23/09/2026)** — tabela reduzida a Status,
+  Cliente/Referência, Registrado em e ETA (as duas últimas continuam
+  ordenáveis, como já eram); Regime, CE, BL, Navio, Despachante e
+  Atracação → Parceiro foram pro drawer, junto de Observação/Docs
+  recebidos/Tabela pública (esses três já existiam na captação, mas nunca
+  apareciam no Histórico — só no formulário). O antigo drawer "BLs deste
+  processo" (badge "+N") foi removido — a lista completa de BLs
+  (`lib/bl-split.ts`) agora é só o valor do campo HBL dentro deste drawer
+  único. `Campo`/`Grupo` são definidos localmente em `historico/page.tsx`,
+  duplicados dos mesmos componentes em `carteira/page.tsx` (mesmo padrão
+  de `RecapItem`/`RecapSection` em `captacoes/page.tsx` — cada tela mantém
+  sua própria cópia local, não é um componente compartilhado).
 - **Captação manual também busca `/clientes`** (22/09/2026), pra sugerir
   cliente cadastrado (nome/apelido) enquanto digita e pré-preencher o CNPJ
   ao escolher uma sugestão — campo continua livre pra digitar qualquer

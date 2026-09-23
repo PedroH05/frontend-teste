@@ -114,9 +114,15 @@ describe('HistoricoPage', () => {
     expect(screen.queryByText('ANDAMENTO')).not.toBeInTheDocument();
   });
 
-  it('BL único aparece direto, sem badge', async () => {
+  // A coluna de BL saiu da tabela (pedido 23/09/2026: só Status,
+  // Cliente/Referência, Registrado em e ETA ficam visíveis) — o HBL agora
+  // mora no drawer de detalhe, aberto clicando na linha.
+  it('BL único aparece no drawer de detalhe, sem badge de "+N"', async () => {
+    const user = userEvent.setup();
     apiFetchMock.mockResolvedValueOnce([base({ id: 1, bl: 'HBCN066406' })]);
     render(<HistoricoPage />);
+    await user.click(await screen.findByText('TECNO'));
+
     expect(await screen.findByText('HBCN066406')).toBeInTheDocument();
     expect(screen.queryByText(/^\+\d/)).not.toBeInTheDocument();
   });
@@ -145,27 +151,40 @@ describe('HistoricoPage', () => {
     const user = userEvent.setup();
     apiFetchMock.mockResolvedValueOnce([base({ id: 1, bl: 'HBCN066406' })]);
     render(<HistoricoPage />);
-    await screen.findByText('HBCN066406');
+    await screen.findByText('TECNO'); // cliente do base() padrão
 
+    // BL não aparece como texto na tabela do Histórico (só no drawer) —
+    // busca por ele com espaço no final e confere que a linha continua lá.
     await user.type(screen.getByPlaceholderText('buscar cliente, BL, navio…'), 'HBCN066406 ');
 
-    expect(screen.getByText('HBCN066406')).toBeInTheDocument();
+    expect(screen.getByText('TECNO')).toBeInTheDocument();
   });
 
-  it('múltiplos BL mostram badge "+N" que abre o drawer com a lista completa', async () => {
+  it('clicar na linha abre o drawer com todos os BLs, agrupados nas seções do formulário (pedido 23/09/2026)', async () => {
     const user = userEvent.setup();
     apiFetchMock.mockResolvedValueOnce([
       base({ id: 1, bl: 'HBCN066406, HBCN066407, HBCN066408' }),
     ]);
     render(<HistoricoPage />);
+    await user.click(await screen.findByText('TECNO'));
 
-    const badge = await screen.findByText('+2');
-    await user.click(badge);
+    expect(await screen.findByText('Identificação')).toBeInTheDocument();
+    expect(screen.getByText('Carga')).toBeInTheDocument();
+    expect(screen.getByText('Aduana')).toBeInTheDocument();
+    expect(screen.getByText('Terminal')).toBeInTheDocument();
+    expect(screen.getByText('Situação')).toBeInTheDocument();
+    expect(screen.getByText('HBCN066406, HBCN066407, HBCN066408')).toBeInTheDocument();
+  });
 
-    expect(screen.getAllByText('HBCN066406')).toHaveLength(2); // célula truncada + drawer
-    expect(screen.getByText('HBCN066407')).toBeInTheDocument();
-    expect(screen.getByText('HBCN066408')).toBeInTheDocument();
-    expect(screen.getByText('BL 3')).toBeInTheDocument();
+  it('clicar em editar/excluir não abre o drawer (pedido 23/09/2026)', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce([base({ id: 1, cli: 'TECNO' })]);
+    render(<HistoricoPage />);
+    await screen.findByText('TECNO');
+
+    await user.click(screen.getByTitle('Editar'));
+
+    expect(screen.queryByText('Identificação')).not.toBeInTheDocument();
   });
 
   it('clicar em "Registrado em" inverte mais recente ↔ mais antigo primeiro (pedido 17/09/2026)', async () => {
