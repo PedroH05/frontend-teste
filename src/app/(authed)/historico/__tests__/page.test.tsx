@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import HistoricoPage from '../page';
 import type { Captacao } from '@/lib/types';
 
+const pushMock = vi.fn();
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: pushMock }),
   usePathname: () => '/historico',
 }));
 
@@ -45,6 +46,11 @@ function base(overrides: Partial<Captacao>): Captacao {
 }
 
 describe('HistoricoPage', () => {
+  afterEach(() => {
+    apiFetchMock.mockReset();
+    pushMock.mockClear();
+  });
+
   it('filtro "Tudo" (padrão) mostra captações de qualquer dia', async () => {
     const ontem = new Date();
     ontem.setDate(ontem.getDate() - 1);
@@ -114,77 +120,44 @@ describe('HistoricoPage', () => {
     expect(screen.queryByText('ANDAMENTO')).not.toBeInTheDocument();
   });
 
-  // A coluna de BL saiu da tabela (pedido 23/09/2026: só Status,
-  // Cliente/Referência, Registrado em e ETA ficam visíveis) — o HBL agora
-  // mora no drawer de detalhe, aberto clicando na linha.
-  it('BL único aparece no drawer de detalhe, sem badge de "+N"', async () => {
-    const user = userEvent.setup();
-    apiFetchMock.mockResolvedValueOnce([base({ id: 1, bl: 'HBCN066406' })]);
-    render(<HistoricoPage />);
-    await user.click(await screen.findByText('TECNO'));
-
-    expect(await screen.findByText('HBCN066406')).toBeInTheDocument();
-    expect(screen.queryByText(/^\+\d/)).not.toBeInTheDocument();
-  });
-
-  it('excluir tira a linha da tela na hora, sem esperar um novo GET (achado testando com dado real)', async () => {
-    const user = userEvent.setup();
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-    apiFetchMock.mockResolvedValueOnce([base({ id: 1, cli: 'PRA EXCLUIR' })]); // GET inicial
-
-    render(<HistoricoPage />);
-    await screen.findByText('PRA EXCLUIR');
-
-    apiFetchMock.mockClear();
-    apiFetchMock.mockResolvedValueOnce(undefined); // DELETE
-    await user.click(screen.getByTitle('Excluir'));
-
-    expect(screen.queryByText('PRA EXCLUIR')).not.toBeInTheDocument();
-    // Só o DELETE — nenhum GET novo depois de excluir (a Vercel pode
-    // devolver a lista antiga por causa de cache, então a tela não deve
-    // depender disso pra atualizar).
-    expect(apiFetchMock).toHaveBeenCalledTimes(1);
-    expect(apiFetchMock).toHaveBeenCalledWith('/captacoes/1', { method: 'DELETE' });
-  });
-
+  // Segunda rodada (pedido 23/09/2026): sem drawer, sem editar/excluir na
+  // linha — clicar no processo leva direto pro passo 6 (Revisão) do
+  // formulário de captação, que já mostra tudo (BL incluído) e já tem
+  // editar/excluir. BL/CE/Regime/Navio saíram da tabela, só Despachante e
+  // Atracação → Parceiro voltaram junto de Registrado em.
   it('busca ignora espaço no final (pedido 17/09/2026)', async () => {
     const user = userEvent.setup();
     apiFetchMock.mockResolvedValueOnce([base({ id: 1, bl: 'HBCN066406' })]);
     render(<HistoricoPage />);
     await screen.findByText('TECNO'); // cliente do base() padrão
 
-    // BL não aparece como texto na tabela do Histórico (só no drawer) —
-    // busca por ele com espaço no final e confere que a linha continua lá.
+    // BL não aparece como texto na tabela do Histórico — busca por ele com
+    // espaço no final e confere que a linha continua lá.
     await user.type(screen.getByPlaceholderText('buscar cliente, BL, navio…'), 'HBCN066406 ');
 
     expect(screen.getByText('TECNO')).toBeInTheDocument();
   });
 
-  it('clicar na linha abre o drawer com todos os BLs, agrupados nas seções do formulário (pedido 23/09/2026)', async () => {
+  it('clicar num processo leva direto pro passo 6 (Revisão) da edição', async () => {
     const user = userEvent.setup();
-    apiFetchMock.mockResolvedValueOnce([
-      base({ id: 1, bl: 'HBCN066406, HBCN066407, HBCN066408' }),
-    ]);
-    render(<HistoricoPage />);
-    await user.click(await screen.findByText('TECNO'));
-
-    expect(await screen.findByText('Identificação')).toBeInTheDocument();
-    expect(screen.getByText('Carga')).toBeInTheDocument();
-    expect(screen.getByText('Aduana')).toBeInTheDocument();
-    expect(screen.getByText('Terminal')).toBeInTheDocument();
-    expect(screen.getByText('Situação')).toBeInTheDocument();
-    expect(screen.getByText('HBCN066406, HBCN066407, HBCN066408')).toBeInTheDocument();
-  });
-
-  it('clicar em editar/excluir não abre o drawer (pedido 23/09/2026)', async () => {
-    const user = userEvent.setup();
-    apiFetchMock.mockResolvedValueOnce([base({ id: 1, cli: 'TECNO' })]);
+    apiFetchMock.mockResolvedValueOnce([base({ id: 7, cli: 'TECNO' })]);
     render(<HistoricoPage />);
     await screen.findByText('TECNO');
 
-    await user.click(screen.getByTitle('Editar'));
+    await user.click(screen.getByText('TECNO'));
 
-    expect(screen.queryByText('Identificação')).not.toBeInTheDocument();
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=7&step=5');
+  });
+
+  it('despachante e atracação → parceiro aparecem na tabela', async () => {
+    apiFetchMock.mockResolvedValueOnce([
+      base({ id: 1, despachante: 'LOGMAIS', terminalDescarga: 'Santos Brasil', terminalCaptado: 'ECOPORTO' }),
+    ]);
+    render(<HistoricoPage />);
+
+    expect(await screen.findByText('LOGMAIS')).toBeInTheDocument();
+    expect(screen.getByText(/santos brasil/i)).toBeInTheDocument();
+    expect(screen.getByText(/ECOPORTO/)).toBeInTheDocument();
   });
 
   it('clicar em "Registrado em" inverte mais recente ↔ mais antigo primeiro (pedido 17/09/2026)', async () => {

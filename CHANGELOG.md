@@ -3,6 +3,22 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-23 — Carteira e Histórico: clicar no processo abre a Revisão (2ª rodada, sem drawer)
+
+- Volta atrás na ideia do drawer de detalhe (ver entradas abaixo, mesmo
+  dia): em vez de um painel novo repetindo o formulário, clicar no processo
+  agora leva direto pro **passo 6 (Revisão)** da captação — a tela que já
+  mostra tudo em 5 seções, cada uma com "Editar", e já tem o botão Excluir.
+- Tabela ganhou 6 colunas nas duas telas: Status, Cliente/Ref., Registrado
+  em, ETA, Despachante e Atracação → Parceiro. Sem coluna de Ações — editar
+  e excluir agora só existem dentro da Revisão.
+- `captacoes/page.tsx` aceita `?step=N` pra abrir direto num passo (antes
+  sempre abria no passo 1, mesmo editando).
+- Carteira: linha sem captação casada (só embarque) continua indo pro
+  fluxo de criar uma captação nova, como antes.
+- **Perdido de propósito:** excluir/editar não têm mais atalho de um clique
+  só na tabela — precisa entrar no processo primeiro.
+
 ## 2026-09-23 — Histórico: mesmo tratamento da Carteira (4 colunas + drawer)
 
 - Tabela tinha 10 colunas com scroll horizontal (Status, Cliente/Referência,

@@ -122,8 +122,15 @@ function CaptacoesForm() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
-  const [step, setStep] = useState(0);
-  const [visited, setVisited] = useState<Set<number>>(() => new Set([0]));
+  // Carteira e Histórico levam direto pra Revisão (?step=5) ao clicar num
+  // processo — pedido 23/09/2026, pra reaproveitar esta tela como o "ver
+  // detalhes" das duas, no lugar de um drawer à parte.
+  const initialStep = (() => {
+    const raw = Number(searchParams.get('step'));
+    return Number.isInteger(raw) && raw >= 0 && raw < STEPS.length ? raw : 0;
+  })();
+  const [step, setStep] = useState(initialStep);
+  const [visited, setVisited] = useState<Set<number>>(() => new Set([initialStep]));
 
   function goToStep(i: number) {
     setStep(i);

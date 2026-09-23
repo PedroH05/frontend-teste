@@ -169,35 +169,29 @@ do `(authed)/layout.tsx`.
   path-aware (responde pela rota pedida, não pela ordem de chamada) — duas
   chamadas em paralelo quebravam a fila de `mockResolvedValueOnce` de
   qualquer teste que não soubesse da segunda chamada.
-- **Carteira: tabela reduzida a 4 colunas + drawer de detalhe** (23/09/2026)
-  — a tabela de Processos tinha 9 colunas (scroll horizontal) com tamanho de
-  fonte inconsistente entre elas. Agora mostra só Status, Cliente/Ref., ETA
-  e Atracação → Parceiro; clicar em qualquer ponto da linha (menos nos
-  ícones de editar/excluir) abre `components/ui/drawer.tsx` de baixo pra
-  cima com todos os campos, agrupados nas mesmas 5 seções do formulário de
-  captação (Identificação, Carga, Aduana, Terminal, Situação) — ver
-  `Campo`/`Grupo` em `carteira/page.tsx`. A linha não usa `role="button"`
-  (isso sobrescreveria o role nativo `row` da tabela e quebraria
-  `getAllByRole('row')` nos testes e em qualquer leitor de tela); fica só
-  com `tabIndex`/`onKeyDown` pra ficar focável e operável por teclado.
-  Clique dentro de `RowActions` (editar/excluir) é ignorado pelo handler da
-  linha via `(e.target as HTMLElement).closest('button')`.
-  **Trade-off aceito:** Registrado em, Regime, Despachante e Navio perderam
-  o cabeçalho clicável pra ordenar (saíram da tabela) — só Status, Cliente
-  e ETA continuam ordenáveis pelo cabeçalho. O padrão de ordenação
-  "registrado mais recente primeiro" (17/09/2026) continua ativo por baixo.
-- **Histórico: mesmo tratamento (23/09/2026)** — tabela reduzida a Status,
-  Cliente/Referência, Registrado em e ETA (as duas últimas continuam
-  ordenáveis, como já eram); Regime, CE, BL, Navio, Despachante e
-  Atracação → Parceiro foram pro drawer, junto de Observação/Docs
-  recebidos/Tabela pública (esses três já existiam na captação, mas nunca
-  apareciam no Histórico — só no formulário). O antigo drawer "BLs deste
-  processo" (badge "+N") foi removido — a lista completa de BLs
-  (`lib/bl-split.ts`) agora é só o valor do campo HBL dentro deste drawer
-  único. `Campo`/`Grupo` são definidos localmente em `historico/page.tsx`,
-  duplicados dos mesmos componentes em `carteira/page.tsx` (mesmo padrão
-  de `RecapItem`/`RecapSection` em `captacoes/page.tsx` — cada tela mantém
-  sua própria cópia local, não é um componente compartilhado).
+- **Carteira e Histórico: clicar no processo leva direto pro passo 6
+  (Revisão) da captação** (23/09/2026, segunda rodada — substitui uma
+  tentativa anterior com drawer de detalhe, que chegou a ser implementada
+  e revertida no mesmo dia). Nas duas telas a tabela mostra 6 colunas —
+  Status, Cliente/Ref., Registrado em, ETA, Despachante, Atracação →
+  Parceiro — sem coluna de Ações: a linha inteira (`tabIndex`/`onKeyDown`,
+  sem `role="button"` — isso sobrescreveria o role nativo `row` da tabela e
+  quebraria `getAllByRole('row')` nos testes e em qualquer leitor de tela)
+  navega com `router.push('/captacoes?edit=<id>&step=5')`. O passo 6
+  (Revisão) já existia no formulário de captação e já mostra tudo — as 5
+  seções com `RecapSection`/`RecapItem`, cada uma com "Editar", e o botão
+  Excluir — então passou a servir de "ver detalhes" das duas telas, sem
+  precisar de UI nova. `captacoes/page.tsx` ganhou suporte a `?step=N`
+  pra abrir direto nesse passo (antes sempre abria no passo 1, mesmo
+  editando); veja `initialStep` em `CaptacoesForm`.
+  Na Carteira, uma linha sem captação casada (só embarque da Logcomex,
+  sem `capId`) não tem o que revisar — o clique cai no fluxo de criar uma
+  captação nova (`captar()`, reaproveitada da versão anterior à simplificação
+  de 14/09/2026), pré-preenchida com o que já se sabe do embarque.
+  **Trade-off aceito:** sem coluna de Ações, editar e excluir exigem entrar
+  na Revisão primeiro — não tem mais atalho de um clique só na tabela.
+  Regime, CE, BL e Navio (Histórico) e Regime (Carteira) não aparecem em
+  nenhuma das duas telas fora da Revisão.
 - **Captação manual também busca `/clientes`** (22/09/2026), pra sugerir
   cliente cadastrado (nome/apelido) enquanto digita e pré-preencher o CNPJ
   ao escolher uma sugestão — campo continua livre pra digitar qualquer

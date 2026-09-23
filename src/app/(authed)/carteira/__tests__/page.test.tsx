@@ -4,8 +4,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import CarteiraPage from '../page';
 import type { CockpitRow } from '@/lib/types';
 
+const pushMock = vi.fn();
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: pushMock }),
   usePathname: () => '/carteira',
 }));
 
@@ -57,6 +58,7 @@ describe('CarteiraPage', () => {
   afterEach(() => {
     for (const k of Object.keys(filas)) delete filas[k];
     apiFetchMock.mockClear();
+    pushMock.mockClear();
   });
 
   it('mostra as 5 faixas de risco com a contagem correta', async () => {
@@ -83,60 +85,44 @@ describe('CarteiraPage', () => {
     expect(linhas[0]).toContain('RECENTE'); // registrado por último, aparece primeiro
   });
 
-  // A coluna "Registrado em" saiu da tabela (pedido 23/09/2026: só Status,
-  // Cliente/Ref., ETA e Atracação → Parceiro ficam visíveis) — o dado
-  // continua existindo, só que agora dentro do drawer de detalhe. Ver os
-  // testes de drawer logo abaixo.
-
-  it('clicar na linha abre o drawer com os campos agrupados nas seções do formulário (pedido 23/09/2026)', async () => {
+  // Segunda rodada (pedido 23/09/2026): sem drawer, sem editar/excluir na
+  // linha — clicar no processo leva direto pro passo 6 (Revisão) do
+  // formulário de captação, que já mostra tudo e já tem editar/excluir.
+  it('clicar num processo com captação leva direto pro passo 6 (Revisão) da edição', async () => {
     const user = userEvent.setup();
-    filaApi('/carteira', {
-      rows: [
-        row({
-          cli: 'TECNO',
-          cnpj: '12.345.678/0001-99',
-          createdAt: '2026-09-05T14:30:00.000Z',
-          navio: 'MSC AMALFI',
-          atrac: 'Santos Brasil',
-          parc: 'ECOPORTO',
-        }),
-      ],
-    });
+    filaApi('/carteira', { rows: [row({ cli: 'TECNO', capId: 42 })] });
     render(<CarteiraPage />);
     await screen.findByText('TECNO');
 
     await user.click(screen.getByText('TECNO'));
 
-    expect(await screen.findByText('Identificação')).toBeInTheDocument();
-    expect(screen.getByText('Carga')).toBeInTheDocument();
-    expect(screen.getByText('Aduana')).toBeInTheDocument();
-    expect(screen.getByText('Terminal')).toBeInTheDocument();
-    expect(screen.getByText('Situação')).toBeInTheDocument();
-    expect(screen.getByText('12.345.678/0001-99')).toBeInTheDocument();
-    expect(screen.getByText(/^05\/09\/2026/)).toBeInTheDocument(); // "Registrado em" dentro do drawer
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=5');
   });
 
-  it('clicar em editar/excluir não abre o drawer (pedido 23/09/2026)', async () => {
+  it('tecla Enter no processo navega igual ao clique', async () => {
     const user = userEvent.setup();
-    filaApi('/carteira', { rows: [row({ cli: 'TECNO' })] });
-    render(<CarteiraPage />);
-    await screen.findByText('TECNO');
-
-    await user.click(screen.getByTitle('Editar'));
-
-    expect(screen.queryByText('Identificação')).not.toBeInTheDocument();
-  });
-
-  it('tecla Enter na linha abre o drawer, igual ao clique (pedido 23/09/2026)', async () => {
-    const user = userEvent.setup();
-    filaApi('/carteira', { rows: [row({ cli: 'TECNO' })] });
+    filaApi('/carteira', { rows: [row({ cli: 'TECNO', capId: 42 })] });
     render(<CarteiraPage />);
     await screen.findByText('TECNO');
 
     screen.getByText('TECNO').closest('tr')!.focus();
     await user.keyboard('{Enter}');
 
-    expect(await screen.findByText('Identificação')).toBeInTheDocument();
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=5');
+  });
+
+  it('linha sem captação casada (só embarque) vai pro fluxo de criar, não pra Revisão', async () => {
+    const user = userEvent.setup();
+    filaApi('/carteira', { rows: [row({ cli: 'TECNO', capId: null })] });
+    render(<CarteiraPage />);
+    await screen.findByText('TECNO');
+
+    await user.click(screen.getByText('TECNO'));
+
+    const destino = pushMock.mock.calls[0]?.[0] as string;
+    expect(destino).toMatch(/^\/captacoes\?/);
+    expect(destino).not.toContain('edit=');
+    expect(destino).toContain('cli=TECNO');
   });
 
   it('alerta minimizável esconde e mostra o texto', async () => {

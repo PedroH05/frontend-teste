@@ -5,12 +5,11 @@ import { useRouter } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Cliente, CockpitRow, ImportResult } from '@/lib/types';
 import { BANDS, banda, diasAte, dLabel, fmtEta, shortTerm } from '@/lib/risco';
-import { formatDataHora } from '@/lib/format';
+import { formatData, formatDataHora } from '@/lib/format';
 import { apelidoCliente } from '@/lib/apelido';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
-import { RowActions } from '@/components/row-actions';
 import {
   Table,
   TableBody,
@@ -19,14 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
 
 // Comportamento portado de captacao-valetrade/public/index.html (render,
 // renderKpis, renderAlert, ask, exportOficial, captar, marcarCaptado,
@@ -50,36 +41,6 @@ function despValido(desp: string): string | undefined {
 type SortKey = 'pr' | 'cli' | 'registrado' | 'dias' | 'regime' | 'desp' | 'navio';
 
 const PAGE_SIZE = 5; // mesmo tamanho de página do Histórico
-
-// Campo/Grupo do drawer de detalhe — mesmo padrão visual do RecapItem do
-// formulário de captação (captacoes/page.tsx): rótulo pequeno em maiúsculo,
-// "não informado" em itálico quando vazio, nunca esconde o campo.
-function Campo({ label, value }: { label: string; value?: React.ReactNode }) {
-  return (
-    <div>
-      <div className="text-[10.5px] font-bold tracking-[.04em] uppercase" style={{ color: 'var(--vt-muted2)' }}>
-        {label}
-      </div>
-      <div
-        className="mt-0.5 text-[13px] font-semibold"
-        style={value ? { color: 'var(--vt-ink)' } : { color: 'var(--vt-muted2)', fontStyle: 'italic', fontWeight: 500 }}
-      >
-        {value || 'não informado'}
-      </div>
-    </div>
-  );
-}
-
-function Grupo({ titulo, children }: { titulo: string; children: React.ReactNode }) {
-  return (
-    <div className="mt-4 first:mt-0">
-      <div className="mb-2 text-[11px] font-extrabold tracking-[.05em] uppercase" style={{ color: 'var(--vt-red)' }}>
-        {titulo}
-      </div>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">{children}</div>
-    </div>
-  );
-}
 
 export default function CarteiraPage() {
   const router = useRouter();
@@ -112,16 +73,6 @@ export default function CarteiraPage() {
   const [importSummary, setImportSummary] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [alertMin, setAlertMin] = useState(false);
-  // Detalhe em drawer (pedido 23/09/2026) — clicar na linha inteira abre um
-  // painel de baixo pra cima com todos os campos, organizados nas mesmas
-  // seções do formulário de captação. Só os ícones de editar/excluir ficam
-  // fora disso (ver handleRowActivate).
-  const [detalheRow, setDetalheRow] = useState<CockpitRow | null>(null);
-
-  function handleRowActivate(e: React.SyntheticEvent, r: CockpitRow) {
-    if ((e.target as HTMLElement).closest('button')) return; // editar/excluir não abrem o drawer
-    setDetalheRow(r);
-  }
 
   useEffect(() => {
     try {
@@ -343,10 +294,9 @@ export default function CarteiraPage() {
     );
   }
 
-  // Sem uso desde que os botões Captar/captado saíram da coluna de ação
-  // (14/09/2026) — mantida de propósito, pode voltar se recuperarmos esse
-  // fluxo mais tarde.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // Linha sem captação casada (embarque só da Logcomex) — clicar nela vai
+  // pro fluxo de criar uma captação nova, pré-preenchida com o que já se
+  // sabe do embarque (pedido 23/09/2026, ver handleRowClick).
   function captar(row: CockpitRow) {
     const params = new URLSearchParams();
     const set = (k: string, v?: string) => v && params.set(k, v);
@@ -407,15 +357,13 @@ export default function CarteiraPage() {
     }
   }
 
-  async function handleDelete(capId: number) {
-    if (!confirm('Excluir este processo? Esta ação não pode ser desfeita.')) return;
-    try {
-      await apiFetch(`/captacoes/${capId}`, { method: 'DELETE' });
-      // Tira da tela na hora — ver comentário equivalente em historico/page.tsx.
-      setRows((prev) => prev.filter((r) => r.capId !== capId));
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erro ao excluir');
-    }
+  // Clicar em qualquer ponto do processo (pedido 23/09/2026) — leva direto
+  // pro passo 6 (Revisão) do formulário, que já mostra tudo e já tem
+  // editar-por-seção e excluir. Sem captação casada, vai pro fluxo de criar
+  // uma nova a partir do embarque (captar(), acima).
+  function handleRowClick(r: CockpitRow) {
+    if (r.capId) router.push(`/captacoes?edit=${r.capId}&step=5`);
+    else captar(r);
   }
 
   async function handleImportFile(file: File | undefined) {
@@ -723,12 +671,32 @@ export default function CarteiraPage() {
                 ))}
                 <TableHead
                   className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
+                  style={{ color: sortKey === 'registrado' ? 'var(--vt-red)' : 'var(--vt-muted)' }}
+                  onClick={() => toggleSort('registrado')}
+                >
+                  Registrado em{' '}
+                  <span style={{ opacity: sortKey === 'registrado' ? 1 : 0.35 }}>
+                    {sortKey === 'registrado' ? (sortDir === 1 ? '▲' : '▼') : '↕'}
+                  </span>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
                   style={{ color: sortKey === 'dias' ? 'var(--vt-red)' : 'var(--vt-muted)' }}
                   onClick={() => toggleSort('dias')}
                 >
                   ETA / Prazo{' '}
                   <span style={{ opacity: sortKey === 'dias' ? 1 : 0.35 }}>
                     {sortKey === 'dias' ? (sortDir === 1 ? '▲' : '▼') : '↕'}
+                  </span>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
+                  style={{ color: sortKey === 'desp' ? 'var(--vt-red)' : 'var(--vt-muted)' }}
+                  onClick={() => toggleSort('desp')}
+                >
+                  Despachante{' '}
+                  <span style={{ opacity: sortKey === 'desp' ? 1 : 0.35 }}>
+                    {sortKey === 'desp' ? (sortDir === 1 ? '▲' : '▼') : '↕'}
                   </span>
                 </TableHead>
                 <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
@@ -740,13 +708,13 @@ export default function CarteiraPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center" style={{ color: 'var(--vt-muted)' }}>
+                  <TableCell colSpan={7} className="text-center" style={{ color: 'var(--vt-muted)' }}>
                     Carregando…
                   </TableCell>
                 </TableRow>
               ) : linhas.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5}>
+                  <TableCell colSpan={7}>
                     <EmptyState
                       title={busca || filterBand || chipFiltro ? 'Nenhum processo com este filtro' : 'Radar vazio'}
                       subtitle={
@@ -762,14 +730,13 @@ export default function CarteiraPage() {
                   <TableRow
                     key={r.capId ?? `${r.bl}-${r.ref}`}
                     tabIndex={0}
-                    aria-haspopup="dialog"
                     className="cursor-pointer"
                     style={{ borderColor: 'var(--vt-line)' }}
-                    onClick={(e) => handleRowActivate(e, r)}
+                    onClick={() => handleRowClick(r)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        handleRowActivate(e, r);
+                        handleRowClick(r);
                       }
                     }}
                   >
@@ -791,24 +758,20 @@ export default function CarteiraPage() {
                         </span>
                       </div>
                     </TableCell>
+                    <TableCell className="font-mono text-xs whitespace-nowrap" title={formatDataHora(r.createdAt)}>
+                      {formatData(r.createdAt)}
+                    </TableCell>
                     <TableCell className="font-mono text-xs">
                       {fmtEta(r.eta)} · {dLabel(d)}
                     </TableCell>
                     <TableCell>
+                      {despValido(r.desp) ?? <span style={{ color: 'var(--vt-c-prej)', fontWeight: 600 }}>inválido</span>}
+                    </TableCell>
+                    <TableCell>
                       {shortTerm(r.atrac) || '—'} <span style={{ color: 'var(--vt-red)', fontWeight: 700 }}>→</span> {shortTerm(r.parc) || '—'}
                     </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {r.capId && (
-                        // Simplificado a pedido (11/09/2026): só editar/excluir aqui.
-                        // Tinha Efetivar/Docs/status ("captado"/"saiu") antes — pode
-                        // voltar a esse modelo mais completo depois, ver histórico
-                        // da conversa se precisar recuperar. Botões Captar/captado
-                        // removidos a pedido (14/09/2026) das linhas sem captação.
-                        <RowActions
-                          onEdit={() => router.push(`/captacoes?edit=${r.capId}`)}
-                          onDelete={() => handleDelete(r.capId!)}
-                        />
-                      )}
+                    <TableCell className="text-right" style={{ color: 'var(--vt-muted2)' }}>
+                      ›
                     </TableCell>
                   </TableRow>
                 ))
@@ -845,70 +808,6 @@ export default function CarteiraPage() {
           )}
         </div>
       </div>
-
-      <Drawer
-        open={!!detalheRow}
-        onOpenChange={(open) => {
-          if (!open) setDetalheRow(null);
-        }}
-        showSwipeHandle
-      >
-        <DrawerContent>
-          {detalheRow && (
-            <>
-              <DrawerHeader>
-                <DrawerTitle>{apelidoCliente(detalheRow.cli, detalheRow.cnpj, clientes)}</DrawerTitle>
-                <DrawerDescription>
-                  {detalheRow.ref.replace(detalheRow.cli, '').trim() || detalheRow.ref}
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="flex-1 overflow-y-auto px-4 pb-2">
-                <Grupo titulo="Identificação">
-                  <Campo label="CNPJ" value={detalheRow.cnpj} />
-                  <Campo label="Cliente" value={apelidoCliente(detalheRow.cli, detalheRow.cnpj, clientes)} />
-                  <Campo label="Referência" value={detalheRow.ref} />
-                </Grupo>
-                <Grupo titulo="Carga">
-                  <Campo label="ETA" value={detalheRow.eta ? `${fmtEta(detalheRow.eta)} · ${dLabel(diasAte(detalheRow.eta))}` : undefined} />
-                  <Campo label="Navio" value={detalheRow.navio} />
-                  <Campo label="Qtde de contêineres" value={detalheRow.qtd} />
-                  <Campo label="Container(s)" value={detalheRow.cont} />
-                </Grupo>
-                <Grupo titulo="Aduana">
-                  <Campo label="CE Mercante" value={detalheRow.ce} />
-                  <Campo label="Regime" value={detalheRow.regime} />
-                  <Campo label="HBL" value={detalheRow.bl || detalheRow.blCap} />
-                  <Campo label="Despachante" value={despValido(detalheRow.desp)} />
-                </Grupo>
-                <Grupo titulo="Terminal">
-                  <Campo label="Atracação" value={shortTerm(detalheRow.atrac)} />
-                  <Campo label="Parceiro" value={shortTerm(detalheRow.parc)} />
-                </Grupo>
-                <Grupo titulo="Situação">
-                  <Campo label="Status" value={banda(detalheRow).t} />
-                  <Campo label="Registrado em" value={formatDataHora(detalheRow.createdAt)} />
-                </Grupo>
-              </div>
-              <DrawerFooter>
-                <div className="flex gap-2">
-                  {detalheRow.capId && (
-                    <Button
-                      variant="ghost"
-                      className={primaryBtn}
-                      onClick={() => router.push(`/captacoes?edit=${detalheRow.capId}`)}
-                    >
-                      Editar
-                    </Button>
-                  )}
-                  <Button variant="ghost" className={glassBtn} onClick={() => setDetalheRow(null)}>
-                    Fechar
-                  </Button>
-                </div>
-              </DrawerFooter>
-            </>
-          )}
-        </DrawerContent>
-      </Drawer>
     </div>
   );
 }
