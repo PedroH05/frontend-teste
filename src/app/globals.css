@@ -165,6 +165,7 @@
   --vt-hover: rgba(255, 255, 255, .45);
   --vt-hover-strong: rgba(255, 255, 255, .5);
   --vt-surface: #fff;
+  --vt-sk: rgba(40, 36, 28, .09);
 }
 
 /* Modo escuro — só os tons neutros mudam (fundo/texto/linhas/vidro); as   */
@@ -185,6 +186,7 @@
   --vt-hover: rgba(255, 255, 255, .07);
   --vt-hover-strong: rgba(255, 255, 255, .08);
   --vt-surface: #2e2a24;
+  --vt-sk: rgba(255, 255, 255, .09);
 }
 
 /* Camada de fundo fixa (equivalente a .ambient do sistema antigo) — NÃO usar */

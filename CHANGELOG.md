@@ -3,6 +3,18 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-25 — Skeleton no lugar de "Carregando…"
+
+- Novo `components/ui/skeleton.tsx` (shadcn) e `components/table-skeleton.tsx`
+  (5 linhas-esqueleto pra tabela). Cor vem do token novo `--vt-sk`, com par
+  claro/escuro; respeita `prefers-reduced-motion`.
+- Trocou o "Carregando…" numa linha só nas tabelas de Carteira, Histórico e
+  Clientes, e o "Carregando captação…" da edição (agora desenha as seções
+  da Revisão).
+- Blocos de risco da Carteira mostravam `0` enquanto carregavam (parecia
+  dado real) e os do Dashboard mostravam `—`: agora mostram uma barra.
+- Se a API falhar, o esqueleto some e aparece a mensagem de erro, como antes.
+
 ## 2026-09-23 — Carteira e Histórico: mesmo tamanho de fonte em toda célula
 
 - As células de dado tinham 4 tamanhos diferentes na mesma linha (14px sem

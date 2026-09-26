@@ -71,6 +71,18 @@ describe('CarteiraPage', () => {
     expect(screen.getByText('Efetivado')).toBeInTheDocument();
   });
 
+  it('mostra esqueleto (não "0" nem "Carregando…") enquanto carrega, e some quando os dados chegam (pedido 25/09/2026)', async () => {
+    filaApi('/carteira', { rows: [row({ cli: 'TECNO' })] });
+    const { container } = render(<CarteiraPage />);
+
+    expect(container.querySelectorAll('[data-slot="skeleton-row"]')).toHaveLength(5);
+    expect(screen.queryByText('Carregando…')).not.toBeInTheDocument();
+
+    await screen.findByText('TECNO');
+    expect(container.querySelectorAll('[data-slot="skeleton-row"]')).toHaveLength(0);
+    expect(container.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(0);
+  });
+
   it('por padrão mostra o registro mais recente primeiro (pedido 17/09/2026)', async () => {
     filaApi('/carteira', {
       rows: [

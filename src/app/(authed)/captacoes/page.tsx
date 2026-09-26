@@ -8,6 +8,7 @@ import { cleanDesp, DESPACHANTES_PADRAO } from '@/lib/despachante';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Field, FieldContent, FieldLabel } from '@/components/ui/field';
 import {
   Select,
@@ -111,7 +112,7 @@ const CONTAINER_COLORS: [string, string][] = [
 
 export default function CaptacoesPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-[13px]" style={{ color: 'var(--vt-muted)' }}>Carregando…</div>}>
+    <Suspense fallback={<div className="p-6 sm:p-8"><Skeleton className="h-6 w-56" /></div>}>
       <CaptacoesForm />
     </Suspense>
   );
@@ -451,7 +452,22 @@ function CaptacoesForm() {
 
   if (loadingEdit) {
     return (
-      <div className="p-8 text-[13px]" style={{ color: 'var(--vt-muted)' }}>Carregando captação…</div>
+      <div className="space-y-3 p-6 sm:p-8" role="status" aria-label="Carregando captação">
+        <Skeleton className="h-6 w-56" />
+        {[3, 3, 4].map((n, i) => (
+          <div key={i} className="vt-glass space-y-3 p-[14px_16px]">
+            <Skeleton className="h-4 w-28" />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {Array.from({ length: n }, (_, k) => (
+                <div key={k} className="space-y-1.5">
+                  <Skeleton className="h-2.5 w-14" />
+                  <Skeleton className="h-3.5 w-24" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     );
   }
 

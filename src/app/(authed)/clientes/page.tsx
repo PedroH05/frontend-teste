@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Field, FieldContent, FieldLabel } from '@/components/ui/field';
 import { EmptyState } from '@/components/ship-scene';
+import { TableSkeletonRows } from '@/components/table-skeleton';
 import { Search, Check, X } from 'lucide-react';
 import { RowActions } from '@/components/row-actions';
 import {
@@ -285,11 +286,7 @@ export default function ClientesPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center" style={{ color: 'var(--vt-muted)' }}>
-                    Carregando…
-                  </TableCell>
-                </TableRow>
+                <TableSkeletonRows columns={['twoLine', 'bar', 'bar', 'none']} />
               ) : clientesFiltrados.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4}>

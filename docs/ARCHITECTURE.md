@@ -196,6 +196,11 @@ do `(authed)/layout.tsx`.
   (23/09/2026) porque tinha 4 tamanhos diferentes na mesma linha. O badge
   de Status (`.vt-band`) fica de fora por ser componente compartilhado com
   outras telas do app.
+- **Skeleton de carga** (25/09/2026): `components/ui/skeleton.tsx` +
+  `components/table-skeleton.tsx` (`TableSkeletonRows`, uma coluna por tipo:
+  `pill`/`twoLine`/`bar`/`none`) substituem o "Carregando…" das tabelas
+  enquanto `loading` é verdadeiro. Larguras determinísticas (sem
+  `Math.random`, evita erro de hidratação). Cor: token `--vt-sk`.
 - **Captação manual também busca `/clientes`** (22/09/2026), pra sugerir
   cliente cadastrado (nome/apelido) enquanto digita e pré-preencher o CNPJ
   ao escolher uma sugestão — campo continua livre pra digitar qualquer

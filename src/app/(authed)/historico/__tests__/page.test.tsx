@@ -65,6 +65,16 @@ describe('HistoricoPage', () => {
     expect(screen.getByText('DE ONTEM')).toBeInTheDocument();
   });
 
+  it('mostra esqueleto enquanto carrega e some quando os dados chegam (pedido 25/09/2026)', async () => {
+    apiFetchMock.mockResolvedValueOnce([base({ id: 1, cli: 'TECNO' })]);
+    const { container } = render(<HistoricoPage />);
+
+    expect(container.querySelectorAll('[data-slot="skeleton-row"]')).toHaveLength(5);
+
+    await screen.findByText('TECNO');
+    expect(container.querySelectorAll('[data-slot="skeleton-row"]')).toHaveLength(0);
+  });
+
   it('"Tudo" ordena por data de registro, não por ETA — captação sem ETA aparece primeiro se for a mais recente', async () => {
     // Regressão: até 16/09/2026 "Tudo" ordenava por ETA (igual ao sistema
     // antigo), então uma captação recém-criada sem ETA ia parar no fim de

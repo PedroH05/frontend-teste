@@ -10,6 +10,8 @@ import { apelidoCliente } from '@/lib/apelido';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
+import { Skeleton } from '@/components/ui/skeleton';
+import { TableSkeletonRows } from '@/components/table-skeleton';
 import {
   Table,
   TableBody,
@@ -560,7 +562,7 @@ export default function CarteiraPage() {
                 }}
               >
                 <div className="text-[25px] leading-none font-extrabold tracking-tight" style={{ color: `var(--vt-c-${b.k})` }}>
-                  {n}
+                  {loading ? <Skeleton className="h-[25px] w-9" /> : n}
                 </div>
                 <div className="mt-1.5 text-[10.5px] font-semibold" style={{ color: 'var(--vt-muted)' }}>
                   {b.l}
@@ -707,11 +709,7 @@ export default function CarteiraPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center" style={{ color: 'var(--vt-muted)' }}>
-                    Carregando…
-                  </TableCell>
-                </TableRow>
+                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'none']} />
               ) : linhas.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7}>

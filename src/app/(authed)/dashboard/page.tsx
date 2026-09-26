@@ -5,6 +5,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 import type { Captacao } from '@/lib/types';
 import { capDate, noPeriodo, qtd, sumBy, ym, type Periodo } from '@/lib/dashboard';
 import { SegmentedControl } from '@/components/segmented-control';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Comportamento portado de captacao-valetrade/public/index.html
 // (renderDashboard, setPeriodo, _bars). Ver
@@ -231,7 +232,7 @@ export default function DashboardPage() {
                 </span>
               )}
               <div className="text-[25px] leading-none font-extrabold tracking-tight" style={{ color: `var(--vt-c-${band})` }}>
-                {loading ? '—' : n}
+                {loading ? <Skeleton className="h-[25px] w-9" /> : n}
               </div>
               <div className="mt-1.5 text-[10.5px] font-semibold" style={{ color: 'var(--vt-muted)' }}>{label}</div>
             </div>

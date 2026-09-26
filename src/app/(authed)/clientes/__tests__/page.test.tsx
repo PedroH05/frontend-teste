@@ -37,6 +37,18 @@ describe('ClientesPage', () => {
     ).toBeInTheDocument();
   });
 
+  it('mostra esqueleto enquanto carrega e some quando os dados chegam (pedido 25/09/2026)', async () => {
+    apiFetchMock.mockResolvedValueOnce([
+      { id: 1, name: 'TECNO', cnpj: null, cnpjRaiz: null, aliases: [], ativo: true },
+    ]);
+    const { container } = render(<ClientesPage />);
+
+    expect(container.querySelectorAll('[data-slot="skeleton-row"]')).toHaveLength(5);
+
+    await screen.findByText('TECNO');
+    expect(container.querySelectorAll('[data-slot="skeleton-row"]')).toHaveLength(0);
+  });
+
   it('lista clientes carregados do backend', async () => {
     apiFetchMock.mockResolvedValueOnce([
       { id: 1, name: 'TECNO', cnpj: null, cnpjRaiz: '12345678', aliases: ['TECNOAMERICA'], ativo: true },

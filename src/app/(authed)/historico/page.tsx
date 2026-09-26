@@ -10,6 +10,7 @@ import { formatData, formatDataHora } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
+import { TableSkeletonRows } from '@/components/table-skeleton';
 import { SegmentedControl } from '@/components/segmented-control';
 import {
   Table,
@@ -274,11 +275,7 @@ export default function HistoricoPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center" style={{ color: 'var(--vt-muted)' }}>
-                    Carregando…
-                  </TableCell>
-                </TableRow>
+                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'none']} />
               ) : linhas.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7}>
