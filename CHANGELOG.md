@@ -3,6 +3,12 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-28 — Clientes: coluna mostra o CNPJ inteiro, não só a raiz
+
+- A tabela mostrava só os 8 dígitos da raiz (`cnpjRaiz`, usados pra achar
+  duplicata). Agora mostra o CNPJ completo (`cnpj`, o que foi digitado no
+  cadastro). Busca passa a considerar os dois campos.
+
 ## 2026-09-25 — Skeleton no lugar de "Carregando…"
 
 - Novo `components/ui/skeleton.tsx` (shadcn) e `components/table-skeleton.tsx`

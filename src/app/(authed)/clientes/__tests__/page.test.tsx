@@ -49,15 +49,22 @@ describe('ClientesPage', () => {
     expect(container.querySelectorAll('[data-slot="skeleton-row"]')).toHaveLength(0);
   });
 
-  it('lista clientes carregados do backend', async () => {
+  it('lista clientes carregados do backend, com o CNPJ inteiro (não só a raiz)', async () => {
     apiFetchMock.mockResolvedValueOnce([
-      { id: 1, name: 'TECNO', cnpj: null, cnpjRaiz: '12345678', aliases: ['TECNOAMERICA'], ativo: true },
+      {
+        id: 1,
+        name: 'TECNO',
+        cnpj: '12.345.678/0001-99',
+        cnpjRaiz: '12345678',
+        aliases: ['TECNOAMERICA'],
+        ativo: true,
+      },
     ]);
 
     render(<ClientesPage />);
 
     expect(await screen.findByText('TECNO')).toBeInTheDocument();
-    expect(screen.getByText('12345678')).toBeInTheDocument();
+    expect(screen.getByText('12.345.678/0001-99')).toBeInTheDocument();
   });
 
   it('apelido vira chip ao teclar Enter e some ao clicar no ✕', async () => {

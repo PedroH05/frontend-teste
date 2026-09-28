@@ -114,6 +114,7 @@ export default function ClientesPage() {
     return clientes.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
+        (c.cnpj ?? '').toLowerCase().includes(q) ||
         (c.cnpjRaiz ?? '').includes(q) ||
         c.aliases.some((a) => a.toLowerCase().includes(q)),
     );
@@ -276,7 +277,7 @@ export default function ClientesPage() {
                   Cliente
                 </TableHead>
                 <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
-                  CNPJ (raiz)
+                  CNPJ
                 </TableHead>
                 <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
                   Apelidos
@@ -351,7 +352,7 @@ export default function ClientesPage() {
                   ) : (
                     <TableRow key={c.id} style={{ borderColor: 'var(--vt-line2)' }}>
                       <TableCell className="font-bold" style={{ color: 'var(--vt-red)' }}>{c.name}</TableCell>
-                      <TableCell className="font-mono text-xs">{c.cnpjRaiz || '—'}</TableCell>
+                      <TableCell className="font-mono text-xs">{c.cnpj || '—'}</TableCell>
                       <TableCell>{c.aliases.join(', ') || '—'}</TableCell>
                       <TableCell className="whitespace-nowrap">
                         <RowActions onEdit={() => startEdit(c)} onDelete={() => handleDelete(c.id)} />
