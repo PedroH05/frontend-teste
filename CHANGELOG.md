@@ -3,12 +3,14 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
-## 2026-09-28 — Clientes: tira o rótulo "Clientes cadastrados", busca sozinha
+## 2026-09-28 — Clientes: busca sobe pro topo, cabeçalho enxuto
 
-- O rótulo não tinha função — nenhuma outra tela repete o nome da seção
-  assim. Saiu; a busca continua na mesma barra acima da tabela, sozinha.
-- Contagem de clientes subiu pro cabeçalho da página (ao lado do título),
-  mesmo padrão do "N processos" da Carteira — reflete a busca ativa.
+- Duas rodadas no mesmo pedido, no mesmo dia: primeiro o rótulo "Clientes
+  cadastrados" saiu e a busca foi pra uma barra própria acima da tabela,
+  com contador "N clientes" no cabeçalho; depois o próprio subtítulo
+  ("Cadastro usado para identificar...") e o contador saíram também.
+  Ficou: título + busca, lado a lado, no topo da página. Tabela começa
+  direto no cabeçalho de colunas, sem barra própria.
 
 ## 2026-09-28 — Clientes: coluna mostra o CNPJ inteiro, não só a raiz
 

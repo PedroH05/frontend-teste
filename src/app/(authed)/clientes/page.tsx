@@ -213,19 +213,17 @@ export default function ClientesPage() {
 
   return (
     <div className="space-y-5 p-6 sm:p-8" style={{ color: 'var(--vt-ink)' }}>
-        <div className="flex flex-wrap items-end gap-3">
-          <div>
-            <h1 className="text-[21px] font-bold tracking-tight">Clientes</h1>
-            <p className="mt-0.5 text-[12.5px]" style={{ color: 'var(--vt-muted)' }}>
-              Cadastro usado para identificar processos na planilha (CNPJ + apelidos)
-            </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-[21px] font-bold tracking-tight">Clientes</h1>
+          <div className="relative ml-auto w-[200px]">
+            <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" style={{ color: 'var(--vt-muted)' }} />
+            <Input
+              placeholder="buscar cliente…"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className={`pl-8 text-[12.5px] ${glassInput}`}
+            />
           </div>
-          <span
-            className="vt-glass-strong rounded-[20px] px-3 py-1.5 text-[12px] font-semibold"
-            style={{ color: 'var(--vt-muted)' }}
-          >
-            {clientesFiltrados.length} clientes
-          </span>
         </div>
 
         <form onSubmit={handleAdd} className="vt-glass grid gap-4 p-[18px_20px] sm:grid-cols-3">
@@ -266,17 +264,6 @@ export default function ClientesPage() {
         </form>
 
         <div className="vt-glass overflow-hidden">
-          <div className="flex items-center p-[14px_18px]" style={{ borderBottom: '1px solid var(--vt-line2)' }}>
-            <div className="relative ml-auto w-[200px]">
-              <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" style={{ color: 'var(--vt-muted)' }} />
-              <Input
-                placeholder="buscar cliente…"
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                className={`pl-8 text-[12.5px] ${glassInput}`}
-              />
-            </div>
-          </div>
           <Table>
             <TableHeader>
               <TableRow style={{ borderColor: 'var(--vt-line)' }}>

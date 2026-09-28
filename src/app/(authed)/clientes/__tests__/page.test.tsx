@@ -19,7 +19,7 @@ vi.mock('@/lib/api', async () => {
 });
 
 describe('ClientesPage', () => {
-  it('mostra a contagem de clientes no cabeçalho, sem o rótulo "Clientes cadastrados" (pedido 28/09/2026)', async () => {
+  it('busca fica no topo, junto do título — sem subtítulo, contador ou rótulo "Clientes cadastrados" (pedido 28/09/2026)', async () => {
     const user = userEvent.setup();
     apiFetchMock.mockResolvedValueOnce([
       { id: 1, name: 'TECNO', cnpj: null, cnpjRaiz: null, aliases: [], ativo: true },
@@ -28,11 +28,13 @@ describe('ClientesPage', () => {
 
     render(<ClientesPage />);
 
-    expect(await screen.findByText('2 clientes')).toBeInTheDocument();
+    await screen.findByText('TECNO');
     expect(screen.queryByText('Clientes cadastrados')).not.toBeInTheDocument();
+    expect(screen.queryByText('2 clientes')).not.toBeInTheDocument(); // era o contador junto do título
+    expect(screen.queryByText(/Cadastro usado para identificar/)).not.toBeInTheDocument();
 
     await user.type(screen.getByPlaceholderText('buscar cliente…'), 'TECNO');
-    expect(await screen.findByText('1 clientes')).toBeInTheDocument();
+    expect(screen.queryByText('HUESKER')).not.toBeInTheDocument();
   });
 
   it('mostra mensagem específica quando o backend responde 409 (raiz de CNPJ duplicada)', async () => {
