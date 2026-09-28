@@ -3,6 +3,13 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-28 — Clientes: tira o rótulo "Clientes cadastrados", busca sozinha
+
+- O rótulo não tinha função — nenhuma outra tela repete o nome da seção
+  assim. Saiu; a busca continua na mesma barra acima da tabela, sozinha.
+- Contagem de clientes subiu pro cabeçalho da página (ao lado do título),
+  mesmo padrão do "N processos" da Carteira — reflete a busca ativa.
+
 ## 2026-09-28 — Clientes: coluna mostra o CNPJ inteiro, não só a raiz
 
 - A tabela mostrava só os 8 dígitos da raiz (`cnpjRaiz`, usados pra achar
