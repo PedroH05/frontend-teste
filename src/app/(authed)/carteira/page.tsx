@@ -728,20 +728,18 @@ export default function CarteiraPage() {
                 </TableRow>
               ) : (
                 linhasPagina.map(({ r, b, d }) => (
-                  <TableRow
-                    key={r.capId ?? `${r.bl}-${r.ref}`}
-                    tabIndex={0}
-                    className="cursor-pointer"
-                    style={{ borderColor: 'var(--vt-line)' }}
-                    onClick={() => handleRowClick(r)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleRowClick(r);
-                      }
-                    }}
-                  >
-                    <TableCell>
+                  <TableRow key={r.capId ?? `${r.bl}-${r.ref}`} style={{ borderColor: 'var(--vt-line)' }}>
+                    <TableCell
+                      tabIndex={0}
+                      className="cursor-pointer"
+                      onClick={() => handleRowClick(r)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleRowClick(r);
+                        }
+                      }}
+                    >
                       <span className={`vt-band b-${b.k}`}>{b.t}</span>
                     </TableCell>
                     <TableCell className="text-[13px]">
@@ -772,9 +770,7 @@ export default function CarteiraPage() {
                     <TableCell className="text-[13px]">
                       {shortTerm(r.atrac) || '—'} <span style={{ color: 'var(--vt-red)', fontWeight: 700 }}>→</span> {shortTerm(r.parc) || '—'}
                     </TableCell>
-                    <TableCell className="text-right text-[13px]" style={{ color: 'var(--vt-muted2)' }}>
-                      ›
-                    </TableCell>
+                    <TableCell />
                   </TableRow>
                 ))
               )}

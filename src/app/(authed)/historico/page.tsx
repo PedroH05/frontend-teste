@@ -287,20 +287,18 @@ export default function HistoricoPage() {
                 </TableRow>
               ) : (
                 linhasPagina.map((c) => (
-                  <TableRow
-                    key={c.id}
-                    tabIndex={0}
-                    className="cursor-pointer"
-                    style={{ borderColor: 'var(--vt-line)' }}
-                    onClick={() => handleRowClick(c)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleRowClick(c);
-                      }
-                    }}
-                  >
-                    <TableCell>
+                  <TableRow key={c.id} style={{ borderColor: 'var(--vt-line)' }}>
+                    <TableCell
+                      tabIndex={0}
+                      className="cursor-pointer"
+                      onClick={() => handleRowClick(c)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleRowClick(c);
+                        }
+                      }}
+                    >
                       <span className={`vt-band ${c.stage === 'SAIU_TERMINAL' ? 'b-conc' : c.stage === 'EFETIVA' ? 'b-efet' : 'b-and'}`}>
                         {STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento'}
                       </span>
@@ -334,9 +332,7 @@ export default function HistoricoPage() {
                     <TableCell className="text-[13px]">
                       {shortTerm(c.terminalDescarga) || '—'} <span style={{ color: 'var(--vt-red)', fontWeight: 700 }}>→</span> {shortTerm(c.terminalCaptado) || '—'}
                     </TableCell>
-                    <TableCell className="text-right text-[13px]" style={{ color: 'var(--vt-muted2)' }}>
-                      ›
-                    </TableCell>
+                    <TableCell />
                   </TableRow>
                 ))
               )}

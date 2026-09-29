@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import HistoricoPage from '../page';
@@ -155,7 +155,18 @@ describe('HistoricoPage', () => {
     expect(screen.getByText('TECNO')).toBeInTheDocument();
   });
 
-  it('clicar num processo leva direto pro passo 6 (Revisão) da edição', async () => {
+  it('clicar no Status de um processo leva direto pro passo 6 (Revisão) da edição (pedido 29/09/2026)', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce([base({ id: 7, cli: 'TECNO' })]);
+    render(<HistoricoPage />);
+    const linha = (await screen.findByText('TECNO')).closest('tr')!;
+
+    await user.click(within(linha).getByText('Em andamento'));
+
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=7&step=5');
+  });
+
+  it('clicar em outra célula da linha (não o Status) não navega', async () => {
     const user = userEvent.setup();
     apiFetchMock.mockResolvedValueOnce([base({ id: 7, cli: 'TECNO' })]);
     render(<HistoricoPage />);
@@ -163,7 +174,7 @@ describe('HistoricoPage', () => {
 
     await user.click(screen.getByText('TECNO'));
 
-    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=7&step=5');
+    expect(pushMock).not.toHaveBeenCalled();
   });
 
   it('despachante e atracação → parceiro aparecem na tabela', async () => {

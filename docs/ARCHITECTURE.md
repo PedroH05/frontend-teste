@@ -174,10 +174,13 @@ do `(authed)/layout.tsx`.
   tentativa anterior com drawer de detalhe, que chegou a ser implementada
   e revertida no mesmo dia). Nas duas telas a tabela mostra 6 colunas —
   Status, Cliente/Ref., Registrado em, ETA, Despachante, Atracação →
-  Parceiro — sem coluna de Ações: a linha inteira (`tabIndex`/`onKeyDown`,
+  Parceiro — sem coluna de Ações: a célula de Status (`tabIndex`/`onKeyDown`,
   sem `role="button"` — isso sobrescreveria o role nativo `row` da tabela e
   quebraria `getAllByRole('row')` nos testes e em qualquer leitor de tela)
-  navega com `router.push('/captacoes?edit=<id>&step=5')`. O passo 6
+  navega com `router.push('/captacoes?edit=<id>&step=5')` — a princípio a
+  linha inteira era clicável, mas restrito só ao Status em 29/09/2026 a
+  pedido, pra não navegar sem querer ao interagir com o resto da linha
+  (a seta que indicava "linha inteira clicável" saiu junto). O passo 6
   (Revisão) já existia no formulário de captação e já mostra tudo — as 5
   seções com `RecapSection`/`RecapItem`, cada uma com "Editar", e o botão
   Excluir — então passou a servir de "ver detalhes" das duas telas, sem

@@ -3,6 +3,13 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-29 — Carteira e Histórico: só o Status abre a Revisão
+
+- Antes, clicar em qualquer ponto da linha navegava pro passo 6 (Revisão).
+  Agora só o campo de Status é clicável — o resto da linha não faz nada.
+  A seta no fim da linha saiu (sugeria clique na linha inteira, que não
+  existe mais).
+
 ## 2026-09-29 — Carteira e Histórico: CE volta como coluna própria
 
 - CE Mercante tinha saído das duas tabelas na simplificação de 6 colunas

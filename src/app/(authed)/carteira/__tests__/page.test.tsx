@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import CarteiraPage from '../page';
@@ -104,10 +104,23 @@ describe('CarteiraPage', () => {
     expect(linhas[0]).toContain('RECENTE'); // registrado por último, aparece primeiro
   });
 
-  // Segunda rodada (pedido 23/09/2026): sem drawer, sem editar/excluir na
-  // linha — clicar no processo leva direto pro passo 6 (Revisão) do
-  // formulário de captação, que já mostra tudo e já tem editar/excluir.
-  it('clicar num processo com captação leva direto pro passo 6 (Revisão) da edição', async () => {
+  // Segunda rodada (23/09/2026): sem drawer, sem editar/excluir na linha —
+  // clicar no processo leva direto pro passo 6 (Revisão) do formulário.
+  // Terceira rodada (29/09/2026): só o campo de Status abre — o resto da
+  // linha não é mais clicável.
+  it('clicar no Status de um processo com captação leva direto pro passo 6 (Revisão) da edição', async () => {
+    const user = userEvent.setup();
+    filaApi('/carteira', { rows: [row({ cli: 'TECNO', capId: 42 })] });
+    render(<CarteiraPage />);
+    await screen.findByText('TECNO');
+
+    const linha = screen.getByText('TECNO').closest('tr')!;
+    await user.click(within(linha).getByText('EM ANDAMENTO'));
+
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=5');
+  });
+
+  it('clicar em outra célula da linha (não o Status) não navega', async () => {
     const user = userEvent.setup();
     filaApi('/carteira', { rows: [row({ cli: 'TECNO', capId: 42 })] });
     render(<CarteiraPage />);
@@ -115,16 +128,17 @@ describe('CarteiraPage', () => {
 
     await user.click(screen.getByText('TECNO'));
 
-    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=5');
+    expect(pushMock).not.toHaveBeenCalled();
   });
 
-  it('tecla Enter no processo navega igual ao clique', async () => {
+  it('tecla Enter no Status navega igual ao clique', async () => {
     const user = userEvent.setup();
     filaApi('/carteira', { rows: [row({ cli: 'TECNO', capId: 42 })] });
     render(<CarteiraPage />);
     await screen.findByText('TECNO');
 
-    screen.getByText('TECNO').closest('tr')!.focus();
+    const linha = screen.getByText('TECNO').closest('tr')!;
+    within(linha).getByText('EM ANDAMENTO').closest('td')!.focus();
     await user.keyboard('{Enter}');
 
     expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=5');
@@ -136,7 +150,8 @@ describe('CarteiraPage', () => {
     render(<CarteiraPage />);
     await screen.findByText('TECNO');
 
-    await user.click(screen.getByText('TECNO'));
+    const linha = screen.getByText('TECNO').closest('tr')!;
+    await user.click(within(linha).getByText('EM ANDAMENTO'));
 
     const destino = pushMock.mock.calls[0]?.[0] as string;
     expect(destino).toMatch(/^\/captacoes\?/);
