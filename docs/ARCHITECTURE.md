@@ -91,6 +91,16 @@ Layout persistente das telas autenticadas:
 - `components/ui/*` — primitivos shadcn (`base-ui`), tema aplicado via
   atributos `data-slot` no CSS global (ver Design System abaixo).
 
+## Tipografia
+
+`src/app/layout.tsx` carrega **IBM Plex Sans** (texto) e **IBM Plex Mono**
+(`font-mono` — CNPJ, código de container/BL, barras do Dashboard) via
+`next/font/google`, nas variáveis `--font-plex-sans`/`--font-plex-mono`
+(mapeadas pra `--font-sans`/`--font-mono` do Tailwind em `globals.css`).
+Trocado de Inter em 29/09/2026 — o nome das variáveis dizia "geist" desde
+o template inicial do Next.js mesmo quando a fonte real era Inter, nunca
+Geist de verdade; corrigido junto da troca.
+
 ## Design system — tokens `--vt-*`
 
 Todo o visual da aplicação usa variáveis CSS customizadas com prefixo

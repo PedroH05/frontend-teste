@@ -3,6 +3,16 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-29 — Fonte trocada pra IBM Plex Sans (+ Plex Mono)
+
+- O app rodava Inter — a variável se chamava `--font-geist-sans` desde o
+  template inicial do Next.js, mas nunca foi a fonte Geist de verdade.
+  Trocado por IBM Plex Sans (texto) + IBM Plex Mono (números/códigos:
+  CNPJ, container, BL, barras do Dashboard) — desenhada pra interface densa
+  de dado, que é a maior parte do app. Variáveis renomeadas pra
+  `--font-plex-sans`/`--font-plex-mono`, nome batendo com a fonte real
+  pela primeira vez.
+
 ## 2026-09-29 — Carteira e Histórico: só o Status abre a Revisão
 
 - Antes, clicar em qualquer ponto da linha navegava pro passo 6 (Revisão).
