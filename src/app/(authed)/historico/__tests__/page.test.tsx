@@ -51,6 +51,13 @@ describe('HistoricoPage', () => {
     pushMock.mockClear();
   });
 
+  it('mostra o CE na tabela (pedido 29/09/2026)', async () => {
+    apiFetchMock.mockResolvedValueOnce([base({ ce: '150726009988-1' })]);
+    render(<HistoricoPage />);
+
+    expect(await screen.findByText('150726009988-1')).toBeInTheDocument();
+  });
+
   it('filtro "Tudo" (padrão) mostra captações de qualquer dia', async () => {
     const ontem = new Date();
     ontem.setDate(ontem.getDate() - 1);

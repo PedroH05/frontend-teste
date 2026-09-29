@@ -190,8 +190,9 @@ do `(authed)/layout.tsx`.
   de 14/09/2026), pré-preenchida com o que já se sabe do embarque.
   **Trade-off aceito:** sem coluna de Ações, editar e excluir exigem entrar
   na Revisão primeiro — não tem mais atalho de um clique só na tabela.
-  Regime, CE, BL e Navio (Histórico) e Regime (Carteira) não aparecem em
-  nenhuma das duas telas fora da Revisão. Toda célula de dado nas duas
+  Regime, BL e Navio (Histórico) e Regime (Carteira) não aparecem em
+  nenhuma das duas telas fora da Revisão — CE voltou como coluna própria
+  (29/09/2026), entre ETA e Despachante, nas duas tabelas. Toda célula de dado nas duas
   tabelas usa 13px, sem fonte monoespaçada nas datas — corrigido depois
   (23/09/2026) porque tinha 4 tamanhos diferentes na mesma linha. O badge
   de Status (`.vt-band`) fica de fora por ser componente compartilhado com

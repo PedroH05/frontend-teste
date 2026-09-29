@@ -61,6 +61,13 @@ describe('CarteiraPage', () => {
     pushMock.mockClear();
   });
 
+  it('mostra o CE na tabela de processos (pedido 29/09/2026)', async () => {
+    filaApi('/carteira', { rows: [row({ ce: '150726001234-5' })] });
+    render(<CarteiraPage />);
+
+    expect(await screen.findByText('150726001234-5')).toBeInTheDocument();
+  });
+
   it('mostra as 5 faixas de risco com a contagem correta', async () => {
     filaApi('/carteira', {
       rows: [row({ stage: 'MANIFESTADA_DOCS' }), row({ stage: 'EFETIVA', capId: 2 })],

@@ -265,6 +265,9 @@ export default function HistoricoPage() {
                   </TableHead>
                 ))}
                 <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
+                  CE
+                </TableHead>
+                <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
                   Despachante
                 </TableHead>
                 <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
@@ -275,10 +278,10 @@ export default function HistoricoPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'none']} />
+                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'none']} />
               ) : linhas.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7}>
+                  <TableCell colSpan={8}>
                     <EmptyState title="Histórico vazio" subtitle="As captações aparecem aqui conforme forem feitas." />
                   </TableCell>
                 </TableRow>
@@ -324,6 +327,7 @@ export default function HistoricoPage() {
                       {formatDataHora(c.createdAt)}
                     </TableCell>
                     <TableCell className="text-[13px]">{formatData(c.eta)}</TableCell>
+                    <TableCell className="text-[13px]">{c.ce || '—'}</TableCell>
                     <TableCell className="text-[13px]">
                       {despValido(c.despachante) ?? <span style={{ color: 'var(--vt-c-prej)', fontWeight: 600 }}>inválido</span>}
                     </TableCell>

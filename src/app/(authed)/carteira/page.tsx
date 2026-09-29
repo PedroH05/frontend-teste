@@ -691,6 +691,9 @@ export default function CarteiraPage() {
                     {sortKey === 'dias' ? (sortDir === 1 ? '▲' : '▼') : '↕'}
                   </span>
                 </TableHead>
+                <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
+                  CE
+                </TableHead>
                 <TableHead
                   className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
                   style={{ color: sortKey === 'desp' ? 'var(--vt-red)' : 'var(--vt-muted)' }}
@@ -709,10 +712,10 @@ export default function CarteiraPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'none']} />
+                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'none']} />
               ) : linhas.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7}>
+                  <TableCell colSpan={8}>
                     <EmptyState
                       title={busca || filterBand || chipFiltro ? 'Nenhum processo com este filtro' : 'Radar vazio'}
                       subtitle={
@@ -762,6 +765,7 @@ export default function CarteiraPage() {
                     <TableCell className="text-[13px]">
                       {fmtEta(r.eta)} · {dLabel(d)}
                     </TableCell>
+                    <TableCell className="text-[13px]">{r.ce || '—'}</TableCell>
                     <TableCell className="text-[13px]">
                       {despValido(r.desp) ?? <span style={{ color: 'var(--vt-c-prej)', fontWeight: 600 }}>inválido</span>}
                     </TableCell>

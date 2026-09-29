@@ -3,6 +3,12 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-09-29 — Carteira e Histórico: CE volta como coluna própria
+
+- CE Mercante tinha saído das duas tabelas na simplificação de 6 colunas
+  (23/09/2026), ficando só dentro da Revisão. Volta como coluna, entre ETA
+  e Despachante — 7 colunas + a seta agora.
+
 ## 2026-09-28 — Clientes: busca sobe pro topo, cabeçalho enxuto
 
 - Duas rodadas no mesmo pedido, no mesmo dia: primeiro o rótulo "Clientes
