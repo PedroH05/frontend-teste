@@ -206,15 +206,14 @@ export default function CarteiraPage() {
     [linhas, pagina],
   );
 
+  // Só sobrou o alerta de crítico (pedido 01/10/2026: tirada a frase "Há N
+  // na janela de 7 dias... com regime pendente" que aparecia quando não
+  // havia nenhum crítico) — `jan`/`semReg` não tinham mais outro uso.
   const alerta = useMemo(() => {
     const prej = enriquecidas
       .filter(({ b }) => b.k === 'prej')
       .sort((a, b) => a.d - b.d);
-    const jan = enriquecidas.filter(({ b }) => b.k === 'jan').length;
-    const semReg = enriquecidas.filter(
-      ({ r }) => !r.regime || r.regime === 'AGUARDANDO',
-    ).length;
-    return { prej, jan, semReg };
+    return { prej };
   }, [enriquecidas]);
 
   function handleAsk(override?: string) {
@@ -488,51 +487,38 @@ export default function CarteiraPage() {
           </div>
         )}
 
-        {(alerta.prej.length > 0 || alerta.jan > 0 || alerta.semReg > 0) && (
+        {alerta.prej.length > 0 && (
           <div
             className="relative overflow-hidden rounded-[16px] p-[13px_18px] text-[#f3efe8] shadow-[var(--vt-sh-lg)]"
             style={{ background: 'linear-gradient(135deg, rgba(38,36,31,.96), rgba(58,26,24,.94))' }}
           >
             <div className="flex flex-wrap items-center gap-3">
-              {alerta.prej.length > 0 && (
-                <span
-                  className="vt-pulse h-[9px] w-[9px] shrink-0 rounded-full"
-                  style={{ background: 'var(--vt-c-prej)' }}
-                />
-              )}
+              <span
+                className="vt-pulse h-[9px] w-[9px] shrink-0 rounded-full"
+                style={{ background: 'var(--vt-c-prej)' }}
+              />
               {!alertMin && (
                 <p className="text-[13px] leading-[1.5]">
-                  {alerta.prej.length > 0 ? (
-                    <>
-                      <b className="text-white">{alerta.prej.length} processo(s)</b> viram tabela pública hoje se não forem
-                      efetivados —{' '}
-                      {alerta.prej.slice(0, 2).map(({ r, d }, i) => (
-                        <span key={r.capId ?? r.bl} style={{ color: '#ff9e93', fontWeight: 700 }}>
-                          {i > 0 && ' e '}
-                          {r.cli} {r.ref.replace(r.cli, '').trim()} ({dLabel(d)})
-                        </span>
-                      ))}
-                      .
-                    </>
-                  ) : (
-                    <>
-                      Há <b className="text-white">{alerta.jan}</b> na janela de 7 dias aguardando captação e{' '}
-                      <b className="text-white">{alerta.semReg}</b> com regime pendente.
-                    </>
-                  )}
+                  <b className="text-white">{alerta.prej.length} processo(s)</b> viram tabela pública hoje se não forem
+                  efetivados —{' '}
+                  {alerta.prej.slice(0, 2).map(({ r, d }, i) => (
+                    <span key={r.capId ?? r.bl} style={{ color: '#ff9e93', fontWeight: 700 }}>
+                      {i > 0 && ' e '}
+                      {r.cli} {r.ref.replace(r.cli, '').trim()} ({dLabel(d)})
+                    </span>
+                  ))}
+                  .
                 </p>
               )}
               <div className="ml-auto flex shrink-0 items-center gap-2">
-                {alerta.prej.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setFilterBand('prej')}
-                    className="rounded-[9px] px-3 py-1.5 text-[11.5px] font-bold whitespace-nowrap"
-                    style={{ background: 'var(--vt-c-prej)', color: '#fff' }}
-                  >
-                    Ver os {alerta.prej.length} críticos →
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setFilterBand('prej')}
+                  className="rounded-[9px] px-3 py-1.5 text-[11.5px] font-bold whitespace-nowrap"
+                  style={{ background: 'var(--vt-c-prej)', color: '#fff' }}
+                >
+                  Ver os {alerta.prej.length} críticos →
+                </button>
                 <button
                   type="button"
                   onClick={toggleAlertMin}

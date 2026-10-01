@@ -184,18 +184,27 @@ describe('CarteiraPage', () => {
     expect(destino).toContain('cli=TECNO');
   });
 
-  it('alerta minimizável esconde e mostra o texto', async () => {
+  it('alerta minimizável esconde e mostra o texto (pedido 01/10/2026: só mostra com crítico de verdade)', async () => {
     const user = userEvent.setup();
     filaApi('/carteira', {
-      rows: [row({ regime: '', eta: '2026-12-01', stage: 'NENHUM', capId: null })],
+      rows: [row({ stage: 'MANIFESTADA_DOCS' })],
     });
     render(<CarteiraPage />);
 
     await screen.findByText('Processos');
-    expect(screen.getByText(/janela de 7 dias/)).toBeInTheDocument();
+    expect(screen.getByText(/viram tabela pública hoje/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '▾' }));
+    expect(screen.queryByText(/viram tabela pública hoje/)).not.toBeInTheDocument();
+  });
+
+  it('sem crítico, o alerta não aparece mais (pedido 01/10/2026: tirada a frase "janela de 7 dias / regime pendente")', async () => {
+    filaApi('/carteira', { rows: [row({ stage: 'MANIFESTADA_PARC' })] });
+    render(<CarteiraPage />);
+
+    await screen.findByText('Processos');
     expect(screen.queryByText(/janela de 7 dias/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/regime pendente/)).not.toBeInTheDocument();
   });
 
   it('busca reconhece um código de container e oferece rastreio', async () => {

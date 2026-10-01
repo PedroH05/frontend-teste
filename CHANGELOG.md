@@ -3,6 +3,13 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-01 — Carteira: tirada a frase "janela de 7 dias / regime pendente"
+
+- O alerta no topo só mostra mais o aviso de crítico ("N processo(s) viram
+  tabela pública hoje se não forem efetivados"). Quando não há nenhum
+  crítico, o alerta inteiro some — antes aparecia com a frase "Há N na
+  janela de 7 dias aguardando captação e M com regime pendente".
+
 ## 2026-10-01 — Carteira: blocos de risco corrigidos
 
 - **"Concluído" saiu** da lista de blocos — não tinha utilidade real ali.
