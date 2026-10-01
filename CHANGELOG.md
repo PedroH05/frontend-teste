@@ -3,6 +3,17 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-01 — Carteira: filtro de mês (botão calendário) e badge "EM ANDAMENTO"
+
+- Botão de calendário ao lado da faixa de cards de risco: abre lista de
+  meses com captação criada (mais recente primeiro, com contagem), filtra a
+  tabela por `createdAt` — quando o processo foi **registrado**, não quando
+  mudou de status. Combina com o card de risco selecionado.
+- Badge de status da linha (coluna Status) que mostrava "JANELA ABERTA"
+  (processos com ETA em 3-7 dias) agora mostra "EM ANDAMENTO" — pedido
+  explícito, confundia. O card "Próximos 7 dias" na faixa de risco não
+  mudou de nome, só o texto do badge na linha.
+
 ## 2026-10-01 — Carteira: tirada a frase "janela de 7 dias / regime pendente"
 
 - O alerta no topo só mostra mais o aviso de crítico ("N processo(s) viram

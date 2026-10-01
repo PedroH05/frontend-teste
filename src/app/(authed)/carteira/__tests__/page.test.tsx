@@ -341,4 +341,30 @@ describe('CarteiraPage', () => {
 
     expect(await screen.findByText('SEM CADASTRO')).toBeInTheDocument();
   });
+
+  it('filtro de mês (botão calendário) filtra por createdAt, não por status (pedido 01/10/2026)', async () => {
+    const user = userEvent.setup();
+    filaApi('/carteira', {
+      rows: [
+        row({ capId: 1, cli: 'AGOSTO', createdAt: '2026-08-15T10:00:00.000Z' }),
+        row({ capId: 2, cli: 'SETEMBRO', createdAt: '2026-09-20T10:00:00.000Z' }),
+      ],
+    });
+    render(<CarteiraPage />);
+
+    await screen.findByText('AGOSTO');
+    expect(screen.getByText('SETEMBRO')).toBeInTheDocument();
+
+    await user.click(screen.getByLabelText('Filtrar por mês de criação'));
+    await user.click(screen.getByText(/Agosto \/ 2026/));
+
+    expect(screen.getByText('AGOSTO')).toBeInTheDocument();
+    expect(screen.queryByText('SETEMBRO')).not.toBeInTheDocument();
+
+    await user.click(screen.getByLabelText('Filtrar por mês de criação'));
+    await user.click(screen.getByText('limpar'));
+
+    expect(screen.getByText('AGOSTO')).toBeInTheDocument();
+    expect(screen.getByText('SETEMBRO')).toBeInTheDocument();
+  });
 });

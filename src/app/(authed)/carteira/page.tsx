@@ -44,6 +44,12 @@ type SortKey = 'pr' | 'cli' | 'registrado' | 'dias' | 'regime' | 'desp' | 'navio
 
 const PAGE_SIZE = 5; // mesmo tamanho de página do Histórico
 
+const MESES_PT = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+];
+const MESES_ABREV = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+
 export default function CarteiraPage() {
   const router = useRouter();
   const [rows, setRows] = useState<CockpitRow[]>([]);
@@ -75,6 +81,23 @@ export default function CarteiraPage() {
   const [importSummary, setImportSummary] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [alertMin, setAlertMin] = useState(false);
+
+  // Filtro de mês (pedido 01/10/2026: "ver o que foi feito no mês") — olha
+  // `createdAt` (quando a captação foi registrada), não quando mudou de
+  // status, e não some com o resto da carteira: é um filtro à parte, igual
+  // ao filterBand, combinável com ele.
+  const [mesFiltro, setMesFiltro] = useState<string | null>(null); // 'YYYY-MM'
+  const [mesAberto, setMesAberto] = useState(false);
+  const mesRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!mesAberto) return;
+    function onClickFora(e: MouseEvent) {
+      if (mesRef.current && !mesRef.current.contains(e.target as Node)) setMesAberto(false);
+    }
+    document.addEventListener('mousedown', onClickFora);
+    return () => document.removeEventListener('mousedown', onClickFora);
+  }, [mesAberto]);
 
   useEffect(() => {
     try {
@@ -146,9 +169,22 @@ export default function CarteiraPage() {
     return c;
   }, [enriquecidas]);
 
+  // Meses com captação criada, mais recente primeiro, com contagem — pro
+  // popover do botão de calendário. 'YYYY-MM' ordena certo como texto.
+  const mesesDisponiveis = useMemo(() => {
+    const porMes = new Map<string, number>();
+    for (const { r } of enriquecidas) {
+      const chave = (r.createdAt ?? '').slice(0, 7);
+      if (!chave) continue;
+      porMes.set(chave, (porMes.get(chave) ?? 0) + 1);
+    }
+    return [...porMes.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  }, [enriquecidas]);
+
   const linhas = useMemo(() => {
     let list = enriquecidas;
     if (filterBand) list = list.filter(({ b }) => b.k === filterBand);
+    if (mesFiltro) list = list.filter(({ r }) => (r.createdAt ?? '').slice(0, 7) === mesFiltro);
     if (chipFiltro === 'critico') list = list.filter(({ b }) => b.k === 'prej');
     else if (chipFiltro === 'semana') list = list.filter(({ b }) => ['prej', 'jan'].includes(b.k));
     else if (chipFiltro === 'semdesp') list = list.filter(({ r }) => !r.regime || r.regime === 'AGUARDANDO');
@@ -180,7 +216,7 @@ export default function CarteiraPage() {
       const vb = val(b);
       return (va < vb ? -1 : va > vb ? 1 : 0) * sortDir;
     });
-  }, [enriquecidas, busca, filterBand, chipFiltro, sortKey, sortDir]);
+  }, [enriquecidas, busca, filterBand, mesFiltro, chipFiltro, sortKey, sortDir]);
 
   const totalContainers = linhas.reduce((s, { r }) => s + (Number(r.qtd) || 1), 0);
 
@@ -189,15 +225,16 @@ export default function CarteiraPage() {
   // ficar numa página que não existe mais. Ajuste durante o render (não em
   // efeito) — ver https://react.dev/learn/you-might-not-need-an-effect.
   const [pagina, setPagina] = useState(1);
-  const [filtroAnterior, setFiltroAnterior] = useState({ filterBand, chipFiltro, busca, sortKey, sortDir });
+  const [filtroAnterior, setFiltroAnterior] = useState({ filterBand, mesFiltro, chipFiltro, busca, sortKey, sortDir });
   if (
     filtroAnterior.filterBand !== filterBand ||
+    filtroAnterior.mesFiltro !== mesFiltro ||
     filtroAnterior.chipFiltro !== chipFiltro ||
     filtroAnterior.busca !== busca ||
     filtroAnterior.sortKey !== sortKey ||
     filtroAnterior.sortDir !== sortDir
   ) {
-    setFiltroAnterior({ filterBand, chipFiltro, busca, sortKey, sortDir });
+    setFiltroAnterior({ filterBand, mesFiltro, chipFiltro, busca, sortKey, sortDir });
     setPagina(1);
   }
   const totalPaginas = Math.max(1, Math.ceil(linhas.length / PAGE_SIZE));
@@ -532,30 +569,108 @@ export default function CarteiraPage() {
           </div>
         )}
 
-        <div className="vt-glass grid grid-cols-2 gap-px overflow-hidden sm:grid-cols-4" style={{ background: 'var(--vt-line)' }}>
-          {BANDS.map((b) => {
-            const n = contagens[b.k] ?? 0;
-            const active = filterBand === b.k;
-            return (
-              <button
-                key={b.k}
-                type="button"
-                onClick={() => setFilterBand((f) => (f === b.k ? null : b.k))}
-                className="relative p-[13px_14px] text-left transition"
-                style={{
-                  background: active ? '#fff' : 'var(--vt-glass-strong)',
-                  boxShadow: active ? `inset 0 -3px 0 var(--vt-c-${b.k})` : undefined,
-                }}
+        <div className="flex items-stretch gap-2">
+          <div className="vt-glass grid flex-1 grid-cols-2 gap-px overflow-hidden sm:grid-cols-4" style={{ background: 'var(--vt-line)' }}>
+            {BANDS.map((b) => {
+              const n = contagens[b.k] ?? 0;
+              const active = filterBand === b.k;
+              return (
+                <button
+                  key={b.k}
+                  type="button"
+                  onClick={() => setFilterBand((f) => (f === b.k ? null : b.k))}
+                  className="relative p-[13px_14px] text-left transition"
+                  style={{
+                    background: active ? '#fff' : 'var(--vt-glass-strong)',
+                    boxShadow: active ? `inset 0 -3px 0 var(--vt-c-${b.k})` : undefined,
+                  }}
+                >
+                  <div className="text-[25px] leading-none font-extrabold tracking-tight" style={{ color: `var(--vt-c-${b.k})` }}>
+                    {loading ? <Skeleton className="h-[25px] w-9" /> : n}
+                  </div>
+                  <div className="mt-1.5 text-[10.5px] font-semibold" style={{ color: 'var(--vt-muted)' }}>
+                    {b.l}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Filtro de mês (pedido 01/10/2026): botão calendário, separado
+              dos cards de risco — filtra a carteira inteira por mês de
+              criação (`createdAt`), combinável com o card selecionado. */}
+          <div className="relative" ref={mesRef}>
+            <button
+              type="button"
+              aria-label="Filtrar por mês de criação"
+              aria-expanded={mesAberto}
+              onClick={() => setMesAberto((v) => !v)}
+              className="vt-glass flex h-full w-[58px] flex-col items-center justify-center gap-1 rounded-[14px] p-2 text-[10px] font-bold transition"
+              style={{
+                background: mesFiltro ? 'var(--vt-c-efet)' : 'var(--vt-glass-strong)',
+                color: mesFiltro ? '#fff' : 'var(--vt-c-efet)',
+                border: '1px solid var(--vt-line)',
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-[18px] w-[18px]">
+                <rect x="3" y="5" width="18" height="16" rx="2" />
+                <path d="M8 3v4M16 3v4M3 10h18" />
+              </svg>
+              {mesFiltro ? MESES_ABREV[Number(mesFiltro.slice(5, 7)) - 1] : 'MÊS'}
+            </button>
+            {mesAberto && (
+              <div
+                className="vt-glass-strong absolute top-[calc(100%+8px)] right-0 z-10 w-[190px] rounded-[12px] p-[6px]"
+                style={{ border: '1px solid var(--vt-line)', boxShadow: 'var(--vt-sh-lg)' }}
               >
-                <div className="text-[25px] leading-none font-extrabold tracking-tight" style={{ color: `var(--vt-c-${b.k})` }}>
-                  {loading ? <Skeleton className="h-[25px] w-9" /> : n}
-                </div>
-                <div className="mt-1.5 text-[10.5px] font-semibold" style={{ color: 'var(--vt-muted)' }}>
-                  {b.l}
-                </div>
-              </button>
-            );
-          })}
+                {mesesDisponiveis.length === 0 && (
+                  <div className="p-2 text-[12px]" style={{ color: 'var(--vt-muted)' }}>
+                    Nenhum mês ainda
+                  </div>
+                )}
+                {mesesDisponiveis.map(([chave, qtd]) => {
+                  const [ano, mes] = chave.split('-');
+                  const sel = mesFiltro === chave;
+                  return (
+                    <button
+                      key={chave}
+                      type="button"
+                      onClick={() => {
+                        setMesFiltro(chave);
+                        setMesAberto(false);
+                      }}
+                      className="flex w-full items-center justify-between rounded-[7px] px-2 py-1.5 text-[12.5px] transition"
+                      style={{
+                        background: sel ? 'var(--vt-bg-efet)' : 'transparent',
+                        color: sel ? 'var(--vt-c-efet)' : 'var(--vt-ink)',
+                        fontWeight: sel ? 700 : 500,
+                      }}
+                    >
+                      <span>
+                        {MESES_PT[Number(mes) - 1]} / {ano}
+                      </span>
+                      <span className="font-mono text-[11px]" style={{ color: 'var(--vt-muted)' }}>
+                        {qtd}
+                      </span>
+                    </button>
+                  );
+                })}
+                {mesFiltro && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMesFiltro(null);
+                      setMesAberto(false);
+                    }}
+                    className="mt-1 w-full rounded-[7px] px-2 py-1.5 text-center text-[11.5px] font-semibold underline"
+                    style={{ color: 'var(--vt-muted)' }}
+                  >
+                    limpar
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="vt-glass p-[15px_17px]">

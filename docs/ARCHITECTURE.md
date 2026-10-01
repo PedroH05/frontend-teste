@@ -240,6 +240,18 @@ do `(authed)/layout.tsx`.
     sem embarque casado) — ver `captacao-api/docs/DECISIONS.md`
     (2026-10-01) pro porquê o card "Efetivado" mostrava ~80 em vez de 300+.
   - Grade dos blocos: `sm:grid-cols-5` → `sm:grid-cols-4`.
+- **Filtro de mês na Carteira** (01/10/2026): botão calendário ao lado da
+  faixa de cards de risco, abre lista de meses com captação criada (mais
+  recente primeiro, com contagem) e filtra a tabela por `createdAt` —
+  quando o processo foi registrado, nunca quando mudou de status.
+  Independente do card de risco selecionado, os dois filtros combinam
+  (AND). Estado `mesFiltro` ('YYYY-MM' ou `null`), popover fecha ao clicar
+  fora (`mesRef` + listener de `mousedown`).
+- **Badge "EM ANDAMENTO" no lugar de "JANELA ABERTA"** (01/10/2026,
+  `lib/risco.ts`): texto do badge de Status da linha pra banda `jan`
+  (ETA em 3-7 dias) mudou — pedido direto, "janela aberta" confundia. O
+  nome do card na faixa de risco continua "Próximos 7 dias", só o badge
+  da linha mudou.
 - **Skeleton de carga** (25/09/2026): `components/ui/skeleton.tsx` +
   `components/table-skeleton.tsx` (`TableSkeletonRows`, uma coluna por tipo:
   `pill`/`twoLine`/`bar`/`none`) substituem o "Carregando…" das tabelas

@@ -44,7 +44,9 @@ export function banda(r: CockpitRow): Banda {
   // sempre em "Em andamento", mesmo com ETA amanhã; Crítico/Próximos 7 dias
   // só pegavam embarque sem nenhuma captação casada.
   if (d <= 2) return { k: 'prej', t: 'CRÍTICO', cls: 'prej', pr: 1 };
-  if (d <= 7) return { k: 'jan', t: 'JANELA ABERTA', cls: 'jan', pr: 2 };
+  // Badge de status mostra "EM ANDAMENTO" aqui (pedido 01/10/2026: "janela
+  // aberta" confundia) — a banda em si continua 'jan' (tile "Próximos 7 dias").
+  if (d <= 7) return { k: 'jan', t: 'EM ANDAMENTO', cls: 'jan', pr: 2 };
   if (r.stage === 'MANIFESTADA_PARC') return { k: 'and', t: 'EM ANDAMENTO', cls: 'and', pr: 3 };
   return { k: 'prog', t: 'PROGRAMADO', cls: 'prog', pr: 6 };
 }
