@@ -3,6 +3,14 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-01 — Ajuste no botão de calendário: só ícone, popover opaco
+
+- Botão de mês, fechado, mostra só o ícone (sem o texto "MÊS") — texto do
+  mês abreviado continua aparecendo quando já há um mês selecionado.
+- Popover de meses usava `vt-glass-strong` (fundo semi-transparente com
+  blur) — ficava difícil de ler sobre a tabela. Trocado por `--vt-surface`
+  (sólido, mesmo token do drawer/modal da aplicação).
+
 ## 2026-10-01 — Carteira: filtro de mês (botão calendário) e badge "EM ANDAMENTO"
 
 - Botão de calendário ao lado da faixa de cards de risco: abre lista de

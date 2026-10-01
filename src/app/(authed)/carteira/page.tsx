@@ -605,7 +605,7 @@ export default function CarteiraPage() {
               aria-label="Filtrar por mês de criação"
               aria-expanded={mesAberto}
               onClick={() => setMesAberto((v) => !v)}
-              className="vt-glass flex h-full w-[58px] flex-col items-center justify-center gap-1 rounded-[14px] p-2 text-[10px] font-bold transition"
+              className="flex h-full w-[58px] flex-col items-center justify-center gap-1 rounded-[14px] p-2 text-[10px] font-bold transition"
               style={{
                 background: mesFiltro ? 'var(--vt-c-efet)' : 'var(--vt-glass-strong)',
                 color: mesFiltro ? '#fff' : 'var(--vt-c-efet)',
@@ -616,12 +616,12 @@ export default function CarteiraPage() {
                 <rect x="3" y="5" width="18" height="16" rx="2" />
                 <path d="M8 3v4M16 3v4M3 10h18" />
               </svg>
-              {mesFiltro ? MESES_ABREV[Number(mesFiltro.slice(5, 7)) - 1] : 'MÊS'}
+              {mesFiltro && MESES_ABREV[Number(mesFiltro.slice(5, 7)) - 1]}
             </button>
             {mesAberto && (
               <div
-                className="vt-glass-strong absolute top-[calc(100%+8px)] right-0 z-10 w-[190px] rounded-[12px] p-[6px]"
-                style={{ border: '1px solid var(--vt-line)', boxShadow: 'var(--vt-sh-lg)' }}
+                className="absolute top-[calc(100%+8px)] right-0 z-10 w-[190px] rounded-[12px] p-[6px]"
+                style={{ background: 'var(--vt-surface)', border: '1px solid var(--vt-line)', boxShadow: 'var(--vt-sh-lg)' }}
               >
                 {mesesDisponiveis.length === 0 && (
                   <div className="p-2 text-[12px]" style={{ color: 'var(--vt-muted)' }}>
