@@ -11,12 +11,14 @@ export interface Banda {
   pr: number;
 }
 
+// "Concluído" saiu da lista de blocos (pedido 01/10/2026) — a Carteira não
+// precisa desse card; `banda()` ainda classifica stage 'SAIU' como 'conc'
+// (aparece no badge de Status da linha), só não vira bloco de contagem.
 export const BANDS: { k: Banda['k']; l: string }[] = [
   { k: 'prej', l: 'Crítico' },
   { k: 'jan', l: 'Próximos 7 dias' },
   { k: 'and', l: 'Em andamento' },
   { k: 'efet', l: 'Efetivado' },
-  { k: 'conc', l: 'Concluído' },
 ];
 
 const hoje = () => {
@@ -34,10 +36,16 @@ export function banda(r: CockpitRow): Banda {
   const d = diasAte(r.eta);
   if (r.stage === 'SAIU') return { k: 'conc', t: 'CONCLUÍDO', cls: 'conc', pr: 5 };
   if (r.stage === 'EFETIVA') return { k: 'efet', t: 'EFETIVADO', cls: 'efet', pr: 4 };
+  // Doc completo e parado = sempre crítico, não importa o ETA (regra de
+  // negócio já existente: vira tabela pública se não for efetivado).
   if (r.stage === 'MANIFESTADA_DOCS') return { k: 'prej', t: 'CRÍTICO', cls: 'prej', pr: 1 };
-  if (r.stage === 'MANIFESTADA_PARC') return { k: 'and', t: 'EM ANDAMENTO', cls: 'and', pr: 3 };
+  // Daqui pra baixo (doc incompleto ou sem captação casada) quem decide é o
+  // ETA — pedido 01/10/2026: antes um processo com doc incompleto caía
+  // sempre em "Em andamento", mesmo com ETA amanhã; Crítico/Próximos 7 dias
+  // só pegavam embarque sem nenhuma captação casada.
   if (d <= 2) return { k: 'prej', t: 'CRÍTICO', cls: 'prej', pr: 1 };
   if (d <= 7) return { k: 'jan', t: 'JANELA ABERTA', cls: 'jan', pr: 2 };
+  if (r.stage === 'MANIFESTADA_PARC') return { k: 'and', t: 'EM ANDAMENTO', cls: 'and', pr: 3 };
   return { k: 'prog', t: 'PROGRAMADO', cls: 'prog', pr: 6 };
 }
 

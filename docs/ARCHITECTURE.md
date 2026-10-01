@@ -222,6 +222,24 @@ do `(authed)/layout.tsx`.
   igual ao `eta`/`cnpj`: captações anteriores a essa data ficam com os três
   `null`. Mudança de schema em produção ainda pendente — ver
   `captacao-api/docs/ARCHITECTURE.md`.
+- **Blocos de risco da Carteira corrigidos** (01/10/2026, `lib/risco.ts`):
+  - **"Concluído" saiu da lista `BANDS`** (não é mais um bloco de contagem).
+    `banda()` ainda classifica `stage === 'SAIU'` como `'conc'` — o badge de
+    Status da linha continua mostrando "CONCLUÍDO" quando aplicável, só não
+    tem mais bloco pra isso.
+  - **Crítico e Próximos 7 dias agora decidem pela proximidade real do
+    ETA**, não só pelo stage. Antes, qualquer captação com doc incompleto
+    (`MANIFESTADA_PARC`) caía sempre em "Em andamento", mesmo com ETA
+    amanhã — só embarque sem nenhuma captação casada (`stage: 'NENHUM'`)
+    chegava a ser avaliado pelo `diasAte(eta)`. Doc completo e parado
+    (`MANIFESTADA_DOCS`) continua sempre Crítico, direto, sem olhar o ETA —
+    regra de negócio deliberada (vira tabela pública se não for efetivado),
+    não é o que estava errado.
+  - **Esses dois ajustes dependem do backend**: o segundo só revela
+    processos que antes eram invisíveis na Carteira (captação `EFETIVA`
+    sem embarque casado) — ver `captacao-api/docs/DECISIONS.md`
+    (2026-10-01) pro porquê o card "Efetivado" mostrava ~80 em vez de 300+.
+  - Grade dos blocos: `sm:grid-cols-5` → `sm:grid-cols-4`.
 - **Skeleton de carga** (25/09/2026): `components/ui/skeleton.tsx` +
   `components/table-skeleton.tsx` (`TableSkeletonRows`, uma coluna por tipo:
   `pill`/`twoLine`/`bar`/`none`) substituem o "Carregando…" das tabelas

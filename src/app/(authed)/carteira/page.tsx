@@ -546,7 +546,7 @@ export default function CarteiraPage() {
           </div>
         )}
 
-        <div className="vt-glass grid grid-cols-2 gap-px overflow-hidden sm:grid-cols-5" style={{ background: 'var(--vt-line)' }}>
+        <div className="vt-glass grid grid-cols-2 gap-px overflow-hidden sm:grid-cols-4" style={{ background: 'var(--vt-line)' }}>
           {BANDS.map((b) => {
             const n = contagens[b.k] ?? 0;
             const active = filterBand === b.k;

@@ -32,12 +32,21 @@ vi.mock('@/lib/api', async () => {
   return { ...actual, apiFetch: (...args: unknown[]) => apiFetchMock(...(args as [string])) };
 });
 
+// ETA padrão bem distante — data fixa aqui já causou 3 testes quebrarem
+// sozinhos meses depois (ficou no passado, virando "Crítico" pela nova
+// regra de ETA em risco.ts, pedido 01/10/2026). Relativo a hoje, nunca vence.
+function isoDaysFromNow(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 function row(overrides: Partial<CockpitRow>): CockpitRow {
   return {
     cnpj: '',
     cli: 'TECNO',
     ref: 'TECNO 001',
-    eta: '2026-09-10',
+    eta: isoDaysFromNow(90),
     regime: 'DTA',
     ce: '',
     bl: '',
@@ -68,7 +77,7 @@ describe('CarteiraPage', () => {
     expect(await screen.findByText('150726001234-5')).toBeInTheDocument();
   });
 
-  it('mostra as 5 faixas de risco com a contagem correta', async () => {
+  it('mostra as 4 faixas de risco com a contagem correta (Concluído saiu, pedido 01/10/2026)', async () => {
     filaApi('/carteira', {
       rows: [row({ stage: 'MANIFESTADA_DOCS' }), row({ stage: 'EFETIVA', capId: 2 })],
     });
@@ -76,6 +85,22 @@ describe('CarteiraPage', () => {
 
     expect(await screen.findByText('Crítico')).toBeInTheDocument();
     expect(screen.getByText('Efetivado')).toBeInTheDocument();
+    expect(screen.queryByText('Concluído')).not.toBeInTheDocument();
+  });
+
+  it('Efetivado conta toda captação EFETIVA, não só quem tem embarque casado (pedido 01/10/2026)', async () => {
+    filaApi('/carteira', {
+      rows: [
+        row({ cli: 'A', stage: 'EFETIVA', capId: 1 }),
+        row({ cli: 'B', stage: 'EFETIVA', capId: 2 }),
+        row({ cli: 'C', stage: 'EFETIVA', capId: 3 }),
+      ],
+    });
+    render(<CarteiraPage />);
+
+    await screen.findByText('Efetivado');
+    const tile = screen.getByText('Efetivado').closest('button')!;
+    expect(tile.textContent).toContain('3');
   });
 
   it('mostra esqueleto (não "0" nem "Carregando…") enquanto carrega, e some quando os dados chegam (pedido 25/09/2026)', async () => {

@@ -3,6 +3,19 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-01 — Carteira: blocos de risco corrigidos
+
+- **"Concluído" saiu** da lista de blocos — não tinha utilidade real ali.
+- **"Efetivado" agora conta todo mundo**, não só quem tem embarque casado
+  no momento (mostrava ~80 em vez de 300+ reais) — correção no backend,
+  ver `CHANGELOG.md` do `captacao-api`.
+- **Crítico e Próximos 7 dias passam a olhar o ETA de verdade.** Antes, um
+  processo com documentação incompleta caía sempre em "Em andamento",
+  mesmo com ETA pra amanhã — agora, qualquer captação não efetivada com
+  ETA em até 2 dias é Crítico, até 7 dias é Próximos 7 dias. Documentação
+  completa e parada continua sempre Crítico, independente do ETA — isso
+  não mudou (é a regra que avisa antes de virar tabela pública).
+
 ## 2026-10-01 — Novo passo "Carregamento" na captação manual
 
 - Formulário ganha o 6º passo, **Carregamento** (entre Situação e Revisão):
