@@ -3,6 +3,27 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-01 — Sidebar preta, fundo pérola (referência cotacoes-valetrade-code)
+
+- Pedido direto do Pedro: deixar o app com a "cara" do `cotacoes-valetrade-code`
+  (outro frontend da Valetrade) sem mudar conteúdo, comportamento ou
+  estrutura de nenhuma tela — só o tema visual.
+- `--vt-page-bg` (fundo da página, tema claro): creme `#f3efe8` → pérola/neve
+  `#F3F4F6`.
+- `.vt-ambient-bg`: era gradiente com 3 manchas coloridas (vermelho/dourado/
+  verde) + base creme/escura — virou chapado, só `var(--vt-page-bg)`. Bloco
+  `[data-theme='dark'] .vt-ambient-bg` (agora redundante) removido.
+- `.vt-side` (sidebar): era vidro translúcido com a cor do tema por trás —
+  agora preta sólida (`#11141A`) sempre, independente do tema claro/escuro.
+  Textos do menu ganharam cor fixa clara (não seguem mais `--vt-ink`/
+  `--vt-muted`, que dependem do tema).
+- `.vt-nav-ind` (indicador deslizante atrás do item ativo do menu): era vidro
+  claro (sumia em cima do preto) — agora vermelho sólido (`--vt-red`), texto
+  do item ativo em branco. Mesma mecânica de antes (JS mede posição/altura
+  do link ativo), só a cor mudou.
+- Cards com glass/blur, fonte IBM Plex, cores dos blocos de risco (Crítico/
+  Próximos 7 dias/Em andamento/Efetivado) — tudo mais continua igual.
+
 ## 2026-10-01 — Ajuste no botão de calendário: só ícone, popover opaco
 
 - Botão de mês, fechado, mostra só o ícone (sem o texto "MÊS") — texto do

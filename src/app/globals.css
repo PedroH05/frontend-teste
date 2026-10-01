@@ -161,7 +161,10 @@
   --vt-sh: 0 6px 22px rgba(40, 36, 28, .07), 0 1px 3px rgba(40, 36, 28, .05);
   --vt-sh-lg: 0 16px 50px rgba(40, 36, 28, .12);
   --vt-radius: 16px;
-  --vt-page-bg: #f3efe8;
+  /* Fundo pérola/neve (pedido 01/10/2026, referência cotacoes-valetrade-code)
+     — era creme (#f3efe8). Só a cor de fundo da página, nada mais do tema
+     mudou. */
+  --vt-page-bg: #F3F4F6;
   --vt-hover: rgba(255, 255, 255, .45);
   --vt-hover-strong: rgba(255, 255, 255, .5);
   --vt-surface: #fff;
@@ -198,11 +201,10 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(60% 50% at 78% 6%, rgba(192, 24, 41, .16), transparent 60%),
-    radial-gradient(50% 40% at 6% 90%, rgba(214, 158, 46, .16), transparent 60%),
-    radial-gradient(45% 45% at 95% 92%, rgba(44, 122, 91, .12), transparent 60%),
-    linear-gradient(160deg, #f6f2ea, #efe9df);
+  /* Chapado, sem manchas coloridas (pedido 01/10/2026: "não está tudo
+     somente branco") — era gradiente com 3 manchas de cor (vermelho/dourado/
+     verde) + base creme. Segue o mesmo tom de --vt-page-bg. */
+  background: var(--vt-page-bg);
 }
 /* Véu do login (index.html original: .login-wrap tinha um overlay claro   */
 /* por cima do ambient-bg pra suavizar contraste do formulário). Precisa    */
@@ -216,14 +218,6 @@
   background: rgba(15, 14, 12, .55);
 }
 
-[data-theme='dark'] .vt-ambient-bg {
-  background:
-    radial-gradient(60% 50% at 78% 6%, rgba(192, 24, 41, .14), transparent 60%),
-    radial-gradient(50% 40% at 6% 90%, rgba(214, 158, 46, .10), transparent 60%),
-    radial-gradient(45% 45% at 95% 92%, rgba(44, 122, 91, .10), transparent 60%),
-    linear-gradient(160deg, #1c1a17, #100f0d);
-}
-
 /* SIDEBAR — ver .side/.brand/.nav do index.html original */
 .vt-side {
   width: 236px;
@@ -233,12 +227,29 @@
   flex-direction: column;
   gap: 6px;
   position: relative;
-  background: var(--vt-glass);
-  backdrop-filter: var(--vt-blur);
-  -webkit-backdrop-filter: var(--vt-blur);
-  border-right: 1px solid var(--vt-line);
+  /* Preta sólida sempre, independente do tema claro/escuro (pedido
+     01/10/2026, referência cotacoes-valetrade-code) — era vidro translúcido
+     com a cor do tema por trás. Textos dela ganham cor fixa clara abaixo,
+     não seguem mais --vt-ink/--vt-muted do tema. */
+  background: #11141A;
   box-shadow: var(--vt-sh);
 }
+.vt-side .vt-brand-shine { background: none; color: #fff; }
+.vt-side .vt-nav-sec { color: #6b7482; }
+.vt-side .vt-nav { color: #c3c8d0; }
+.vt-side .vt-nav:hover:not(.active) { background: rgba(255, 255, 255, .06); }
+.vt-side .vt-nav.active { color: #fff; }
+.vt-side .vt-nav-ind {
+  /* Vermelho sólido (pedido 01/10/2026, referência cotacoes-valetrade-code)
+     — era vidro claro, que sumia em cima da sidebar preta. */
+  background: var(--vt-red);
+  border: none;
+  box-shadow: none;
+}
+.vt-side .vt-user-card { border-top-color: rgba(255, 255, 255, .08); }
+.vt-side .vt-user-meta .email { color: #e6e8ec; }
+.vt-side .vt-logout-btn { color: #6b7482; }
+.vt-side .vt-logout-btn:hover { color: #ff6b5e; background: rgba(255, 255, 255, .08); }
 .vt-brand {
   display: flex;
   align-items: center;

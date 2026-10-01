@@ -116,6 +116,22 @@ componente — isso já causou bug real (badge de Regime na Carteira e o "✕"
 de aliases em Clientes usavam `rgba(40,36,28,...)` fixo, ilegível no modo
 escuro até serem trocados pelos tokens).
 
+**Sidebar preta sólida, sem variar por tema** (01/10/2026, pedido direto —
+referência visual do `cotacoes-valetrade-code`, outro frontend da
+Valetrade): `.vt-side` deixou de usar `var(--vt-glass)` (vidro translúcido
+com a cor do tema por trás) e virou `#11141A` fixo nos dois temas — é a
+única parte da interface que não segue `--vt-ink`/`--vt-muted` do tema
+ativo; os seletores `.vt-side .vt-nav`/`.vt-nav-sec`/`.vt-user-meta .email`
+etc. têm cor clara fixa própria. O indicador deslizante atrás do item ativo
+(`.vt-nav-ind`, posição calculada em JS no `AppShell`) também parou de usar
+glass e virou vermelho sólido (`--vt-red`), texto do item ativo em branco.
+`--vt-page-bg` (fundo da página, tema claro) mudou de creme (`#f3efe8`)
+pra pérola/neve (`#F3F4F6`); `.vt-ambient-bg` (antes um gradiente com 3
+manchas coloridas atrás do conteúdo) virou chapado, só a cor de
+`--vt-page-bg` — pedido explícito ("não gostei, pois não está tudo somente
+branco"). Cards com glass, fonte IBM Plex e cores das faixas de risco não
+mudaram.
+
 ## Modo escuro
 
 `lib/theme.ts` — flag `light`/`dark` persistida em `localStorage`,
