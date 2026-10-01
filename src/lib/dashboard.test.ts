@@ -26,6 +26,9 @@ function cap(overrides: Partial<Captacao>): Captacao {
     docRecebidaEm: null,
     prejuizoPublico: null,
     dateLabel: null,
+    dataCarregamento: null,
+    transportadora: null,
+    dataChegada: null,
     createdAt: new Date().toISOString(),
     ...overrides,
   };

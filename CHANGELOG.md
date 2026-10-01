@@ -3,6 +3,18 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-01 — Novo passo "Carregamento" na captação manual
+
+- Formulário ganha o 6º passo, **Carregamento** (entre Situação e Revisão):
+  Data de carregamento + Transportadora. O passo Terminal ganha Data de
+  chegada, sem virar passo à parte.
+- Revisão virou o 7º passo — `?step=6` na URL (Carteira/Histórico usam
+  isso pra abrir direto nela), não mais `?step=5`.
+- Três campos novos na captação (`dataCarregamento`, `transportadora`,
+  `dataChegada`) — captações antigas ficam com eles vazios. Depende de
+  mudança de schema no backend (`captacao-api`, ainda pendente em
+  produção, ver `CHANGELOG.md` de lá).
+
 ## 2026-09-29 — Fonte trocada pra IBM Plex Sans (+ Plex Mono)
 
 - O app rodava Inter — a variável se chamava `--font-geist-sans` desde o

@@ -210,6 +210,18 @@ do `(authed)/layout.tsx`.
   (23/09/2026) porque tinha 4 tamanhos diferentes na mesma linha. O badge
   de Status (`.vt-band`) fica de fora por ser componente compartilhado com
   outras telas do app.
+- **Formulário de captação ganha o 6º passo "Carregamento"** (01/10/2026):
+  `STEPS` passa de 6 pra 7 itens (`Identificação, Carga, Aduana, Terminal,
+  Situação, Carregamento, Revisão`) — Carregamento entra **depois** de
+  Situação, não logo depois de Carga, com só dois campos:
+  `dataCarregamento` e `transportadora`. O passo Terminal ganha um terceiro
+  campo, `dataChegada`, sem virar passo à parte. `Revisão` passou a ser o
+  7º passo (índice 6) — os links `?step=6` da Carteira/Histórico (ver
+  item acima) apontam pra ela, não mais `?step=5`. Os três campos são
+  `string | null` (`'YYYY-MM-DD'` nas duas datas), tratados pelo backend
+  igual ao `eta`/`cnpj`: captações anteriores a essa data ficam com os três
+  `null`. Mudança de schema em produção ainda pendente — ver
+  `captacao-api/docs/ARCHITECTURE.md`.
 - **Skeleton de carga** (25/09/2026): `components/ui/skeleton.tsx` +
   `components/table-skeleton.tsx` (`TableSkeletonRows`, uma coluna por tipo:
   `pill`/`twoLine`/`bar`/`none`) substituem o "Carregando…" das tabelas

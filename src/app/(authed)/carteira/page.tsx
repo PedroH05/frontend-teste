@@ -360,11 +360,11 @@ export default function CarteiraPage() {
   }
 
   // Clicar em qualquer ponto do processo (pedido 23/09/2026) — leva direto
-  // pro passo 6 (Revisão) do formulário, que já mostra tudo e já tem
+  // pro passo 7 (Revisão) do formulário, que já mostra tudo e já tem
   // editar-por-seção e excluir. Sem captação casada, vai pro fluxo de criar
   // uma nova a partir do embarque (captar(), acima).
   function handleRowClick(r: CockpitRow) {
-    if (r.capId) router.push(`/captacoes?edit=${r.capId}&step=5`);
+    if (r.capId) router.push(`/captacoes?edit=${r.capId}&step=6`);
     else captar(r);
   }
 

@@ -83,11 +83,11 @@ export default function HistoricoPage() {
   const [pagina, setPagina] = useState(1);
 
   // Clicar em qualquer ponto do processo (pedido 23/09/2026, mesmo padrão da
-  // Carteira) — leva direto pro passo 6 (Revisão) do formulário, que já
+  // Carteira) — leva direto pro passo 7 (Revisão) do formulário, que já
   // mostra tudo (inclusive todos os BLs) e já tem editar-por-seção e
   // excluir. Substitui o drawer de detalhe usado antes.
   function handleRowClick(c: Captacao) {
-    router.push(`/captacoes?edit=${c.id}&step=5`);
+    router.push(`/captacoes?edit=${c.id}&step=6`);
   }
 
   async function load() {

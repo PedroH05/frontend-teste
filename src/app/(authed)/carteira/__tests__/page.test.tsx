@@ -105,10 +105,10 @@ describe('CarteiraPage', () => {
   });
 
   // Segunda rodada (23/09/2026): sem drawer, sem editar/excluir na linha —
-  // clicar no processo leva direto pro passo 6 (Revisão) do formulário.
+  // clicar no processo leva direto pro passo 7 (Revisão) do formulário.
   // Terceira rodada (29/09/2026): só o campo de Status abre — o resto da
   // linha não é mais clicável.
-  it('clicar no Status de um processo com captação leva direto pro passo 6 (Revisão) da edição', async () => {
+  it('clicar no Status de um processo com captação leva direto pro passo 7 (Revisão) da edição', async () => {
     const user = userEvent.setup();
     filaApi('/carteira', { rows: [row({ cli: 'TECNO', capId: 42 })] });
     render(<CarteiraPage />);
@@ -117,7 +117,7 @@ describe('CarteiraPage', () => {
     const linha = screen.getByText('TECNO').closest('tr')!;
     await user.click(within(linha).getByText('EM ANDAMENTO'));
 
-    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=5');
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=6');
   });
 
   it('clicar em outra célula da linha (não o Status) não navega', async () => {
@@ -141,7 +141,7 @@ describe('CarteiraPage', () => {
     within(linha).getByText('EM ANDAMENTO').closest('td')!.focus();
     await user.keyboard('{Enter}');
 
-    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=5');
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=6');
   });
 
   it('linha sem captação casada (só embarque) vai pro fluxo de criar, não pra Revisão', async () => {

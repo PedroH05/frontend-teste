@@ -24,7 +24,7 @@ import {
 // migration-plan/prompts/03-captacoes.md pra fórmula exata de
 // stage/doc_*/doc_recebida_em (calculada no backend a partir de
 // `efetivada` + `docBl`/`docCe`/`docPl`, não recalculada aqui).
-const STEPS = ['Identificação', 'Carga', 'Aduana', 'Terminal', 'Situação', 'Revisão'] as const;
+const STEPS = ['Identificação', 'Carga', 'Aduana', 'Terminal', 'Situação', 'Carregamento', 'Revisão'] as const;
 
 function fmtDateBR(iso?: string): string {
   if (!iso) return '';
@@ -244,6 +244,9 @@ function CaptacoesForm() {
           terminalCaptado: c.terminalCaptado ?? undefined,
           observacao: c.observacao ?? '',
           cnpj: c.cnpj ?? '',
+          dataCarregamento: c.dataCarregamento ? c.dataCarregamento.slice(0, 10) : undefined,
+          transportadora: c.transportadora ?? '',
+          dataChegada: c.dataChegada ? c.dataChegada.slice(0, 10) : undefined,
           docBl: c.docBl ?? false,
           docCe: c.docCe ?? false,
           docPl: c.docPl ?? false,
@@ -435,12 +438,14 @@ function CaptacoesForm() {
           : i === 2
             ? [form.ce, form.regime, form.bl, form.despachante]
             : i === 3
-              ? [form.terminalDescarga, form.terminalCaptado]
+              ? [form.terminalDescarga, form.terminalCaptado, form.dataChegada]
               : i === 4
                 ? showDocs
                   ? [form.observacao, form.docBl, form.docCe, form.docPl, form.prejuizoPublico]
                   : [form.observacao, form.prejuizoPublico]
-                : [];
+                : i === 5
+                  ? [form.dataCarregamento, form.transportadora]
+                  : [];
     if (campos.length === 0) return 'todos';
     const { preenchidos, total } = contarPreenchidos(campos);
     return preenchidos === total ? 'todos' : preenchidos === 0 ? 'nenhum' : 'parcial';
@@ -751,7 +756,7 @@ function CaptacoesForm() {
       )}
 
       {step === 3 && (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-3">
           <Field>
             <FieldLabel htmlFor="atrac">Atracação</FieldLabel>
             <FieldContent>
@@ -790,6 +795,17 @@ function CaptacoesForm() {
                   ))}
                 </SelectContent>
               </Select>
+            </FieldContent>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="dataChegada">Data de chegada</FieldLabel>
+            <FieldContent>
+              <Input
+                id="dataChegada"
+                type="date"
+                value={form.dataChegada ?? ''}
+                onChange={(e) => set('dataChegada', e.target.value)}
+              />
             </FieldContent>
           </Field>
         </div>
@@ -862,6 +878,33 @@ function CaptacoesForm() {
       )}
 
       {step === 5 && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field>
+            <FieldLabel htmlFor="dataCarregamento">Data de carregamento</FieldLabel>
+            <FieldContent>
+              <Input
+                id="dataCarregamento"
+                type="date"
+                value={form.dataCarregamento ?? ''}
+                onChange={(e) => set('dataCarregamento', e.target.value)}
+              />
+            </FieldContent>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="transportadora">Transportadora</FieldLabel>
+            <FieldContent>
+              <Input
+                id="transportadora"
+                placeholder="ex.: Rodomax"
+                value={form.transportadora ?? ''}
+                onChange={(e) => set('transportadora', e.target.value)}
+              />
+            </FieldContent>
+          </Field>
+        </div>
+      )}
+
+      {step === 6 && (
         <div className="space-y-2.5">
           <RecapSection n={1} title="Identificação" onEdit={() => goToStep(0)}>
             <div className="grid grid-cols-3 gap-x-4 gap-y-2.5">
@@ -897,6 +940,7 @@ function CaptacoesForm() {
             <div className="grid grid-cols-3 gap-x-4 gap-y-2.5">
               <RecapItem label="Atracação" value={form.terminalDescarga} />
               <RecapItem label="Parceiro" value={form.terminalCaptado} />
+              <RecapItem label="Data de chegada" value={fmtDateBR(form.dataChegada)} />
             </div>
           </RecapSection>
 
@@ -935,6 +979,13 @@ function CaptacoesForm() {
                 </div>
               </div>
             )}
+          </RecapSection>
+
+          <RecapSection n={6} title="Carregamento" onEdit={() => goToStep(5)}>
+            <div className="grid grid-cols-3 gap-x-4 gap-y-2.5">
+              <RecapItem label="Data de carregamento" value={fmtDateBR(form.dataCarregamento)} />
+              <RecapItem label="Transportadora" value={form.transportadora} />
+            </div>
           </RecapSection>
         </div>
       )}

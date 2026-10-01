@@ -45,8 +45,9 @@ describe('CaptacoesPage', () => {
     const user = userEvent.setup();
     render(<CaptacoesPage />);
 
-    // navega até o último passo (Revisão) sem preencher nada
-    for (let i = 0; i < 5; i++) {
+    // navega até o último passo (Revisão) sem preencher nada — 6 passos pra
+    // chegar nela, agora que Carregamento (6º) entrou antes dela (01/10/2026)
+    for (let i = 0; i < 6; i++) {
       await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
     }
     await user.click(screen.getByRole('button', { name: 'Salvar' }));
@@ -65,7 +66,7 @@ describe('CaptacoesPage', () => {
 
     await user.type(screen.getByLabelText('Cliente'), 'tecno');
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
     }
     await user.click(screen.getByRole('button', { name: 'Salvar' }));
@@ -82,6 +83,59 @@ describe('CaptacoesPage', () => {
     // espera a animação do botão Salvar (1.4s) terminar antes de navegar —
     // ver shipButtonAway() em ../page.tsx.
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/historico'), { timeout: 2000 });
+  });
+
+  it('passo Carregamento (6º) salva data de carregamento e transportadora (pedido 01/10/2026)', async () => {
+    const user = userEvent.setup();
+    filaApi('/captacoes', {});
+    render(<CaptacoesPage />);
+
+    await user.type(screen.getByLabelText('Cliente'), 'tecno');
+    for (let i = 0; i < 4; i++) {
+      await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+    }
+    // passo 4 = Situação; passo 5 = Carregamento
+    await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+
+    expect(screen.getByRole('button', { name: /Carregamento/ })).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Data de carregamento'), '2026-10-01');
+    await user.type(screen.getByLabelText('Transportadora'), 'RODOMAX');
+    await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+
+    // Revisão mostra a seção nova (heading, não o rótulo do stepper)
+    expect(screen.getByRole('heading', { name: 'Carregamento' })).toBeInTheDocument();
+    expect(screen.getByText('01/10/2026')).toBeInTheDocument();
+    expect(screen.getByText('RODOMAX')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    const chamadaSalvar = apiFetchMock.mock.calls.find((c) => c[0] === '/captacoes' && c[1]);
+    const body = JSON.parse((chamadaSalvar as [string, { body: string }])[1].body);
+    expect(body.dataCarregamento).toBe('2026-10-01');
+    expect(body.transportadora).toBe('RODOMAX');
+  });
+
+  it('passo Terminal (4º) salva a data de chegada', async () => {
+    const user = userEvent.setup();
+    filaApi('/captacoes', {});
+    render(<CaptacoesPage />);
+
+    await user.type(screen.getByLabelText('Cliente'), 'tecno');
+    for (let i = 0; i < 3; i++) {
+      await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+    }
+    // passo 3 = Terminal
+    expect(screen.getByLabelText('Data de chegada')).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Data de chegada'), '2026-10-05');
+
+    for (let i = 0; i < 3; i++) {
+      await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+    }
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    const chamadaSalvar = apiFetchMock.mock.calls.find((c) => c[0] === '/captacoes' && c[1]);
+    const body = JSON.parse((chamadaSalvar as [string, { body: string }])[1].body);
+    expect(body.dataChegada).toBe('2026-10-05');
   });
 
   it('Enter num campo avança pra próxima etapa, sem precisar clicar em Próximo (pedido 16/09/2026)', async () => {

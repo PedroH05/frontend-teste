@@ -41,6 +41,11 @@ export interface Captacao {
   terminalCaptado: string | null;
   observacao: string | null;
   cnpj: string | null;
+  // Passo "Carregamento" (6º passo do formulário) e Terminal, adicionados
+  // 01/10/2026 — captações anteriores a essa data têm os três null.
+  dataCarregamento: string | null;
+  transportadora: string | null;
+  dataChegada: string | null;
   stage: string | null;
   docBl: boolean | null;
   docCe: boolean | null;
@@ -92,6 +97,9 @@ export interface CaptacaoInput {
   terminalCaptado?: string;
   observacao?: string;
   cnpj?: string;
+  dataCarregamento?: string;
+  transportadora?: string;
+  dataChegada?: string;
   efetivada?: boolean;
   docBl?: boolean;
   docCe?: boolean;

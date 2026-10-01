@@ -45,6 +45,9 @@ function buildCaptacao(id: number, payload: CaptacaoInput, base?: Captacao): Cap
     docRecebidaEm: base?.docRecebidaEm ?? (payload.docBl || payload.docCe || payload.docPl ? nowIso().slice(0, 10) : null),
     prejuizoPublico: payload.prejuizoPublico ?? base?.prejuizoPublico ?? false,
     dateLabel: base?.dateLabel ?? null,
+    dataCarregamento: payload.dataCarregamento ?? base?.dataCarregamento ?? null,
+    transportadora: payload.transportadora ?? base?.transportadora ?? null,
+    dataChegada: payload.dataChegada ?? base?.dataChegada ?? null,
     createdAt: base?.createdAt ?? nowIso(),
   };
 }

@@ -29,21 +29,21 @@ export const mockCaptacoes: Captacao[] = [
     bl: 'HBCN066406', ce: '150726001234-5', container: 'TCNU4455210', quantidade: 2, navio: 'MSC AMALFI',
     despachante: 'LOGMAIS', terminalDescarga: 'Santos Brasil', terminalCaptado: 'ECOPORTO',
     observacao: null, cnpj: '23.456.789/0001-01', stage: 'MANIFESTADA', docBl: true, docCe: true, docPl: false,
-    docRecebidaEm: isoDaysFromNow(-1), prejuizoPublico: false, dateLabel: null, createdAt: isoDaysFromNow(-2),
+    docRecebidaEm: isoDaysFromNow(-1), prejuizoPublico: false, dateLabel: null, createdAt: isoDaysFromNow(-2), dataCarregamento: null, transportadora: null, dataChegada: null,
   },
   {
     id: 2, cli: 'ALUZEN', referencia: 'ALUZEN NA140966-26', eta: isoDaysFromNow(-3), regime: 'DUIMP',
     bl: 'ALZ2200147', ce: '150726009988-1', container: 'MSCU7183340', quantidade: 3, navio: 'MSC NAOMI',
     despachante: 'NIRRON', terminalDescarga: 'Santos Brasil', terminalCaptado: 'ECOPORTO',
     observacao: null, cnpj: '12.345.678/0001-90', stage: 'EFETIVA', docBl: true, docCe: true, docPl: true,
-    docRecebidaEm: isoDaysFromNow(-4), prejuizoPublico: false, dateLabel: null, createdAt: isoDaysFromNow(-6),
+    docRecebidaEm: isoDaysFromNow(-4), prejuizoPublico: false, dateLabel: null, createdAt: isoDaysFromNow(-6), dataCarregamento: null, transportadora: null, dataChegada: null,
   },
   {
     id: 3, cli: 'HB', referencia: 'HB TINTAS 0308-26', eta: isoDaysFromNow(-88), regime: 'DI',
     bl: 'HBTV0041188', ce: '150726004411-2', container: 'HBTU9012345', quantidade: 1, navio: 'SEATTLE BRIDGE',
     despachante: 'LOGMAIS', terminalDescarga: 'DPW', terminalCaptado: 'ECOPORTO',
     observacao: null, cnpj: '34.567.890/0001-12', stage: 'SAIU_TERMINAL', docBl: true, docCe: true, docPl: true,
-    docRecebidaEm: isoDaysFromNow(-90), prejuizoPublico: false, dateLabel: null, createdAt: isoDaysFromNow(-91),
+    docRecebidaEm: isoDaysFromNow(-90), prejuizoPublico: false, dateLabel: null, createdAt: isoDaysFromNow(-91), dataCarregamento: null, transportadora: null, dataChegada: null,
   },
 ];
 

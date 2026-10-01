@@ -40,6 +40,9 @@ function base(overrides: Partial<Captacao>): Captacao {
     docRecebidaEm: null,
     prejuizoPublico: null,
     dateLabel: null,
+    dataCarregamento: null,
+    transportadora: null,
+    dataChegada: null,
     createdAt: new Date().toISOString(),
     ...overrides,
   };
@@ -138,7 +141,7 @@ describe('HistoricoPage', () => {
   });
 
   // Segunda rodada (pedido 23/09/2026): sem drawer, sem editar/excluir na
-  // linha — clicar no processo leva direto pro passo 6 (Revisão) do
+  // linha — clicar no processo leva direto pro passo 7 (Revisão) do
   // formulário de captação, que já mostra tudo (BL incluído) e já tem
   // editar/excluir. BL/CE/Regime/Navio saíram da tabela, só Despachante e
   // Atracação → Parceiro voltaram junto de Registrado em.
@@ -155,7 +158,7 @@ describe('HistoricoPage', () => {
     expect(screen.getByText('TECNO')).toBeInTheDocument();
   });
 
-  it('clicar no Status de um processo leva direto pro passo 6 (Revisão) da edição (pedido 29/09/2026)', async () => {
+  it('clicar no Status de um processo leva direto pro passo 7 (Revisão) da edição (pedido 29/09/2026)', async () => {
     const user = userEvent.setup();
     apiFetchMock.mockResolvedValueOnce([base({ id: 7, cli: 'TECNO' })]);
     render(<HistoricoPage />);
@@ -163,7 +166,7 @@ describe('HistoricoPage', () => {
 
     await user.click(within(linha).getByText('Em andamento'));
 
-    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=7&step=5');
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=7&step=6');
   });
 
   it('clicar em outra célula da linha (não o Status) não navega', async () => {
