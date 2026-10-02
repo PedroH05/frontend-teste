@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Cliente, CockpitRow, ImportResult } from '@/lib/types';
-import { BANDS, banda, diasAte, dLabel, fmtEta, shortTerm } from '@/lib/risco';
+import { BANDS, banda, diasAte, dLabel, fmtEta, shortTerm, type Banda } from '@/lib/risco';
+import { AlertTriangle, CheckCircle2, Clock, RefreshCw } from 'lucide-react';
 import { formatData, formatDataHora } from '@/lib/format';
 import { apelidoCliente } from '@/lib/apelido';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,19 @@ const MESES_PT = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ];
 const MESES_ABREV = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+
+// Ícone por banda de risco nos cards da Carteira (pedido 02/10/2026, "dar
+// mais vida" ao tema Novo — ver artefato "Dar mais vida ao tema Novo",
+// opção C escolhida). Só aparece sob o tema Novo (globals.css,
+// `.vt-risk-tile-ic` escondido no Clássico).
+const BAND_ICON: Record<Banda['k'], typeof AlertTriangle> = {
+  prej: AlertTriangle,
+  jan: Clock,
+  and: RefreshCw,
+  efet: CheckCircle2,
+  conc: CheckCircle2,
+  prog: Clock,
+};
 
 export default function CarteiraPage() {
   const router = useRouter();
@@ -574,23 +588,34 @@ export default function CarteiraPage() {
             {BANDS.map((b) => {
               const n = contagens[b.k] ?? 0;
               const active = filterBand === b.k;
+              const Icon = BAND_ICON[b.k];
               return (
                 <button
                   key={b.k}
                   type="button"
                   onClick={() => setFilterBand((f) => (f === b.k ? null : b.k))}
-                  className="relative p-[13px_14px] text-left transition"
+                  className={`vt-risk-tile relative flex items-center gap-3 p-[13px_14px] text-left transition${
+                    b.k === 'prej' && n > 0 ? ' vt-risk-tile-pulse' : ''
+                  }`}
                   style={{
                     background: active ? '#fff' : 'var(--vt-glass-strong)',
                     boxShadow: active ? `inset 0 -3px 0 var(--vt-c-${b.k})` : undefined,
                   }}
                 >
-                  <div className="text-[25px] leading-none font-extrabold tracking-tight" style={{ color: `var(--vt-c-${b.k})` }}>
-                    {loading ? <Skeleton className="h-[25px] w-9" /> : n}
-                  </div>
-                  <div className="mt-1.5 text-[10.5px] font-semibold" style={{ color: 'var(--vt-muted)' }}>
-                    {b.l}
-                  </div>
+                  <span
+                    className="vt-risk-tile-ic"
+                    style={{ background: `var(--vt-bg-${b.k})`, color: `var(--vt-c-${b.k})` }}
+                  >
+                    <Icon size={18} />
+                  </span>
+                  <span>
+                    <div className="text-[25px] leading-none font-extrabold tracking-tight" style={{ color: `var(--vt-c-${b.k})` }}>
+                      {loading ? <Skeleton className="h-[25px] w-9" /> : n}
+                    </div>
+                    <div className="mt-1.5 text-[10.5px] font-semibold" style={{ color: 'var(--vt-muted)' }}>
+                      {b.l}
+                    </div>
+                  </span>
                 </button>
               );
             })}

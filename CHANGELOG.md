@@ -3,6 +3,20 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-02 — Cards de risco da Carteira com ícone colorido (tema Novo)
+
+- Pedido ("tema Novo ficou sem vida", escolhida a opção C do artefato "Dar
+  mais vida ao tema Novo"): cada card de risco (Crítico/Próximos 7 dias/
+  Em andamento/Efetivado) ganhou um ícone num quadradinho na cor da banda
+  (`AlertTriangle`/`Clock`/`RefreshCw`/`CheckCircle2`, lucide-react), o
+  card levanta levemente no hover, e o card Crítico pulsa uma borda fina
+  quando tem algo nele (`n > 0`).
+- Só aparece no tema **Novo** — `.vt-risk-tile-ic` fica `display: none` por
+  padrão, só vira visível sob `:root:not([data-skin='classic'])`; hover e
+  pulso têm a mesma trava. Tema Clássico continua exatamente como sempre
+  foi (sem ícone, sem hover, sem pulso).
+- Pulso respeita `prefers-reduced-motion`.
+
 ## 2026-10-02 — Tirado o botão de sol/lua (claro/escuro) do cartão de usuário
 
 - Pedido direto. O toggle de modo claro/escuro saiu do `AppShell` — ficava

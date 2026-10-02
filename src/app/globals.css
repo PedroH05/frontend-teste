@@ -760,3 +760,42 @@
 .b-efet { background: var(--vt-bg-efet); color: var(--vt-c-efet); }
 .b-conc { background: var(--vt-bg-conc); color: var(--vt-c-conc); }
 .b-prog { background: var(--vt-bg-prog); color: var(--vt-c-prog); }
+/* Cards de risco da Carteira com mais vida (pedido 02/10/2026, "deixou sem
+   vida" o tema Novo — artefato "Dar mais vida ao tema Novo", opção C: ícone
+   colorido + hover que levanta + pulso no Crítico). Só no tema Novo — o
+   Clássico mantém o visual simples de sempre (ícone escondido, sem
+   hover/pulso). */
+.vt-risk-tile-ic {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+:root:not([data-skin='classic']) .vt-risk-tile-ic { display: flex; }
+:root:not([data-skin='classic']) .vt-risk-tile {
+  transition: transform .15s, box-shadow .15s;
+}
+:root:not([data-skin='classic']) .vt-risk-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(20, 20, 25, .08), 0 14px 28px rgba(20, 20, 25, .08);
+  z-index: 1;
+}
+:root:not([data-skin='classic']) .vt-risk-tile-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 1.5px solid var(--vt-c-prej);
+  opacity: 0;
+  pointer-events: none;
+  animation: vt-tile-pulse 2.4s ease-out infinite;
+}
+@keyframes vt-tile-pulse {
+  0% { opacity: .55; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-skin='classic']) .vt-risk-tile-pulse::after { animation: none; }
+}
