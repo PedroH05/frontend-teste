@@ -3,12 +3,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, LogOut, Moon, Package, History as HistoryIcon, Settings, Sun, Users } from 'lucide-react';
+import { LayoutDashboard, LogOut, Package, History as HistoryIcon, Settings, Users } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import { disableMockMode, isMockMode } from '@/lib/mock-mode';
 import { apiFetch } from '@/lib/api';
 import { banda } from '@/lib/risco';
-import { applyTheme, getTheme, type Theme } from '@/lib/theme';
+import { applyTheme, getTheme } from '@/lib/theme';
 import { applySkin, getSkin } from '@/lib/skin';
 import type { CockpitRow } from '@/lib/types';
 
@@ -40,7 +40,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mock, setMock] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [criticos, setCriticos] = useState(0);
-  const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza com localStorage (sistema externo), só existe no cliente
@@ -48,18 +47,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
-    const saved = getTheme();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza com localStorage (sistema externo), só existe no cliente
-    setTheme(saved);
-    applyTheme(saved);
+    // Sem botão de trocar na UI (tirado 02/10/2026) — só aplica o que já
+    // estava salvo de antes, pra quem tinha escolhido escuro não voltar
+    // pro claro sem querer.
+    applyTheme(getTheme());
     applySkin(getSkin());
   }, []);
-
-  function toggleTheme() {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-    applyTheme(next);
-  }
 
   useEffect(() => {
     // GET /auth/me existia desde o início mas nenhuma tela chamava — ver
@@ -166,14 +159,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {userEmail || 'Sessão ativa'}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="vt-logout-btn"
-              title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
-            >
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
             <button type="button" onClick={handleLogout} className="vt-logout-btn" title="Sair">
               <LogOut size={16} />
             </button>

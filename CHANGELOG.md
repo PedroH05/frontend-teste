@@ -3,6 +3,13 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-02 — Tirado o botão de sol/lua (claro/escuro) do cartão de usuário
+
+- Pedido direto. O toggle de modo claro/escuro saiu do `AppShell` — ficava
+  ao lado do avatar/e-mail, junto do botão de sair. `applyTheme(getTheme())`
+  continua rodando na montagem (quem já tinha escolhido escuro antes
+  continua vendo escuro), só não tem mais como trocar pela UI.
+
 ## 2026-10-02 — Tela Config: escolher entre tema "Novo" e "Clássico"
 
 - Pedido direto: poder alternar entre os dois temas visuais, não só ficar
