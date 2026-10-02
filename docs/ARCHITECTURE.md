@@ -132,6 +132,29 @@ manchas coloridas atrás do conteúdo) virou chapado, só a cor de
 branco"). Cards com glass, fonte IBM Plex e cores das faixas de risco não
 mudaram.
 
+**Tema visual escolhível — "Novo" vs "Clássico"** (02/10/2026): o visual
+acima ("Novo") deixou de ser fixo — pedido pra poder alternar de volta pro
+visual anterior ("Clássico": sidebar em vidro, fundo creme com gradiente).
+Implementado como um terceiro eixo de tema, independente do claro/escuro:
+- `lib/skin.ts` (`Skin = 'classic' | 'new'`, `getSkin`/`applySkin`) — mesmo
+  padrão de `lib/theme.ts`, persiste em `localStorage` (chave `vt-skin`) e
+  aplica `data-skin` na raiz do documento. **Padrão é `'new'`** quando não
+  há nada salvo (sessão nunca abriu `/config`) — garante que ninguém via o
+  visual mudar sozinho na primeira visita depois do deploy.
+- `globals.css`: as regras específicas do "Novo" (`--vt-page-bg` pérola,
+  `.vt-ambient-bg` chapado, `.vt-side` preta + textos/indicador da sidebar)
+  viraram overrides sob `:root:not([data-skin='classic'])`, por cima da
+  versão "Clássico" (que voltou a ser a base/default do CSS, sem nenhuma
+  classe extra — é o que `.vt-side`/`.vt-nav`/`.vt-ambient-bg` etc. já
+  eram desde sempre). Nenhuma regra foi duplicada — "Clássico" é
+  literalmente o CSS de antes de 01/10/2026, intacto.
+- Tela `/config` (`src/app/(authed)/config/page.tsx`, nova, item "Config"
+  no menu em "Sistema"): dois cards com preview em miniatura de cada tema;
+  clicar chama `applySkin` na hora, sem reload. Primeira configuração de
+  usuário do app — página existe só pra isso por enquanto.
+- Aplicado no `AppShell`, no mesmo `useEffect` que já carregava o tema
+  claro/escuro na montagem.
+
 ## Modo escuro
 
 `lib/theme.ts` — flag `light`/`dark` persistida em `localStorage`,

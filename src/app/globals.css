@@ -161,14 +161,21 @@
   --vt-sh: 0 6px 22px rgba(40, 36, 28, .07), 0 1px 3px rgba(40, 36, 28, .05);
   --vt-sh-lg: 0 16px 50px rgba(40, 36, 28, .12);
   --vt-radius: 16px;
-  /* Fundo pérola/neve (pedido 01/10/2026, referência cotacoes-valetrade-code)
-     — era creme (#f3efe8). Só a cor de fundo da página, nada mais do tema
-     mudou. */
-  --vt-page-bg: #F3F4F6;
+  /* Creme — tema "Clássico" (base). Tema "Novo" (pérola, pedido 01/10/2026,
+     referência cotacoes-valetrade-code) sobrescreve abaixo. Escolha fica em
+     /config, ver lib/skin.ts. */
+  --vt-page-bg: #f3efe8;
   --vt-hover: rgba(255, 255, 255, .45);
   --vt-hover-strong: rgba(255, 255, 255, .5);
   --vt-surface: #fff;
   --vt-sk: rgba(40, 36, 28, .09);
+}
+
+/* Escopado pra não-escuro explicitamente — [data-theme='dark'] já define
+   --vt-page-bg própria logo abaixo, e precisa continuar vencendo mesmo com
+   a maior especificidade de :not() aqui. */
+:root:not([data-theme='dark']):not([data-skin='classic']) {
+  --vt-page-bg: #F3F4F6;
 }
 
 /* Modo escuro — só os tons neutros mudam (fundo/texto/linhas/vidro); as   */
@@ -196,14 +203,29 @@
 /* como classe do container de conteúdo, senão os gradientes viram relativos  */
 /* à altura do conteúdo (que rola) em vez do viewport, e ficam saturados      */
 /* demais. Renderizar como irmã fixa, atrás de tudo (ver AppShell).          */
+/* Base = tema "Clássico" (gradiente com 3 manchas de cor + creme/escuro).
+   Tema "Novo" (pedido 01/10/2026, referência cotacoes-valetrade-code) é
+   chapado — sobrescrito abaixo sob [data-skin] != classic. Os dois temas
+   escolhíveis em /config (ver lib/skin.ts). */
 .vt-ambient-bg {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  /* Chapado, sem manchas coloridas (pedido 01/10/2026: "não está tudo
-     somente branco") — era gradiente com 3 manchas de cor (vermelho/dourado/
-     verde) + base creme. Segue o mesmo tom de --vt-page-bg. */
+  background:
+    radial-gradient(60% 50% at 78% 6%, rgba(192, 24, 41, .16), transparent 60%),
+    radial-gradient(50% 40% at 6% 90%, rgba(214, 158, 46, .16), transparent 60%),
+    radial-gradient(45% 45% at 95% 92%, rgba(44, 122, 91, .12), transparent 60%),
+    linear-gradient(160deg, #f6f2ea, #efe9df);
+}
+[data-theme='dark'] .vt-ambient-bg {
+  background:
+    radial-gradient(60% 50% at 78% 6%, rgba(192, 24, 41, .14), transparent 60%),
+    radial-gradient(50% 40% at 6% 90%, rgba(214, 158, 46, .10), transparent 60%),
+    radial-gradient(45% 45% at 95% 92%, rgba(44, 122, 91, .10), transparent 60%),
+    linear-gradient(160deg, #1c1a17, #100f0d);
+}
+:root:not([data-skin='classic']) .vt-ambient-bg {
   background: var(--vt-page-bg);
 }
 /* Véu do login (index.html original: .login-wrap tinha um overlay claro   */
@@ -218,7 +240,11 @@
   background: rgba(15, 14, 12, .55);
 }
 
-/* SIDEBAR — ver .side/.brand/.nav do index.html original */
+/* SIDEBAR — ver .side/.brand/.nav do index.html original. Base = tema
+   "Clássico" (vidro translúcido, segue o tema claro/escuro normalmente).
+   Tema "Novo" (pedido 01/10/2026, referência cotacoes-valetrade-code) vira
+   preta sólida sempre — sobrescrito abaixo sob [data-skin] != classic.
+   Escolha fica em /config (ver lib/skin.ts). */
 .vt-side {
   width: 236px;
   flex-shrink: 0;
@@ -227,29 +253,33 @@
   flex-direction: column;
   gap: 6px;
   position: relative;
-  /* Preta sólida sempre, independente do tema claro/escuro (pedido
-     01/10/2026, referência cotacoes-valetrade-code) — era vidro translúcido
-     com a cor do tema por trás. Textos dela ganham cor fixa clara abaixo,
-     não seguem mais --vt-ink/--vt-muted do tema. */
-  background: #11141A;
+  background: var(--vt-glass);
+  backdrop-filter: var(--vt-blur);
+  -webkit-backdrop-filter: var(--vt-blur);
+  border-right: 1px solid var(--vt-line);
   box-shadow: var(--vt-sh);
 }
-.vt-side .vt-brand-shine { background: none; color: #fff; }
-.vt-side .vt-nav-sec { color: #6b7482; }
-.vt-side .vt-nav { color: #c3c8d0; }
-.vt-side .vt-nav:hover:not(.active) { background: rgba(255, 255, 255, .06); }
-.vt-side .vt-nav.active { color: #fff; }
-.vt-side .vt-nav-ind {
-  /* Vermelho sólido (pedido 01/10/2026, referência cotacoes-valetrade-code)
-     — era vidro claro, que sumia em cima da sidebar preta. */
+:root:not([data-skin='classic']) .vt-side {
+  background: #11141A;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-right: none;
+}
+:root:not([data-skin='classic']) .vt-side .vt-brand-shine { background: none; color: #fff; }
+:root:not([data-skin='classic']) .vt-side .vt-nav-sec { color: #6b7482; }
+:root:not([data-skin='classic']) .vt-side .vt-nav { color: #c3c8d0; }
+:root:not([data-skin='classic']) .vt-side .vt-nav:hover:not(.active) { background: rgba(255, 255, 255, .06); }
+:root:not([data-skin='classic']) .vt-side .vt-nav.active { color: #fff; }
+:root:not([data-skin='classic']) .vt-side .vt-nav-ind {
+  /* Vermelho sólido — era vidro claro, que sumia em cima da sidebar preta. */
   background: var(--vt-red);
   border: none;
   box-shadow: none;
 }
-.vt-side .vt-user-card { border-top-color: rgba(255, 255, 255, .08); }
-.vt-side .vt-user-meta .email { color: #e6e8ec; }
-.vt-side .vt-logout-btn { color: #6b7482; }
-.vt-side .vt-logout-btn:hover { color: #ff6b5e; background: rgba(255, 255, 255, .08); }
+:root:not([data-skin='classic']) .vt-side .vt-user-card { border-top-color: rgba(255, 255, 255, .08); }
+:root:not([data-skin='classic']) .vt-side .vt-user-meta .email { color: #e6e8ec; }
+:root:not([data-skin='classic']) .vt-side .vt-logout-btn { color: #6b7482; }
+:root:not([data-skin='classic']) .vt-side .vt-logout-btn:hover { color: #ff6b5e; background: rgba(255, 255, 255, .08); }
 .vt-brand {
   display: flex;
   align-items: center;

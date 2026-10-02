@@ -32,7 +32,7 @@ src/
   app/
     login/            tela de login (Supabase Auth) — única rota fora do grupo autenticado
     (authed)/          grupo de rotas autenticadas, layout compartilhado (AppShell)
-      carteira/ clientes/ captacoes/ historico/ dashboard/
+      carteira/ clientes/ captacoes/ historico/ dashboard/ config/
       layout.tsx        renderiza <AppShell> — precisa ser layout de verdade, não componente recriado por página
   components/
     app-shell.tsx       sidebar + indicador deslizante + tema + logout

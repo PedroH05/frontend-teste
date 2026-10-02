@@ -3,6 +3,25 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-02 — Tela Config: escolher entre tema "Novo" e "Clássico"
+
+- Pedido direto: poder alternar entre os dois temas visuais, não só ficar
+  fixo no "Novo" do dia anterior.
+- Nova tela `/config` (rota + item "Config" no menu, seção "Sistema"):
+  dois cards — "Novo" (sidebar preta sólida/item ativo vermelho/fundo
+  pérola) e "Clássico" (sidebar em vidro seguindo claro/escuro, fundo
+  creme com gradiente) — com um preview em miniatura de cada um.
+- `lib/skin.ts` (`getSkin`/`applySkin`, padrão igual a `lib/theme.ts`):
+  persiste em `localStorage` (`vt-skin`), aplica `data-skin` na raiz.
+  Padrão é `"new"` quando não há nada salvo — quem nunca abriu `/config`
+  continua vendo exatamente o que já estava publicado, sem mudança.
+- `globals.css`: as regras de `--vt-page-bg`, `.vt-ambient-bg` e `.vt-side`
+  (+ textos/indicador da sidebar) voltaram a ter a versão "Clássico" como
+  base, com o "Novo" sobrescrevendo via `:root:not([data-skin='classic'])`
+  — não é um tema novo substituindo o outro, os dois convivem no CSS.
+- Aplicado no `AppShell` junto do toggle de claro/escuro (mesmo `useEffect`
+  de inicialização).
+
 ## 2026-10-01 — Sidebar preta, fundo pérola (referência cotacoes-valetrade-code)
 
 - Pedido direto do Pedro: deixar o app com a "cara" do `cotacoes-valetrade-code`

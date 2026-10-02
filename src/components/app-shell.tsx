@@ -3,12 +3,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, LogOut, Moon, Package, History as HistoryIcon, Sun, Users } from 'lucide-react';
+import { LayoutDashboard, LogOut, Moon, Package, History as HistoryIcon, Settings, Sun, Users } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import { disableMockMode, isMockMode } from '@/lib/mock-mode';
 import { apiFetch } from '@/lib/api';
 import { banda } from '@/lib/risco';
 import { applyTheme, getTheme, type Theme } from '@/lib/theme';
+import { applySkin, getSkin } from '@/lib/skin';
 import type { CockpitRow } from '@/lib/types';
 
 // Sidebar/layout portado de captacao-valetrade/public/index.html (.side,
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
       { href: '/historico', label: 'Histórico', icon: HistoryIcon },
     ],
   },
+  { section: 'Sistema', items: [{ href: '/config', label: 'Config', icon: Settings }] },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -50,6 +52,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza com localStorage (sistema externo), só existe no cliente
     setTheme(saved);
     applyTheme(saved);
+    applySkin(getSkin());
   }, []);
 
   function toggleTheme() {
