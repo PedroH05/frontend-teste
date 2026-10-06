@@ -778,7 +778,7 @@ export default function CarteiraPage() {
               className="ml-auto w-[200px] rounded-[10px] text-[12.5px]"
             />
           </div>
-          <Table>
+          <Table className="vt-tabela-compacta">
             <TableHeader>
               <TableRow style={{ borderColor: 'var(--vt-line)' }}>
                 {(

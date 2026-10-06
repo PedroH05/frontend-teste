@@ -239,7 +239,7 @@ export default function HistoricoPage() {
               className={`ml-auto w-[220px] ${glassInput}`}
             />
           </div>
-          <Table>
+          <Table className="vt-tabela-compacta">
             <TableHeader>
               <TableRow style={{ borderColor: 'var(--vt-line)' }}>
                 {['Status', 'Cliente'].map((h) => (

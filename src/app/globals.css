@@ -837,3 +837,9 @@
 }
 :root:not([data-status-texto='mostrar']) .vt-band-status::before { width: 18px; height: 18px; }
 :root:not([data-status-texto='mostrar']) td:has(> .vt-band-status) { text-align: center; }
+
+/* Tabelas de captação: espaçamento lateral menor pra caber em telas e zoom
+   de empresa sem barra de rolagem lateral (pedido 06/10/2026). */
+.vt-tabela-compacta th,
+.vt-tabela-compacta td { padding-left: 6px; padding-right: 6px; }
+.vt-tabela-compacta th { padding-left: 6px; padding-right: 6px; }
