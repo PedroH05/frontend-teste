@@ -828,11 +828,12 @@
    badges de status (.vt-band-status), não pra tags como "provável". */
 :root:not([data-status-texto='mostrar']) .vt-band-texto { display: none; }
 :root:not([data-status-texto='mostrar']) .vt-band-status {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   justify-content: center;
   gap: 0;
   border-radius: 9px;
 }
-:root:not([data-status-texto='mostrar']) .vt-band-status::before { width: 14px; height: 14px; }
+:root:not([data-status-texto='mostrar']) .vt-band-status::before { width: 18px; height: 18px; }
+:root:not([data-status-texto='mostrar']) td:has(> .vt-band-status) { text-align: center; }
