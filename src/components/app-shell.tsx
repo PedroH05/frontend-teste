@@ -42,7 +42,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmail] = useState('');
   const [criticos, setCriticos] = useState(0);
   const [recolhida, setRecolhida] = useState(false);
-  const ultimaRecolhida = useRef(false);
+  const asideRef = useRef<HTMLElement>(null);
+
+  // Posiciona a faixa do item ativo no bloco de link atual. Chamada ao trocar
+  // de página, ao recolher/expandir e no fim da animação de largura da sidebar
+  // (senão a faixa fica fora do esquadro no meio do deslize).
+  function posicionaIndicador() {
+    const active = [...navRefs.current.entries()].find(([href]) => pathname?.startsWith(href));
+    const ind = indRef.current;
+    if (!active || !ind) {
+      if (ind) ind.style.opacity = '0';
+      return;
+    }
+    const el = active[1];
+    ind.style.top = `${el.offsetTop}px`;
+    ind.style.height = `${el.offsetHeight}px`;
+    ind.style.opacity = '1';
+  }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza com localStorage (sistema externo), só existe no cliente
@@ -103,24 +119,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // Move a "saliência" de vidro pro item ativo — mede a posição real do
   // link em vez de calcular por índice, igual moveNavInd() no original.
   useLayoutEffect(() => {
-    const active = [...navRefs.current.entries()].find(([href]) => pathname?.startsWith(href));
-    const ind = indRef.current;
-    if (!active || !ind) {
-      if (ind) ind.style.opacity = '0';
-      return;
-    }
-    const el = active[1];
-    const mudouRecolhida = ultimaRecolhida.current !== recolhida;
-    ultimaRecolhida.current = recolhida;
-    if (mudouRecolhida) ind.style.transition = 'none';
-    ind.style.top = `${el.offsetTop}px`;
-    ind.style.height = `${el.offsetHeight}px`;
-    ind.style.opacity = '1';
-    if (mudouRecolhida) {
-      void ind.offsetHeight;
-      ind.style.transition = '';
-    }
+    posicionaIndicador();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- posicionaIndicador só lê pathname e refs; as dependências são as que disparam o reposicionamento
   }, [pathname, recolhida]);
+
+  useEffect(() => {
+    const aside = asideRef.current;
+    if (!aside) return;
+    const aoTerminar = (e: TransitionEvent) => {
+      if (e.propertyName === 'width') posicionaIndicador();
+    };
+    aside.addEventListener('transitionend', aoTerminar);
+    return () => aside.removeEventListener('transitionend', aoTerminar);
+  });
 
   async function handleLogout() {
     disableMockMode();
@@ -136,7 +147,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <div className="vt-ambient-bg" />
       <div className="flex h-screen overflow-hidden">
-        <aside className={`vt-side${recolhida ? ' vt-side-recolhida' : ''}`}>
+        <aside ref={asideRef} className={`vt-side${recolhida ? ' vt-side-recolhida' : ''}`}>
           <div ref={indRef} className="vt-nav-ind" />
           <div className="vt-brand">
             {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática pequena, next/image não compensa aqui */}

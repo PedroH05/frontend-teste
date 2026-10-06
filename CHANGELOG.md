@@ -3,6 +3,13 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-06 — Deslize da sidebar volta, faixa encaixa no fim
+
+- A sidebar anima a largura de novo (deslize suave ao recolher/expandir).
+- A faixa do item ativo é reposicionada ao trocar de página, ao recolher/
+  expandir e no fim da animação de largura (`transitionend`), então termina
+  sempre alinhada.
+
 ## 2026-10-06 — Indicador do menu não desliza errado ao recolher
 
 - Ao recolher/expandir a sidebar, o indicador de item ativo é remedido na

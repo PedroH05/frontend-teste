@@ -282,6 +282,7 @@
 :root:not([data-skin='classic']) .vt-side .vt-logout-btn:hover { color: #ff6b5e; background: rgba(255, 255, 255, .08); }
 /* Sidebar recolhida (só ícones) — pedido 06/10/2026, dá espaço pras colunas
    extras da tabela (ver lib/sidebar.ts). */
+.vt-side { transition: width .22s ease, padding .22s ease; }
 .vt-side-recolhida {
   width: 68px;
   padding-inline: 10px;
@@ -297,7 +298,6 @@
   line-height: 1.5;
 }
 .vt-side-recolhida .vt-user-card { justify-content: center; }
-.vt-side-recolhida .vt-nav-ind { left: 10px; right: 10px; }
 .vt-side-recolhida .vt-logout-btn { width: 100%; }
 .vt-brand {
   display: flex;
