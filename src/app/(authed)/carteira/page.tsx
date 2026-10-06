@@ -887,6 +887,9 @@ export default function CarteiraPage() {
                             </span>
                           )}
                         </span>
+                        <span style={{ color: 'var(--vt-muted)' }}>
+                          {r.ref.replace(r.cli, '').trim() || r.ref}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-[12.5px] whitespace-nowrap" title={formatDataHora(r.createdAt)}>

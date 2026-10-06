@@ -320,6 +320,13 @@ export default function HistoricoPage() {
                         >
                           {c.cli}
                         </span>
+                        <span
+                          title={c.referencia ?? undefined}
+                          className="truncate"
+                          style={{ color: 'var(--vt-muted)' }}
+                        >
+                          {c.referencia}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-[12.5px] whitespace-nowrap">
