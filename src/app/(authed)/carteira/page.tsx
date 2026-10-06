@@ -847,15 +847,14 @@ export default function CarteiraPage() {
                 <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
                   Atracação → Parceiro
                 </TableHead>
-                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'none']} />
+                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar']} />
               ) : linhas.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10}>
+                  <TableCell colSpan={9}>
                     <EmptyState
                       title={busca || filterBand || chipFiltro ? 'Nenhum processo com este filtro' : 'Radar vazio'}
                       subtitle={
@@ -882,7 +881,7 @@ export default function CarteiraPage() {
                     >
                       <span className={`vt-band b-${b.k}`}>{b.t}</span>
                     </TableCell>
-                    <TableCell className="text-[13px]">
+                    <TableCell className="text-[12.5px]">
                       <div className="flex flex-col">
                         <span className="font-bold" style={{ color: 'var(--vt-red)' }} title={r.cli}>
                           {apelidoCliente(r.cli, r.cnpj, clientes)}
@@ -897,16 +896,16 @@ export default function CarteiraPage() {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-[13px] whitespace-nowrap" title={formatDataHora(r.createdAt)}>
+                    <TableCell className="text-[12.5px] whitespace-nowrap" title={formatDataHora(r.createdAt)}>
                       {formatData(r.createdAt)}
                     </TableCell>
-                    <TableCell className="text-[13px]">
+                    <TableCell className="text-[12.5px]">
                       {fmtEta(r.eta)} · {dLabel(d)}
                     </TableCell>
-                    <TableCell className="vt-extra-col max-w-[130px] text-[12px] font-mono" title={r.blCap || r.bl || ''}>
+                    <TableCell className="vt-extra-col max-w-[130px] text-[12.5px] font-mono" title={r.blCap || r.bl || ''}>
                       <span className="block truncate">{r.blCap || r.bl || '—'}</span>
                     </TableCell>
-                    <TableCell className="vt-extra-col text-[12px] font-mono whitespace-nowrap" title={listaConts(r.cont).join(', ')}>
+                    <TableCell className="vt-extra-col text-[12.5px] font-mono whitespace-nowrap" title={listaConts(r.cont).join(', ')}>
                       {listaConts(r.cont)[0] ?? '—'}
                       {listaConts(r.cont).length > 1 && (
                         <span className="ml-1.5 rounded-full px-1.5 text-[10px] font-bold" style={{ background: 'var(--vt-bg-jan)', color: 'var(--vt-c-jan)' }}>
@@ -914,14 +913,13 @@ export default function CarteiraPage() {
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="whitespace-nowrap font-mono text-[12px]">{r.ce || '—'}</TableCell>
-                    <TableCell className="text-[13px]">
+                    <TableCell className="whitespace-nowrap font-mono text-[12.5px]">{r.ce || '—'}</TableCell>
+                    <TableCell className="text-[12.5px] leading-snug">
                       {despValido(r.desp) ?? <span style={{ color: 'var(--vt-c-prej)', fontWeight: 600 }}>inválido</span>}
                     </TableCell>
-                    <TableCell className="text-[13px]">
+                    <TableCell className="text-[12.5px] leading-snug">
                       {shortTerm(r.atrac) || '—'} <span style={{ color: 'var(--vt-red)', fontWeight: 700 }}>→</span> {shortTerm(r.parc) || '—'}
                     </TableCell>
-                    <TableCell />
                   </TableRow>
                 ))
               )}
