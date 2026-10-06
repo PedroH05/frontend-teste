@@ -817,6 +817,15 @@ export default function CarteiraPage() {
                     {sortKey === 'dias' ? (sortDir === 1 ? '▲' : '▼') : '↕'}
                   </span>
                 </TableHead>
+                {['HBL', 'Container', 'Qtde', 'Regime'].map((h) => (
+                  <TableHead
+                    key={h}
+                    className="vt-extra-col text-[11px] font-semibold tracking-[.05em] uppercase"
+                    style={{ color: 'var(--vt-muted)' }}
+                  >
+                    {h}
+                  </TableHead>
+                ))}
                 <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
                   CE
                 </TableHead>
@@ -838,10 +847,10 @@ export default function CarteiraPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'none']} />
+                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'none']} />
               ) : linhas.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8}>
+                  <TableCell colSpan={12}>
                     <EmptyState
                       title={busca || filterBand || chipFiltro ? 'Nenhum processo com este filtro' : 'Radar vazio'}
                       subtitle={
@@ -889,6 +898,10 @@ export default function CarteiraPage() {
                     <TableCell className="text-[13px]">
                       {fmtEta(r.eta)} · {dLabel(d)}
                     </TableCell>
+                    <TableCell className="vt-extra-col text-[13px] font-mono">{r.blCap || r.bl || '—'}</TableCell>
+                    <TableCell className="vt-extra-col text-[13px] font-mono">{r.cont || '—'}</TableCell>
+                    <TableCell className="vt-extra-col text-[13px]">{r.qtd || '—'}</TableCell>
+                    <TableCell className="vt-extra-col text-[13px]">{r.regime || '—'}</TableCell>
                     <TableCell className="text-[13px]">{r.ce || '—'}</TableCell>
                     <TableCell className="text-[13px]">
                       {despValido(r.desp) ?? <span style={{ color: 'var(--vt-c-prej)', fontWeight: 600 }}>inválido</span>}

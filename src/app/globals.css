@@ -280,6 +280,25 @@
 :root:not([data-skin='classic']) .vt-side .vt-user-meta .email { color: #e6e8ec; }
 :root:not([data-skin='classic']) .vt-side .vt-logout-btn { color: #6b7482; }
 :root:not([data-skin='classic']) .vt-side .vt-logout-btn:hover { color: #ff6b5e; background: rgba(255, 255, 255, .08); }
+/* Sidebar recolhida (só ícones) — pedido 06/10/2026, dá espaço pras colunas
+   extras da tabela (ver lib/sidebar.ts). */
+.vt-side { transition: width .22s ease, padding .22s ease; }
+.vt-side-recolhida {
+  width: 68px;
+  padding-inline: 10px;
+}
+.vt-side-recolhida .vt-brand { justify-content: center; padding-inline: 0; margin-inline: 0; }
+.vt-side-recolhida .vt-nav { justify-content: center; padding-inline: 0; }
+.vt-side-recolhida .vt-nav .badge {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 8px;
+  padding: 0 4px;
+  line-height: 1.5;
+}
+.vt-side-recolhida .vt-user-card { justify-content: center; }
+.vt-side-recolhida .vt-logout-btn { width: 100%; }
 .vt-brand {
   display: flex;
   align-items: center;
@@ -799,3 +818,7 @@
 @media (prefers-reduced-motion: reduce) {
   :root:not([data-skin='classic']) .vt-risk-tile-pulse::after { animation: none; }
 }
+
+/* Colunas extras da Carteira (HBL, Container, Qtde, Regime) — só aparecem
+   com a sidebar recolhida, pra usar o espaço ganho (pedido 06/10/2026). */
+:root:not([data-sidebar='recolhida']) .vt-extra-col { display: none; }

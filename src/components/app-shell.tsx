@@ -3,13 +3,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, LogOut, Package, History as HistoryIcon, Settings, Users } from 'lucide-react';
+import { LayoutDashboard, LogOut, Package, History as HistoryIcon, PanelLeftClose, PanelLeftOpen, Settings, Users } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import { disableMockMode, isMockMode } from '@/lib/mock-mode';
 import { apiFetch } from '@/lib/api';
 import { banda } from '@/lib/risco';
 import { applyTheme, getTheme } from '@/lib/theme';
 import { applySkin, getSkin } from '@/lib/skin';
+import { applySidebarRecolhida, getSidebarRecolhida } from '@/lib/sidebar';
 import type { CockpitRow } from '@/lib/types';
 
 // Sidebar/layout portado de captacao-valetrade/public/index.html (.side,
@@ -40,6 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mock, setMock] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [criticos, setCriticos] = useState(0);
+  const [recolhida, setRecolhida] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza com localStorage (sistema externo), só existe no cliente
@@ -52,7 +54,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // pro claro sem querer.
     applyTheme(getTheme());
     applySkin(getSkin());
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza com localStorage (sistema externo), só existe no cliente
+    setRecolhida(getSidebarRecolhida());
   }, []);
+
+  useEffect(() => {
+    applySidebarRecolhida(recolhida);
+  }, [recolhida]);
 
   useEffect(() => {
     // GET /auth/me existia desde o início mas nenhuma tela chamava — ver
@@ -120,25 +128,37 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <div className="vt-ambient-bg" />
       <div className="flex h-screen overflow-hidden">
-        <aside className="vt-side">
+        <aside className={`vt-side${recolhida ? ' vt-side-recolhida' : ''}`}>
           <div ref={indRef} className="vt-nav-ind" />
           <div className="vt-brand">
             {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática pequena, next/image não compensa aqui */}
             <img src="/valetrade-logo.png" alt="Valetrade" className="h-9 w-9 shrink-0 object-contain" />
-            <div>
-              <b className="vt-brand-shine block text-[15px] tracking-wide">VALETRADE</b>
-              <small className="text-[10.5px]" style={{ color: 'var(--vt-muted)' }}>
-                Captação Inteligente
-              </small>
-            </div>
+            {!recolhida && (
+              <div className="min-w-0 flex-1">
+                <b className="vt-brand-shine block text-[15px] tracking-wide">VALETRADE</b>
+                <small className="text-[10.5px]" style={{ color: 'var(--vt-muted)' }}>
+                  Captação Inteligente
+                </small>
+              </div>
+            )}
           </div>
+          <button
+            type="button"
+            onClick={() => setRecolhida((v) => !v)}
+            className="vt-logout-btn self-end"
+            title={recolhida ? 'Expandir menu' : 'Recolher menu'}
+            aria-label={recolhida ? 'Expandir menu' : 'Recolher menu'}
+          >
+            {recolhida ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+          </button>
           {NAV_ITEMS.map((group) => (
             <div key={group.section}>
-              <div className="vt-nav-sec">{group.section}</div>
+              {!recolhida && <div className="vt-nav-sec">{group.section}</div>}
               {group.items.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
+                  title={recolhida ? item.label : undefined}
                   ref={(el) => {
                     if (el) navRefs.current.set(item.href, el);
                     else navRefs.current.delete(item.href);
@@ -146,7 +166,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   className={`vt-nav${pathname?.startsWith(item.href) ? ' active' : ''}`}
                 >
                   <item.icon className="ic" />
-                  <span>{item.label}</span>
+                  {!recolhida && <span>{item.label}</span>}
                   {item.href === '/carteira' && criticos > 0 && <span className="badge">{criticos}</span>}
                 </Link>
               ))}
@@ -154,11 +174,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           ))}
           <div className="vt-user-card">
             <div className="vt-avatar" title="Sessão ativa" />
-            <div className="vt-user-meta">
-              <div className="email" title={userEmail}>
-                {userEmail || 'Sessão ativa'}
+            {!recolhida && (
+              <div className="vt-user-meta">
+                <div className="email" title={userEmail}>
+                  {userEmail || 'Sessão ativa'}
+                </div>
               </div>
-            </div>
+            )}
             <button type="button" onClick={handleLogout} className="vt-logout-btn" title="Sair">
               <LogOut size={16} />
             </button>

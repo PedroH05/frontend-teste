@@ -3,6 +3,16 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-06 — Sidebar recolhível + colunas extras na Carteira
+
+- Botão no topo da sidebar recolhe o menu pra só ícones (68px); passar o
+  mouse mostra o nome da tela (`title`). Escolha salva em `localStorage`
+  (`vt-sidebar`, `lib/sidebar.ts`) e refletida em `data-sidebar` na raiz.
+- Carteira: 4 colunas que antes só apareciam dentro da edição — **HBL**
+  (`blCap` ou `bl`), **Container**, **Qtde** e **Regime** — ficam escondidas
+  com a sidebar aberta e aparecem quando ela está recolhida
+  (`.vt-extra-col`, regra em `globals.css`).
+
 ## 2026-10-06 — Histórico: tirado o filtro "Concluído"
 
 - Pedido direto. O select de status do Histórico perde a opção "Concluído"
