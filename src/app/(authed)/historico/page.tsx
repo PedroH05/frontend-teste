@@ -308,8 +308,12 @@ export default function HistoricoPage() {
                         }
                       }}
                     >
-                      <span className={`vt-band ${c.stage === 'SAIU_TERMINAL' ? 'b-conc' : c.stage === 'EFETIVA' ? 'b-efet' : 'b-and'}`}>
-                        {STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento'}
+                      <span
+                        className={`vt-band vt-band-status ${c.stage === 'SAIU_TERMINAL' ? 'b-conc' : c.stage === 'EFETIVA' ? 'b-efet' : 'b-and'}`}
+                        title={STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento'}
+                        aria-label={STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento'}
+                      >
+                        <span className="vt-band-texto">{STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento'}</span>
                       </span>
                     </TableCell>
                     <TableCell className="max-w-[170px] text-[12.5px]">

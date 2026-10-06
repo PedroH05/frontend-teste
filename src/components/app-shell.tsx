@@ -11,6 +11,7 @@ import { banda } from '@/lib/risco';
 import { applyTheme, getTheme } from '@/lib/theme';
 import { applySkin, getSkin } from '@/lib/skin';
 import { applySidebarRecolhida, getSidebarRecolhida } from '@/lib/sidebar';
+import { applyStatusTexto, getStatusTexto } from '@/lib/status-texto';
 import type { CockpitRow } from '@/lib/types';
 
 // Sidebar/layout portado de captacao-valetrade/public/index.html (.side,
@@ -78,6 +79,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     applySidebarRecolhida(recolhida);
   }, [recolhida]);
+
+  useEffect(() => {
+    applyStatusTexto(getStatusTexto());
+  }, []);
 
   useEffect(() => {
     // GET /auth/me existia desde o início mas nenhuma tela chamava — ver

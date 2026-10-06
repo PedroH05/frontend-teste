@@ -822,3 +822,17 @@
 /* Colunas extras da Carteira (HBL, Container, Qtde, Regime) — só aparecem
    com a sidebar recolhida, pra usar o espaço ganho (pedido 06/10/2026). */
 :root:not([data-sidebar='recolhida']) .vt-extra-col { display: none; }
+
+/* Status das tabelas só com ícone e cor (padrão). Com a opção da Config
+   ligada (data-status-texto=mostrar), volta o nome escrito. Vale só pros
+   badges de status (.vt-band-status), não pra tags como "provável". */
+:root:not([data-status-texto='mostrar']) .vt-band-texto { display: none; }
+:root:not([data-status-texto='mostrar']) .vt-band-status {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  justify-content: center;
+  gap: 0;
+  border-radius: 9px;
+}
+:root:not([data-status-texto='mostrar']) .vt-band-status::before { width: 14px; height: 14px; }

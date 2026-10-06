@@ -876,7 +876,9 @@ export default function CarteiraPage() {
                         }
                       }}
                     >
-                      <span className={`vt-band b-${b.k}`}>{b.t}</span>
+                      <span className={`vt-band vt-band-status b-${b.k}`} title={b.t} aria-label={b.t}>
+                        <span className="vt-band-texto">{b.t}</span>
+                      </span>
                     </TableCell>
                     <TableCell className="text-[12.5px]">
                       <div className="flex flex-col">

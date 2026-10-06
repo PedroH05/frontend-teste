@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { applySkin, getSkin, type Skin } from '@/lib/skin';
+import { applyStatusTexto, getStatusTexto } from '@/lib/status-texto';
 
 // Única configuração por enquanto: tema visual (pedido 02/10/2026) — não é
 // o mesmo toggle de claro/escuro (lib/theme.ts, botão no AppShell), é a
@@ -49,6 +50,18 @@ function Amostra({ v }: { v: Skin }) {
 
 export default function ConfigPage() {
   const [skin, setSkin] = useState<Skin>('new');
+  const [statusTexto, setStatusTexto] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza com localStorage (sistema externo), só existe no cliente
+    setStatusTexto(getStatusTexto());
+  }, []);
+
+  function alternarStatusTexto() {
+    const proximo = !statusTexto;
+    setStatusTexto(proximo);
+    applyStatusTexto(proximo);
+  }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza com localStorage (sistema externo), só existe no cliente
@@ -67,6 +80,28 @@ export default function ConfigPage() {
         <p className="mt-0.5 text-[12.5px]" style={{ color: 'var(--vt-muted)' }}>
           Preferências da sua sessão neste navegador.
         </p>
+      </div>
+
+      <div className="vt-glass max-w-[640px] p-[18px_20px] flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-[14px] font-bold">Mostrar o nome do status</h2>
+          <p className="mt-1 text-[12.5px]" style={{ color: 'var(--vt-muted)' }}>
+            Desligado: só o ícone colorido nas tabelas (o nome aparece ao passar o mouse).
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={statusTexto}
+          onClick={alternarStatusTexto}
+          className="relative h-[22px] w-[40px] shrink-0 rounded-full transition"
+          style={{ background: statusTexto ? 'var(--vt-red)' : 'var(--vt-line)' }}
+        >
+          <span
+            className="absolute top-[3px] left-[3px] size-4 rounded-full bg-white transition-transform"
+            style={{ transform: statusTexto ? 'translateX(18px)' : 'translateX(0)' }}
+          />
+        </button>
       </div>
 
       <div className="vt-glass max-w-[640px] p-[18px_20px]">

@@ -3,6 +3,15 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-06 — Status das tabelas só com ícone e cor (opção na Config)
+
+- Carteira e Histórico mostram o status só como chip colorido com o ícone
+  (crítico, próximos 7 dias, em andamento, efetivado). O nome aparece no
+  passar do mouse.
+- Config ganha o interruptor "Mostrar o nome do status" pra voltar a escrita
+  (`lib/status-texto.ts`, `data-status-texto` na raiz). Padrão: só ícone.
+- Tags como "provável" continuam com texto.
+
 ## 2026-10-06 — Cartão com o HBL completo ao passar o mouse
 
 - HBL (Carteira e Histórico) continua cortado na célula; com mouse por cima
