@@ -8,6 +8,7 @@ import { BANDS, banda, diasAte, dLabel, fmtEta, shortTerm, type Banda } from '@/
 import { AlertTriangle, CheckCircle2, Clock, RefreshCw } from 'lucide-react';
 import { formatData, formatDataHora } from '@/lib/format';
 import { apelidoCliente } from '@/lib/apelido';
+import { listaConts } from '@/lib/conteineres';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
@@ -35,11 +36,6 @@ import {
 const ALERT_MIN_KEY = 'alertMin';
 const TT_CONTAINER = (n: string) => `https://www.track-trace.com/container/${n}`;
 const TT_BOL = (n: string) => `https://www.track-trace.com/bol/${n}`;
-
-// Contêineres vêm numa string só (podem vir separados por vírgula/espaço).
-function listaConts(v: string | null | undefined): string[] {
-  return (v ?? '').split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
-}
 
 function despValido(desp: string): string | undefined {
   return desp && Number.isNaN(Number(desp)) ? desp : undefined;

@@ -3,6 +3,13 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-06 — Histórico: mesmo padrão da Carteira
+
+- Colunas HBL e Contêiner (só com a sidebar recolhida), contêiner com `+N`.
+- CE inteiro numa linha só, célula vazia no fim removida, fonte das células
+  unificada em 12,5px.
+- Helper `listaConts` movido pra `lib/conteineres.ts` e usado nas duas telas.
+
 ## 2026-10-06 — Carteira recolhida: sem Qtde/Regime, CE inteiro
 
 - Colunas extras ficam só HBL e Contêiner (Qtde e Regime saíram). Contêiner

@@ -10,6 +10,7 @@ import { formatData, formatDataHora } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
+import { listaConts } from '@/lib/conteineres';
 import { TableSkeletonRows } from '@/components/table-skeleton';
 import { SegmentedControl } from '@/components/segmented-control';
 import {
@@ -263,6 +264,15 @@ export default function HistoricoPage() {
                     </span>
                   </TableHead>
                 ))}
+                {['HBL', 'Container'].map((h) => (
+                  <TableHead
+                    key={h}
+                    className="vt-extra-col text-[11px] font-semibold tracking-[.05em] uppercase"
+                    style={{ color: 'var(--vt-muted)' }}
+                  >
+                    {h}
+                  </TableHead>
+                ))}
                 <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
                   CE
                 </TableHead>
@@ -272,15 +282,14 @@ export default function HistoricoPage() {
                 <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
                   Atracação → Parceiro
                 </TableHead>
-                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'none']} />
+                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar']} />
               ) : linhas.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8}>
+                  <TableCell colSpan={9}>
                     <EmptyState title="Histórico vazio" subtitle="As captações aparecem aqui conforme forem feitas." />
                   </TableCell>
                 </TableRow>
@@ -302,7 +311,7 @@ export default function HistoricoPage() {
                         {STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento'}
                       </span>
                     </TableCell>
-                    <TableCell className="max-w-[170px] text-[13px]">
+                    <TableCell className="max-w-[170px] text-[12.5px]">
                       <div className="flex flex-col gap-px">
                         <span
                           title={c.cli ?? undefined}
@@ -320,18 +329,28 @@ export default function HistoricoPage() {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-[13px] whitespace-nowrap">
+                    <TableCell className="text-[12.5px] whitespace-nowrap">
                       {formatDataHora(c.createdAt)}
                     </TableCell>
-                    <TableCell className="text-[13px]">{formatData(c.eta)}</TableCell>
-                    <TableCell className="text-[13px]">{c.ce || '—'}</TableCell>
-                    <TableCell className="text-[13px]">
+                    <TableCell className="text-[12.5px]">{formatData(c.eta)}</TableCell>
+                    <TableCell className="vt-extra-col max-w-[130px] text-[12.5px] font-mono" title={c.bl ?? ''}>
+                      <span className="block truncate">{c.bl || '—'}</span>
+                    </TableCell>
+                    <TableCell className="vt-extra-col text-[12.5px] font-mono whitespace-nowrap" title={listaConts(c.container).join(', ')}>
+                      {listaConts(c.container)[0] ?? '—'}
+                      {listaConts(c.container).length > 1 && (
+                        <span className="ml-1.5 rounded-full px-1.5 text-[10px] font-bold" style={{ background: 'var(--vt-bg-jan)', color: 'var(--vt-c-jan)' }}>
+                          +{listaConts(c.container).length - 1}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap font-mono text-[12.5px] leading-snug">{c.ce || '—'}</TableCell>
+                    <TableCell className="text-[12.5px] leading-snug">
                       {despValido(c.despachante) ?? <span style={{ color: 'var(--vt-c-prej)', fontWeight: 600 }}>inválido</span>}
                     </TableCell>
-                    <TableCell className="text-[13px]">
+                    <TableCell className="text-[12.5px] leading-snug">
                       {shortTerm(c.terminalDescarga) || '—'} <span style={{ color: 'var(--vt-red)', fontWeight: 700 }}>→</span> {shortTerm(c.terminalCaptado) || '—'}
                     </TableCell>
-                    <TableCell />
                   </TableRow>
                 ))
               )}
