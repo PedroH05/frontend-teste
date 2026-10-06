@@ -8,7 +8,15 @@ export function HblCartao({ valor }: { valor: string | null | undefined }) {
 
   return (
     <HoverCard>
-      <HoverCardTrigger className="block max-w-[130px] cursor-default truncate font-mono">{valor}</HoverCardTrigger>
+      <HoverCardTrigger className="inline-flex max-w-[130px] cursor-default items-center font-mono">
+        <span className="truncate">{valor}</span>
+        <span
+          className="ml-1.5 shrink-0 rounded-full px-1.5 text-[10px] font-bold"
+          style={{ background: 'var(--vt-bg-jan)', color: 'var(--vt-c-jan)' }}
+        >
+          i
+        </span>
+      </HoverCardTrigger>
       <HoverCardContent className="w-auto min-w-[160px]">
         <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">HBL</p>
         <p className="font-mono text-[13px]">{valor}</p>
