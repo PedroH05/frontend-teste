@@ -387,7 +387,7 @@
   z-index: 0;
   pointer-events: none;
   opacity: 0;
-  transition: top .30s cubic-bezier(.34,1.35,.5,1), height .30s cubic-bezier(.34,1.35,.5,1), opacity .2s;
+  transition: top .30s cubic-bezier(.25,.8,.25,1), height .30s cubic-bezier(.25,.8,.25,1), opacity .2s;
 }
 .vt-side-foot {
   margin-top: auto;
