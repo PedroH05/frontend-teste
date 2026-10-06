@@ -3,6 +3,13 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-06 — Colunas extras da Carteira mais compactas
+
+- HBL com largura máxima e corte com reticências (texto completo no tooltip).
+- Contêiner: mostra só o primeiro + badge `+N` (até 14 por processo não
+  estoura a tabela); lista completa no tooltip.
+- Qtde centralizada.
+
 ## 2026-10-06 — Sidebar recolhível + colunas extras na Carteira
 
 - Botão no topo da sidebar recolhe o menu pra só ícones (68px); passar o

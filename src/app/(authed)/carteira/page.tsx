@@ -36,6 +36,11 @@ const ALERT_MIN_KEY = 'alertMin';
 const TT_CONTAINER = (n: string) => `https://www.track-trace.com/container/${n}`;
 const TT_BOL = (n: string) => `https://www.track-trace.com/bol/${n}`;
 
+// Contêineres vêm numa string só (podem vir separados por vírgula/espaço).
+function listaConts(v: string | null | undefined): string[] {
+  return (v ?? '').split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
+}
+
 function despValido(desp: string): string | undefined {
   return desp && Number.isNaN(Number(desp)) ? desp : undefined;
 }
@@ -898,9 +903,18 @@ export default function CarteiraPage() {
                     <TableCell className="text-[13px]">
                       {fmtEta(r.eta)} · {dLabel(d)}
                     </TableCell>
-                    <TableCell className="vt-extra-col text-[13px] font-mono">{r.blCap || r.bl || '—'}</TableCell>
-                    <TableCell className="vt-extra-col text-[13px] font-mono">{r.cont || '—'}</TableCell>
-                    <TableCell className="vt-extra-col text-[13px]">{r.qtd || '—'}</TableCell>
+                    <TableCell className="vt-extra-col max-w-[130px] text-[12px] font-mono" title={r.blCap || r.bl || ''}>
+                      <span className="block truncate">{r.blCap || r.bl || '—'}</span>
+                    </TableCell>
+                    <TableCell className="vt-extra-col text-[12px] font-mono whitespace-nowrap" title={listaConts(r.cont).join(', ')}>
+                      {listaConts(r.cont)[0] ?? '—'}
+                      {listaConts(r.cont).length > 1 && (
+                        <span className="ml-1.5 rounded-full px-1.5 text-[10px] font-bold" style={{ background: 'var(--vt-bg-jan)', color: 'var(--vt-c-jan)' }}>
+                          +{listaConts(r.cont).length - 1}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="vt-extra-col text-[13px] text-center">{r.qtd || '—'}</TableCell>
                     <TableCell className="vt-extra-col text-[13px]">{r.regime || '—'}</TableCell>
                     <TableCell className="text-[13px]">{r.ce || '—'}</TableCell>
                     <TableCell className="text-[13px]">
