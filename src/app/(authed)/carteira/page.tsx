@@ -822,7 +822,7 @@ export default function CarteiraPage() {
                     {sortKey === 'dias' ? (sortDir === 1 ? '▲' : '▼') : '↕'}
                   </span>
                 </TableHead>
-                {['HBL', 'Container', 'Qtde', 'Regime'].map((h) => (
+                {['HBL', 'Container'].map((h) => (
                   <TableHead
                     key={h}
                     className="vt-extra-col text-[11px] font-semibold tracking-[.05em] uppercase"
@@ -852,10 +852,10 @@ export default function CarteiraPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'none']} />
+                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'none']} />
               ) : linhas.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={12}>
+                  <TableCell colSpan={10}>
                     <EmptyState
                       title={busca || filterBand || chipFiltro ? 'Nenhum processo com este filtro' : 'Radar vazio'}
                       subtitle={
@@ -914,9 +914,7 @@ export default function CarteiraPage() {
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="vt-extra-col text-[13px] text-center">{r.qtd || '—'}</TableCell>
-                    <TableCell className="vt-extra-col text-[13px]">{r.regime || '—'}</TableCell>
-                    <TableCell className="text-[13px]">{r.ce || '—'}</TableCell>
+                    <TableCell className="whitespace-nowrap font-mono text-[12px]">{r.ce || '—'}</TableCell>
                     <TableCell className="text-[13px]">
                       {despValido(r.desp) ?? <span style={{ color: 'var(--vt-c-prej)', fontWeight: 600 }}>inválido</span>}
                     </TableCell>

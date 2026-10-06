@@ -3,6 +3,12 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-06 — Carteira recolhida: sem Qtde/Regime, CE inteiro
+
+- Colunas extras ficam só HBL e Contêiner (Qtde e Regime saíram). Contêiner
+  mostra um + badge `+N`.
+- CE em uma linha só, sem cortar nem quebrar (`whitespace-nowrap`).
+
 ## 2026-10-06 — Colunas extras da Carteira mais compactas
 
 - HBL com largura máxima e corte com reticências (texto completo no tooltip).
