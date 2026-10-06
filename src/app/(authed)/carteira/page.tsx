@@ -9,6 +9,7 @@ import { AlertTriangle, CheckCircle2, Clock, RefreshCw } from 'lucide-react';
 import { formatData, formatDataHora } from '@/lib/format';
 import { apelidoCliente } from '@/lib/apelido';
 import { ListaConteineres } from '@/components/lista-conteineres';
+import { HblCartao } from '@/components/hbl-cartao';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
@@ -898,8 +899,8 @@ export default function CarteiraPage() {
                     <TableCell className="text-[12.5px]">
                       {fmtEta(r.eta)} · {dLabel(d)}
                     </TableCell>
-                    <TableCell className="vt-extra-col max-w-[130px] text-[12.5px] font-mono" title={r.blCap || r.bl || ''}>
-                      <span className="block truncate">{r.blCap || r.bl || '—'}</span>
+                    <TableCell className="vt-extra-col text-[12.5px]">
+                      <HblCartao valor={r.blCap || r.bl} />
                     </TableCell>
                     <TableCell className="vt-extra-col text-[12.5px]">
                       <ListaConteineres valor={r.cont} />

@@ -3,6 +3,12 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-06 — Cartão com o HBL completo ao passar o mouse
+
+- HBL (Carteira e Histórico) continua cortado na célula; com mouse por cima
+  abre um cartão com o valor inteiro (`components/hbl-cartao.tsx`, mesmo
+  `HoverCard` do shadcn usado nos contêineres).
+
 ## 2026-10-06 — Cartão com a lista de contêineres ao passar o mouse
 
 - Coluna Contêiner (Carteira e Histórico): com mouse por cima do "+N", abre

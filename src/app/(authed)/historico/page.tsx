@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
 import { ListaConteineres } from '@/components/lista-conteineres';
+import { HblCartao } from '@/components/hbl-cartao';
 import { TableSkeletonRows } from '@/components/table-skeleton';
 import { SegmentedControl } from '@/components/segmented-control';
 import {
@@ -333,8 +334,8 @@ export default function HistoricoPage() {
                       {formatDataHora(c.createdAt)}
                     </TableCell>
                     <TableCell className="text-[12.5px]">{formatData(c.eta)}</TableCell>
-                    <TableCell className="vt-extra-col max-w-[130px] text-[12.5px] font-mono" title={c.bl ?? ''}>
-                      <span className="block truncate">{c.bl || '—'}</span>
+                    <TableCell className="vt-extra-col text-[12.5px]">
+                      <HblCartao valor={c.bl} />
                     </TableCell>
                     <TableCell className="vt-extra-col text-[12.5px]">
                       <ListaConteineres valor={c.container} />
