@@ -298,6 +298,7 @@
   line-height: 1.5;
 }
 .vt-side-recolhida .vt-user-card { justify-content: center; }
+.vt-side-recolhida .vt-nav-ind { left: 10px; right: 10px; }
 .vt-side-recolhida .vt-logout-btn { width: 100%; }
 .vt-brand {
   display: flex;

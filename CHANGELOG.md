@@ -3,6 +3,13 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-06 — Indicador do menu não desliza errado ao recolher
+
+- Ao recolher/expandir a sidebar, o indicador de item ativo é remedido na
+  hora e sem animação (antes ficava na posição antiga e "deslizava" errado).
+  A animação normal ao trocar de página continua.
+- Margem do indicador acompanha a sidebar recolhida (10px).
+
 ## 2026-10-06 — Cliente sem referência nas tabelas
 
 - Carteira e Histórico: a coluna "Cliente / Ref." virou só "Cliente" (a

@@ -42,6 +42,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmail] = useState('');
   const [criticos, setCriticos] = useState(0);
   const [recolhida, setRecolhida] = useState(false);
+  const ultimaRecolhida = useRef(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza com localStorage (sistema externo), só existe no cliente
@@ -109,10 +110,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       return;
     }
     const el = active[1];
+    const mudouRecolhida = ultimaRecolhida.current !== recolhida;
+    ultimaRecolhida.current = recolhida;
+    if (mudouRecolhida) ind.style.transition = 'none';
     ind.style.top = `${el.offsetTop}px`;
     ind.style.height = `${el.offsetHeight}px`;
     ind.style.opacity = '1';
-  }, [pathname]);
+    if (mudouRecolhida) {
+      void ind.offsetHeight;
+      ind.style.transition = '';
+    }
+  }, [pathname, recolhida]);
 
   async function handleLogout() {
     disableMockMode();
