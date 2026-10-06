@@ -3,6 +3,13 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-06 — Cartão com a lista de contêineres ao passar o mouse
+
+- Coluna Contêiner (Carteira e Histórico): com mouse por cima do "+N", abre
+  um cartão com todos os contêineres, sem precisar abrir a captação. Feito
+  com `HoverCard` (shadcn, sobre o `PreviewCard` do base-ui) em
+  `components/ui/hover-card.tsx`; uso em `components/lista-conteineres.tsx`.
+
 ## 2026-10-06 — Contêineres separados por barra mostram só o primeiro
 
 - Processos com contêineres separados por `/` (ex.: `MSBU…/MSMU…`) apareciam

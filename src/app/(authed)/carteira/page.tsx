@@ -8,7 +8,7 @@ import { BANDS, banda, diasAte, dLabel, fmtEta, shortTerm, type Banda } from '@/
 import { AlertTriangle, CheckCircle2, Clock, RefreshCw } from 'lucide-react';
 import { formatData, formatDataHora } from '@/lib/format';
 import { apelidoCliente } from '@/lib/apelido';
-import { listaConts } from '@/lib/conteineres';
+import { ListaConteineres } from '@/components/lista-conteineres';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
@@ -901,13 +901,8 @@ export default function CarteiraPage() {
                     <TableCell className="vt-extra-col max-w-[130px] text-[12.5px] font-mono" title={r.blCap || r.bl || ''}>
                       <span className="block truncate">{r.blCap || r.bl || '—'}</span>
                     </TableCell>
-                    <TableCell className="vt-extra-col text-[12.5px] font-mono whitespace-nowrap" title={listaConts(r.cont).join(', ')}>
-                      {listaConts(r.cont)[0] ?? '—'}
-                      {listaConts(r.cont).length > 1 && (
-                        <span className="ml-1.5 rounded-full px-1.5 text-[10px] font-bold" style={{ background: 'var(--vt-bg-jan)', color: 'var(--vt-c-jan)' }}>
-                          +{listaConts(r.cont).length - 1}
-                        </span>
-                      )}
+                    <TableCell className="vt-extra-col text-[12.5px]">
+                      <ListaConteineres valor={r.cont} />
                     </TableCell>
                     <TableCell className="whitespace-nowrap font-mono text-[12.5px]">{r.ce || '—'}</TableCell>
                     <TableCell className="text-[12.5px] leading-snug">

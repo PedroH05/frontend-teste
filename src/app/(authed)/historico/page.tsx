@@ -10,7 +10,7 @@ import { formatData, formatDataHora } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
-import { listaConts } from '@/lib/conteineres';
+import { ListaConteineres } from '@/components/lista-conteineres';
 import { TableSkeletonRows } from '@/components/table-skeleton';
 import { SegmentedControl } from '@/components/segmented-control';
 import {
@@ -336,13 +336,8 @@ export default function HistoricoPage() {
                     <TableCell className="vt-extra-col max-w-[130px] text-[12.5px] font-mono" title={c.bl ?? ''}>
                       <span className="block truncate">{c.bl || '—'}</span>
                     </TableCell>
-                    <TableCell className="vt-extra-col text-[12.5px] font-mono whitespace-nowrap" title={listaConts(c.container).join(', ')}>
-                      {listaConts(c.container)[0] ?? '—'}
-                      {listaConts(c.container).length > 1 && (
-                        <span className="ml-1.5 rounded-full px-1.5 text-[10px] font-bold" style={{ background: 'var(--vt-bg-jan)', color: 'var(--vt-c-jan)' }}>
-                          +{listaConts(c.container).length - 1}
-                        </span>
-                      )}
+                    <TableCell className="vt-extra-col text-[12.5px]">
+                      <ListaConteineres valor={c.container} />
                     </TableCell>
                     <TableCell className="whitespace-nowrap font-mono text-[12.5px] leading-snug">{c.ce || '—'}</TableCell>
                     <TableCell className="text-[12.5px] leading-snug">
