@@ -843,3 +843,5 @@
 .vt-tabela-compacta th,
 .vt-tabela-compacta td { padding-left: 6px; padding-right: 6px; }
 .vt-tabela-compacta th { padding-left: 6px; padding-right: 6px; }
+.vt-tabela-compacta th,
+.vt-tabela-compacta td { text-align: center; }
