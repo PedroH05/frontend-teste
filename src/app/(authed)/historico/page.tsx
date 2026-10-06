@@ -241,7 +241,7 @@ export default function HistoricoPage() {
           <Table>
             <TableHeader>
               <TableRow style={{ borderColor: 'var(--vt-line)' }}>
-                {['Status', 'Cliente / Referência'].map((h) => (
+                {['Status', 'Cliente'].map((h) => (
                   <TableHead key={h} className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
                     {h}
                   </TableHead>
@@ -319,13 +319,6 @@ export default function HistoricoPage() {
                           style={{ color: 'var(--vt-red)' }}
                         >
                           {c.cli}
-                        </span>
-                        <span
-                          title={c.referencia ?? undefined}
-                          className="truncate"
-                          style={{ color: 'var(--vt-muted)' }}
-                        >
-                          {c.referencia}
                         </span>
                       </div>
                     </TableCell>

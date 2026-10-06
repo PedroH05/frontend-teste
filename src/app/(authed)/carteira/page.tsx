@@ -783,7 +783,7 @@ export default function CarteiraPage() {
                 {(
                   [
                     ['pr', 'Status'],
-                    ['cli', 'Cliente / Ref.'],
+                    ['cli', 'Cliente'],
                   ] as [SortKey, string][]
                 ).map(([key, label]) => (
                   <TableHead
@@ -886,9 +886,6 @@ export default function CarteiraPage() {
                               provável
                             </span>
                           )}
-                        </span>
-                        <span style={{ color: 'var(--vt-muted)' }}>
-                          {r.ref.replace(r.cli, '').trim() || r.ref}
                         </span>
                       </div>
                     </TableCell>

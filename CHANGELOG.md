@@ -3,6 +3,12 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-06 — Cliente sem referência nas tabelas
+
+- Carteira e Histórico: a coluna "Cliente / Ref." virou só "Cliente" (a
+  referência saiu da célula), linhas mais baixas e mais espaço pras outras
+  colunas.
+
 ## 2026-10-06 — Histórico: mesmo padrão da Carteira
 
 - Colunas HBL e Contêiner (só com a sidebar recolhida), contêiner com `+N`.
