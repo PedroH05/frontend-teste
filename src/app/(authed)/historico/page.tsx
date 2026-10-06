@@ -229,7 +229,6 @@ export default function HistoricoPage() {
               <option value="todos">Todos os status</option>
               <option value="efet">Efetivado</option>
               <option value="and">Em andamento</option>
-              <option value="conc">Concluído</option>
             </select>
             <Input
               placeholder="buscar cliente, BL, navio…"

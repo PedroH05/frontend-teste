@@ -3,6 +3,12 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-06 — Histórico: tirado o filtro "Concluído"
+
+- Pedido direto. O select de status do Histórico perde a opção "Concluído"
+  (fica Todos / Efetivado / Em andamento). Captações `SAIU_TERMINAL` ainda
+  são categorizadas como `conc` internamente, só não têm mais filtro próprio.
+
 ## 2026-10-02 — Cards de risco da Carteira com ícone colorido (tema Novo)
 
 - Pedido ("tema Novo ficou sem vida", escolhida a opção C do artefato "Dar
