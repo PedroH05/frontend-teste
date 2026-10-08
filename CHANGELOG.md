@@ -3,6 +3,19 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-08 — Tela "Anotações" na sidebar (notas soltas)
+
+- Pedido direto, mesmo dia do painel de notas por captação: "eu quero ela
+  na side bar", nota sem vínculo com captação nenhuma. Item novo
+  "Anotações" no menu (seção Gestão), tela `/anotacoes` — mesma UI do
+  painel (lista à esquerda, nota aberta à direita, "+ Nova nota"), falando
+  com `GET`/`POST /notas` (sem id de captação) em vez de
+  `/captacoes/:id/notas`.
+- `Nota.captacaoId` em `lib/types.ts` virou `number | null`. Modo demo
+  ganhou as mesmas rotas em memória.
+- Precisa do backend novo (`captacao-api`, 08/10/2026) e da coluna
+  `captacao_id` liberada (`DROP NOT NULL`) em produção.
+
 ## 2026-10-08 — Painel de Notas na edição de captação
 
 - Botão "Notas" no cabeçalho da tela (só em modo edição, precisa de

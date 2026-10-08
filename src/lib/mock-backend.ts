@@ -218,6 +218,29 @@ export async function mockRequest<T>(path: string, init?: RequestInit): Promise<
     notas = [nota, ...notas];
     return nota as T;
   }
+  // Notas soltas, sem captação (tela "Anotações" da sidebar) — checar
+  // ANTES do notaMatch de baixo, senão '/notas' (sem id) nunca bateria.
+  if (path === '/notas' && method === 'GET') {
+    return notas
+      .filter((n) => n.captacaoId === null)
+      .sort((a, b) => Number(b.fixada) - Number(a.fixada) || (b.updatedAt < a.updatedAt ? -1 : 1)) as T;
+  }
+  if (path === '/notas' && method === 'POST') {
+    const body = parseBody(init) as NotaInput;
+    const agora = nowIso();
+    const nota: Nota = {
+      id: nextNotaId++,
+      captacaoId: null,
+      titulo: body.titulo?.trim() || 'Nova nota',
+      texto: body.texto ?? null,
+      cor: body.cor ?? null,
+      fixada: body.fixada ?? false,
+      createdAt: agora,
+      updatedAt: agora,
+    };
+    notas = [nota, ...notas];
+    return nota as T;
+  }
   const notaMatch = /^\/notas\/(\d+)$/.exec(path);
   if (notaMatch && method === 'PATCH') {
     const id = Number(notaMatch[1]);

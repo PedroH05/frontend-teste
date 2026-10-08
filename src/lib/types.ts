@@ -13,7 +13,7 @@ export interface ImportResult {
 // Anexo de arquivo e desenho ainda não existem no backend.
 export interface Nota {
   id: number;
-  captacaoId: number;
+  captacaoId: number | null; // null = nota solta, sem captação (tela Anotações)
   titulo: string | null;
   texto: string | null;
   cor: string | null;

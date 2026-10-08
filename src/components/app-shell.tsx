@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, LogOut, Package, History as HistoryIcon, PanelLeftClose, PanelLeftOpen, Settings, Users } from 'lucide-react';
+import { LayoutDashboard, LogOut, Package, History as HistoryIcon, PanelLeftClose, PanelLeftOpen, Settings, StickyNote, Users } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import { disableMockMode, isMockMode } from '@/lib/mock-mode';
 import { apiFetch } from '@/lib/api';
@@ -29,6 +29,7 @@ const NAV_ITEMS = [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/clientes', label: 'Clientes', icon: Users },
       { href: '/historico', label: 'Histórico', icon: HistoryIcon },
+      { href: '/anotacoes', label: 'Anotações', icon: StickyNote },
     ],
   },
   { section: 'Sistema', items: [{ href: '/config', label: 'Config', icon: Settings }] },
