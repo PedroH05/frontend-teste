@@ -100,12 +100,14 @@ describe('CaptacoesPage', () => {
     expect(screen.getByRole('button', { name: /Carregamento/ })).toBeInTheDocument();
     await user.type(screen.getByLabelText('Data de carregamento'), '2026-10-01');
     await user.type(screen.getByLabelText('Transportadora'), 'RODOMAX');
+    await user.type(screen.getByLabelText('Data de chegada (destino)'), '2026-10-10');
     await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
 
     // Revisão mostra a seção nova (heading, não o rótulo do stepper)
     expect(screen.getByRole('heading', { name: 'Carregamento' })).toBeInTheDocument();
     expect(screen.getByText('01/10/2026')).toBeInTheDocument();
     expect(screen.getByText('RODOMAX')).toBeInTheDocument();
+    expect(screen.getByText('10/10/2026')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Salvar' }));
 
@@ -113,6 +115,31 @@ describe('CaptacoesPage', () => {
     const body = JSON.parse((chamadaSalvar as [string, { body: string }])[1].body);
     expect(body.dataCarregamento).toBe('2026-10-01');
     expect(body.transportadora).toBe('RODOMAX');
+    expect(body.dataChegadaDestino).toBe('2026-10-10');
+  });
+
+  it('dataChegadaDestino (Carregamento) é diferente de dataChegada (Terminal) — pedido 08/10/2026', async () => {
+    const user = userEvent.setup();
+    filaApi('/captacoes', {});
+    render(<CaptacoesPage />);
+
+    await user.type(screen.getByLabelText('Cliente'), 'tecno');
+    for (let i = 0; i < 3; i++) {
+      await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+    }
+    // passo 3 = Terminal
+    await user.type(screen.getByLabelText('Data de chegada'), '2026-10-05');
+    for (let i = 0; i < 2; i++) {
+      await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+    }
+    // passo 5 = Carregamento
+    await user.type(screen.getByLabelText('Data de chegada (destino)'), '2026-10-12');
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    const chamadaSalvar = apiFetchMock.mock.calls.find((c) => c[0] === '/captacoes' && c[1]);
+    const body = JSON.parse((chamadaSalvar as [string, { body: string }])[1].body);
+    expect(body.dataChegada).toBe('2026-10-05');
+    expect(body.dataChegadaDestino).toBe('2026-10-12');
   });
 
   it('passo Terminal (4º) salva a data de chegada', async () => {

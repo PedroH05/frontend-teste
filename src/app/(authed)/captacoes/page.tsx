@@ -247,6 +247,7 @@ function CaptacoesForm() {
           dataCarregamento: c.dataCarregamento ? c.dataCarregamento.slice(0, 10) : undefined,
           transportadora: c.transportadora ?? '',
           dataChegada: c.dataChegada ? c.dataChegada.slice(0, 10) : undefined,
+          dataChegadaDestino: c.dataChegadaDestino ? c.dataChegadaDestino.slice(0, 10) : undefined,
           docBl: c.docBl ?? false,
           docCe: c.docCe ?? false,
           docPl: c.docPl ?? false,
@@ -444,7 +445,7 @@ function CaptacoesForm() {
                   ? [form.observacao, form.docBl, form.docCe, form.docPl, form.prejuizoPublico]
                   : [form.observacao, form.prejuizoPublico]
                 : i === 5
-                  ? [form.dataCarregamento, form.transportadora]
+                  ? [form.dataCarregamento, form.transportadora, form.dataChegadaDestino]
                   : [];
     if (campos.length === 0) return 'todos';
     const { preenchidos, total } = contarPreenchidos(campos);
@@ -901,6 +902,17 @@ function CaptacoesForm() {
               />
             </FieldContent>
           </Field>
+          <Field>
+            <FieldLabel htmlFor="dataChegadaDestino">Data de chegada (destino)</FieldLabel>
+            <FieldContent>
+              <Input
+                id="dataChegadaDestino"
+                type="date"
+                value={form.dataChegadaDestino ?? ''}
+                onChange={(e) => set('dataChegadaDestino', e.target.value)}
+              />
+            </FieldContent>
+          </Field>
         </div>
       )}
 
@@ -985,6 +997,7 @@ function CaptacoesForm() {
             <div className="grid grid-cols-3 gap-x-4 gap-y-2.5">
               <RecapItem label="Data de carregamento" value={fmtDateBR(form.dataCarregamento)} />
               <RecapItem label="Transportadora" value={form.transportadora} />
+              <RecapItem label="Data de chegada (destino)" value={fmtDateBR(form.dataChegadaDestino)} />
             </div>
           </RecapSection>
         </div>

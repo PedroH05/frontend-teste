@@ -48,6 +48,7 @@ function buildCaptacao(id: number, payload: CaptacaoInput, base?: Captacao): Cap
     dataCarregamento: payload.dataCarregamento ?? base?.dataCarregamento ?? null,
     transportadora: payload.transportadora ?? base?.transportadora ?? null,
     dataChegada: payload.dataChegada ?? base?.dataChegada ?? null,
+    dataChegadaDestino: payload.dataChegadaDestino ?? base?.dataChegadaDestino ?? null,
     createdAt: base?.createdAt ?? nowIso(),
   };
 }

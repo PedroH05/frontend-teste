@@ -3,6 +3,17 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-08 — Campo "Data de chegada (destino)" no passo Carregamento
+
+- Pedido direto. Já existia "Data de chegada" no passo Terminal (chegada
+  **no terminal**) — o campo novo (`dataChegadaDestino`) é a chegada no
+  **destino final**, depois do carregamento, com nome e rótulo próprios
+  pra não confundir as duas datas.
+- `FormState`, prefill de edição, `completudeStep` (passo 5) e a Revisão
+  (seção Carregamento) atualizados. Precisa do backend novo (ver
+  `captacao-api/CHANGELOG.md`, 08/10/2026) — schema em produção ainda
+  pendente.
+
 ## 2026-10-06 — Status das tabelas só com ícone e cor (opção na Config)
 
 - Carteira e Histórico mostram o status só como chip colorido com o ícone

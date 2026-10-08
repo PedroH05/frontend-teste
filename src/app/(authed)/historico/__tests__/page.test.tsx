@@ -42,7 +42,7 @@ function base(overrides: Partial<Captacao>): Captacao {
     dateLabel: null,
     dataCarregamento: null,
     transportadora: null,
-    dataChegada: null,
+    dataChegada: null, dataChegadaDestino: null,
     createdAt: new Date().toISOString(),
     ...overrides,
   };

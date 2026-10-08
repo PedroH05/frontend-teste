@@ -261,6 +261,14 @@ do `(authed)/layout.tsx`.
   igual ao `eta`/`cnpj`: captações anteriores a essa data ficam com os três
   `null`. Mudança de schema em produção ainda pendente — ver
   `captacao-api/docs/ARCHITECTURE.md`.
+- **Passo Carregamento ganha `dataChegadaDestino`** (08/10/2026): pedido
+  direto de "data de chegada" nesse passo — já existia `dataChegada` no
+  passo Terminal (chegada **no terminal**), então o campo novo tem nome
+  próprio em vez de reaproveitar, pra não confundir as duas datas
+  (`dataChegada` = terminal, `dataChegadaDestino` = destino final, depois
+  do carregamento). Rótulo na tela: "Data de chegada (destino)". Mesma
+  regra de `'YYYY-MM-DD'`/`null` dos outros campos do passo. Mudança de
+  schema em produção ainda pendente.
 - **Blocos de risco da Carteira corrigidos** (01/10/2026, `lib/risco.ts`):
   - **"Concluído" saiu da lista `BANDS`** (não é mais um bloco de contagem).
     `banda()` ainda classifica `stage === 'SAIU'` como `'conc'` — o badge de

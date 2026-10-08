@@ -45,7 +45,10 @@ export interface Captacao {
   // 01/10/2026 — captações anteriores a essa data têm os três null.
   dataCarregamento: string | null;
   transportadora: string | null;
-  dataChegada: string | null;
+  dataChegada: string | null; // chegada no TERMINAL (passo Terminal)
+  // Chegada no DESTINO final, depois do carregamento (passo Carregamento,
+  // 08/10/2026) — não confundir com dataChegada acima.
+  dataChegadaDestino: string | null;
   stage: string | null;
   docBl: boolean | null;
   docCe: boolean | null;
@@ -100,6 +103,7 @@ export interface CaptacaoInput {
   dataCarregamento?: string;
   transportadora?: string;
   dataChegada?: string;
+  dataChegadaDestino?: string;
   efetivada?: boolean;
   docBl?: boolean;
   docCe?: boolean;

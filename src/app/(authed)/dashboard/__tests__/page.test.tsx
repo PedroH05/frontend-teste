@@ -43,7 +43,7 @@ function cap(overrides: Partial<Captacao>): Captacao {
     dateLabel: null,
     dataCarregamento: null,
     transportadora: null,
-    dataChegada: null,
+    dataChegada: null, dataChegadaDestino: null,
     createdAt: old.toISOString(), // fora do período "mês" por padrão
     ...overrides,
   };
