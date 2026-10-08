@@ -1,17 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { StickyNote, X } from 'lucide-react';
+import { PencilRuler, StickyNote, X } from 'lucide-react';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Nota } from '@/lib/types';
+import { DesenhoDialog } from '@/components/desenho-dialog';
 
 // Bloco de anotações da captação (pedido 08/10/2026): várias notas, cada
 // uma com nome próprio — "criar nota, dar nome, ai tudo que eu fizer fica
 // naquela nota... crio a nota 2 pra outro assunto". Painel lateral, só
 // aparece em modo edição (precisa de captacaoId já salvo — não dá pra
 // anexar nota numa captação que ainda não existe no banco).
-// Anexo de arquivo e desenho ficam pra depois — precisam de bucket de
-// armazenamento, decisão de infra separada.
+// Desenho usa Excalidraw (ver desenho-dialog.tsx), exportado como PNG
+// base64, sem bucket de armazenamento. Anexo de arquivo de verdade (foto,
+// PDF) continua pra depois — esse sim precisa de bucket.
 export function NotasPainel({ captacaoId }: { captacaoId: number }) {
   const [aberto, setAberto] = useState(false);
   const [notas, setNotas] = useState<Nota[]>([]);
@@ -21,6 +23,7 @@ export function NotasPainel({ captacaoId }: { captacaoId: number }) {
   const [tituloDraft, setTituloDraft] = useState('');
   const [textoDraft, setTextoDraft] = useState('');
   const [salvando, setSalvando] = useState(false);
+  const [desenhando, setDesenhando] = useState(false);
 
   const selecionada = notas.find((n) => n.id === selecionadaId) ?? null;
 
@@ -79,6 +82,23 @@ export function NotasPainel({ captacaoId }: { captacaoId: number }) {
       setNotas((ns) => ns.map((n) => (n.id === atualizada.id ? atualizada : n)));
     } catch (err) {
       setErro(err instanceof ApiError ? err.message : 'Erro ao salvar nota');
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function salvarDesenho(dataUrl: string) {
+    if (!selecionada) return;
+    setSalvando(true);
+    try {
+      const atualizada = await apiFetch<Nota>(`/notas/${selecionada.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ desenho: dataUrl }),
+      });
+      setNotas((ns) => ns.map((n) => (n.id === atualizada.id ? atualizada : n)));
+      setDesenhando(false);
+    } catch (err) {
+      setErro(err instanceof ApiError ? err.message : 'Erro ao salvar o desenho');
     } finally {
       setSalvando(false);
     }
@@ -191,9 +211,29 @@ export function NotasPainel({ captacaoId }: { captacaoId: number }) {
                     onChange={(e) => setTextoDraft(e.target.value)}
                     onBlur={salvar}
                     placeholder="Escreva aqui..."
-                    className="min-h-[200px] flex-1 resize-none rounded-[10px] border p-3.5 text-[14px] outline-none"
+                    className="min-h-[160px] flex-1 resize-none rounded-[10px] border p-3.5 text-[14px] outline-none"
                     style={{ borderColor: 'var(--vt-line)' }}
                   />
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setDesenhando(true)}
+                      className="vt-glass-strong inline-flex items-center gap-1.5 rounded-[9px] border border-[var(--vt-line)] px-3 py-1.5 text-[12px] font-semibold"
+                    >
+                      <PencilRuler size={14} />
+                      {selecionada.desenho ? 'Editar desenho' : 'Abrir quadro'}
+                    </button>
+                    {selecionada.desenho && (
+                      // eslint-disable-next-line @next/next/no-img-element -- data URL (base64), next/image não serve pra isso
+                      <img
+                        src={selecionada.desenho}
+                        alt="Desenho da nota"
+                        className="h-[52px] cursor-pointer rounded-[8px] border"
+                        style={{ borderColor: 'var(--vt-line)' }}
+                        onClick={() => setDesenhando(true)}
+                      />
+                    )}
+                  </div>
                   <p className="text-[11px]" style={{ color: 'var(--vt-muted)' }}>
                     {salvando ? 'Salvando…' : 'Salva ao sair do campo.'}
                   </p>
@@ -206,6 +246,10 @@ export function NotasPainel({ captacaoId }: { captacaoId: number }) {
             </section>
           </div>
         </div>
+      )}
+
+      {desenhando && selecionada && (
+        <DesenhoDialog valorInicial={selecionada.desenho} onSalvar={salvarDesenho} onFechar={() => setDesenhando(false)} />
       )}
     </>
   );

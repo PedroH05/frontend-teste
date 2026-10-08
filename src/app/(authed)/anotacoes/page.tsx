@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PencilRuler } from 'lucide-react';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Nota } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { DesenhoDialog } from '@/components/desenho-dialog';
 
 // Bloco de anotações geral, sem vínculo com captação nenhuma (pedido
 // 08/10/2026, mesmo dia do painel de notas por captação — ver
@@ -17,6 +19,7 @@ export default function AnotacoesPage() {
   const [tituloDraft, setTituloDraft] = useState('');
   const [textoDraft, setTextoDraft] = useState('');
   const [salvando, setSalvando] = useState(false);
+  const [desenhando, setDesenhando] = useState(false);
 
   const selecionada = notas.find((n) => n.id === selecionadaId) ?? null;
 
@@ -69,6 +72,23 @@ export default function AnotacoesPage() {
       setNotas((ns) => ns.map((n) => (n.id === atualizada.id ? atualizada : n)));
     } catch (err) {
       setErro(err instanceof ApiError ? err.message : 'Erro ao salvar nota');
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function salvarDesenho(dataUrl: string) {
+    if (!selecionada) return;
+    setSalvando(true);
+    try {
+      const atualizada = await apiFetch<Nota>(`/notas/${selecionada.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ desenho: dataUrl }),
+      });
+      setNotas((ns) => ns.map((n) => (n.id === atualizada.id ? atualizada : n)));
+      setDesenhando(false);
+    } catch (err) {
+      setErro(err instanceof ApiError ? err.message : 'Erro ao salvar o desenho');
     } finally {
       setSalvando(false);
     }
@@ -164,9 +184,29 @@ export default function AnotacoesPage() {
               onChange={(e) => setTextoDraft(e.target.value)}
               onBlur={salvar}
               placeholder="Escreva aqui..."
-              className="min-h-[300px] flex-1 resize-none rounded-[10px] border p-4 text-[14px] outline-none"
+              className="min-h-[260px] flex-1 resize-none rounded-[10px] border p-4 text-[14px] outline-none"
               style={{ borderColor: 'var(--vt-line)' }}
             />
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setDesenhando(true)}
+                className="vt-glass-strong inline-flex items-center gap-1.5 rounded-[9px] border border-[var(--vt-line)] px-3 py-1.5 text-[12px] font-semibold"
+              >
+                <PencilRuler size={14} />
+                {selecionada.desenho ? 'Editar desenho' : 'Abrir quadro'}
+              </button>
+              {selecionada.desenho && (
+                // eslint-disable-next-line @next/next/no-img-element -- data URL (base64), next/image não serve pra isso
+                <img
+                  src={selecionada.desenho}
+                  alt="Desenho da nota"
+                  className="h-[52px] cursor-pointer rounded-[8px] border"
+                  style={{ borderColor: 'var(--vt-line)' }}
+                  onClick={() => setDesenhando(true)}
+                />
+              )}
+            </div>
             <p className="text-[11px]" style={{ color: 'var(--vt-muted)' }}>
               {salvando ? 'Salvando…' : 'Salva ao sair do campo.'}
             </p>
@@ -177,6 +217,10 @@ export default function AnotacoesPage() {
           </p>
         )}
       </section>
+
+      {desenhando && selecionada && (
+        <DesenhoDialog valorInicial={selecionada.desenho} onSalvar={salvarDesenho} onFechar={() => setDesenhando(false)} />
+      )}
     </div>
   );
 }

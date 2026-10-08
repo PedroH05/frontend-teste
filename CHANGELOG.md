@@ -3,6 +3,22 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-08 — Desenhar na nota, com Excalidraw de verdade
+
+- Pedido direto: "usa o excalidraw". Botão "Abrir quadro"/"Editar desenho"
+  nas duas telas de notas (painel por captação e `/anotacoes`), abre um
+  diálogo com o `@excalidraw/excalidraw` de verdade (dynamic import,
+  `ssr: false` — usa canvas/`window`, não existe no servidor). "Salvar no
+  anexo" exporta a cena como PNG e manda em base64 pro backend
+  (`PATCH /notas/:id`, campo `desenho`) — sem bucket de armazenamento.
+- Miniatura do desenho salvo aparece do lado do botão; clicar nela também
+  abre o quadro pra editar de novo (começa em branco — só a imagem fica
+  salva, não a cena editável do Excalidraw).
+- `components/desenho-dialog.tsx` novo, reaproveitado nas duas telas.
+  `Nota.desenho` em `lib/types.ts`; modo demo ganhou o campo também.
+- Precisa do backend novo (`captacao-api`, 08/10/2026) e da coluna
+  `desenho` em produção.
+
 ## 2026-10-08 — Tela "Anotações" na sidebar (notas soltas)
 
 - Pedido direto, mesmo dia do painel de notas por captação: "eu quero ela

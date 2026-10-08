@@ -211,6 +211,7 @@ export async function mockRequest<T>(path: string, init?: RequestInit): Promise<
       titulo: body.titulo?.trim() || 'Nova nota',
       texto: body.texto ?? null,
       cor: body.cor ?? null,
+      desenho: body.desenho ?? null,
       fixada: body.fixada ?? false,
       createdAt: agora,
       updatedAt: agora,
@@ -234,6 +235,7 @@ export async function mockRequest<T>(path: string, init?: RequestInit): Promise<
       titulo: body.titulo?.trim() || 'Nova nota',
       texto: body.texto ?? null,
       cor: body.cor ?? null,
+      desenho: body.desenho ?? null,
       fixada: body.fixada ?? false,
       createdAt: agora,
       updatedAt: agora,
@@ -252,6 +254,7 @@ export async function mockRequest<T>(path: string, init?: RequestInit): Promise<
       titulo: body.titulo !== undefined ? body.titulo : base.titulo,
       texto: body.texto !== undefined ? body.texto : base.texto,
       cor: body.cor !== undefined ? body.cor : base.cor,
+      desenho: body.desenho !== undefined ? body.desenho : base.desenho,
       fixada: body.fixada !== undefined ? body.fixada : base.fixada,
       updatedAt: nowIso(),
     };

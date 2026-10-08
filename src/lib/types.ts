@@ -17,6 +17,7 @@ export interface Nota {
   titulo: string | null;
   texto: string | null;
   cor: string | null;
+  desenho: string | null; // PNG do Excalidraw em base64 (data URL)
   fixada: boolean;
   createdAt: string;
   updatedAt: string;
@@ -26,6 +27,7 @@ export interface NotaInput {
   titulo?: string;
   texto?: string;
   cor?: string;
+  desenho?: string;
   fixada?: boolean;
 }
 
