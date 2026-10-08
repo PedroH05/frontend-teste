@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { NotasPainel } from '@/components/notas-painel';
 
 // Comportamento portado de captacao-valetrade/public/index.html
 // (salvarManual, manualStep). Ver
@@ -479,13 +480,16 @@ function CaptacoesForm() {
 
   return (
     <div className="vt-form-maior space-y-5 p-6 sm:p-8" style={{ color: 'var(--vt-ink)' }}>
-      <div>
-        <h1 className="text-[24px] font-bold tracking-tight">
-          {editId ? 'Editar captação' : 'Captação manual'}
-        </h1>
-        <p className="mt-0.5 text-[12.5px]" style={{ color: 'var(--vt-muted)' }}>
-          Os mesmos campos da planilha — agora salvos direto na captacao-api
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-[24px] font-bold tracking-tight">
+            {editId ? 'Editar captação' : 'Captação manual'}
+          </h1>
+          <p className="mt-0.5 text-[12.5px]" style={{ color: 'var(--vt-muted)' }}>
+            Os mesmos campos da planilha — agora salvos direto na captacao-api
+          </p>
+        </div>
+        {editId && <NotasPainel captacaoId={Number(editId)} />}
       </div>
 
       <div className="relative flex items-start pt-1">

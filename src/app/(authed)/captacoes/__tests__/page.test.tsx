@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import CaptacoesPage from '../page';
+import { mockCaptacoes } from '@/lib/mock-data';
 
 const pushMock = vi.fn();
 const backMock = vi.fn();
@@ -260,5 +261,41 @@ describe('CaptacoesPage', () => {
     await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
 
     expect(screen.getByPlaceholderText('Nome do despachante')).toHaveValue('NOVOLOG');
+  });
+
+  it('painel de Notas: cria uma nota, dá nome e salva (pedido 08/10/2026)', async () => {
+    const user = userEvent.setup();
+    const captacaoId = mockCaptacoes[0].id;
+    useSearchParamsMock.mockReturnValue(new URLSearchParams({ edit: String(captacaoId) }));
+    filaApi('/captacoes', [mockCaptacoes[0]]);
+    filaApi(`/captacoes/${captacaoId}/notas`, []);
+    render(<CaptacoesPage />);
+
+    const btnNotas = await screen.findByRole('button', { name: /^Notas/ });
+    await user.click(btnNotas);
+    expect(await screen.findByText('Nenhuma nota ainda.')).toBeInTheDocument();
+
+    filaApi(`/captacoes/${captacaoId}/notas`, {
+      id: 1,
+      captacaoId,
+      titulo: 'Nova nota',
+      texto: null,
+      cor: null,
+      fixada: false,
+      createdAt: '2026-10-08T10:00:00.000Z',
+      updatedAt: '2026-10-08T10:00:00.000Z',
+    });
+    await user.click(screen.getByRole('button', { name: '+ Nova nota' }));
+
+    const campoTitulo = await screen.findByPlaceholderText('Nome da nota');
+    expect(campoTitulo).toHaveValue('Nova nota');
+
+    filaApi('/notas/1', { id: 1, captacaoId, titulo: 'Avaria', texto: 'detalhe', cor: null, fixada: false, createdAt: '', updatedAt: '' });
+    await user.clear(campoTitulo);
+    await user.type(campoTitulo, 'Avaria');
+    await user.tab();
+
+    const chamadaPatch = apiFetchMock.mock.calls.find((c) => c[0] === '/notas/1');
+    expect(chamadaPatch).toBeTruthy();
   });
 });

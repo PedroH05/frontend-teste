@@ -3,6 +3,21 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-08 — Painel de Notas na edição de captação
+
+- Botão "Notas" no cabeçalho da tela (só em modo edição, precisa de
+  `captacaoId` já salvo): abre painel com lista de notas à esquerda e a
+  nota aberta à direita — nome, texto, salva ao sair do campo. "+ Nova
+  nota" cria uma em branco ("Nova nota"), pra tratar outro assunto sem
+  misturar com a anterior.
+- `components/notas-painel.tsx` + `Nota`/`NotaInput` em `lib/types.ts`.
+  Modo demo (`mock-backend.ts`) ganhou as mesmas rotas em memória.
+- **Anexo de arquivo e desenho não vieram nessa entrega** — precisam de
+  bucket de armazenamento, decisão de infra separada. Por enquanto só
+  texto.
+- Precisa do backend novo (`captacao-api`, 08/10/2026) e da tabela `notas`
+  em produção (já confirmada criada).
+
 ## 2026-10-08 — Tirado "Data de chegada" do passo Terminal
 
 - Pedido direto: redundante com "Data de chegada (destino)" do passo

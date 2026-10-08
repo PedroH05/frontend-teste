@@ -9,6 +9,26 @@ export interface ImportResult {
   ignorados: number;
 }
 
+// Nota da captação (08/10/2026) — várias por captação, uma por assunto.
+// Anexo de arquivo e desenho ainda não existem no backend.
+export interface Nota {
+  id: number;
+  captacaoId: number;
+  titulo: string | null;
+  texto: string | null;
+  cor: string | null;
+  fixada: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotaInput {
+  titulo?: string;
+  texto?: string;
+  cor?: string;
+  fixada?: boolean;
+}
+
 export interface Cliente {
   id: number;
   name: string;

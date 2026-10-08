@@ -1,7 +1,7 @@
 // "Backend" falso em memória pro modo demo — responde às mesmas rotas que
 // apiFetch chamaria na captacao-api de verdade, sem rede nenhuma. Estado
 // vive só na aba (reseta ao recarregar a página). Ver mock-mode.ts.
-import type { Captacao, CaptacaoInput, Cliente, CockpitRow, ImportResult } from './types';
+import type { Captacao, CaptacaoInput, Cliente, CockpitRow, ImportResult, Nota, NotaInput } from './types';
 import { mockCarteira, mockCaptacoes, mockClientes } from './mock-data';
 import { ApiError } from './api';
 
@@ -10,6 +10,8 @@ let captacoes: Captacao[] = structuredClone(mockCaptacoes);
 let clientes: Cliente[] = structuredClone(mockClientes);
 let nextCaptacaoId = 100;
 let nextClienteId = 100;
+let notas: Nota[] = [];
+let nextNotaId = 1;
 
 function nowIso() {
   return new Date().toISOString();
@@ -190,6 +192,53 @@ export async function mockRequest<T>(path: string, init?: RequestInit): Promise<
     captacoes = captacoes.map((c) => (c.id === id ? updated : c));
     syncCockpitRow(updated);
     return updated as T;
+  }
+
+  const notasListMatch = /^\/captacoes\/(\d+)\/notas$/.exec(path);
+  if (notasListMatch && method === 'GET') {
+    const captacaoId = Number(notasListMatch[1]);
+    return notas
+      .filter((n) => n.captacaoId === captacaoId)
+      .sort((a, b) => Number(b.fixada) - Number(a.fixada) || (b.updatedAt < a.updatedAt ? -1 : 1)) as T;
+  }
+  if (notasListMatch && method === 'POST') {
+    const captacaoId = Number(notasListMatch[1]);
+    const body = parseBody(init) as NotaInput;
+    const agora = nowIso();
+    const nota: Nota = {
+      id: nextNotaId++,
+      captacaoId,
+      titulo: body.titulo?.trim() || 'Nova nota',
+      texto: body.texto ?? null,
+      cor: body.cor ?? null,
+      fixada: body.fixada ?? false,
+      createdAt: agora,
+      updatedAt: agora,
+    };
+    notas = [nota, ...notas];
+    return nota as T;
+  }
+  const notaMatch = /^\/notas\/(\d+)$/.exec(path);
+  if (notaMatch && method === 'PATCH') {
+    const id = Number(notaMatch[1]);
+    const base = notas.find((n) => n.id === id);
+    if (!base) throw new ApiError(404, 'Nota não encontrada.');
+    const body = parseBody(init) as NotaInput;
+    const updated: Nota = {
+      ...base,
+      titulo: body.titulo !== undefined ? body.titulo : base.titulo,
+      texto: body.texto !== undefined ? body.texto : base.texto,
+      cor: body.cor !== undefined ? body.cor : base.cor,
+      fixada: body.fixada !== undefined ? body.fixada : base.fixada,
+      updatedAt: nowIso(),
+    };
+    notas = notas.map((n) => (n.id === id ? updated : n));
+    return updated as T;
+  }
+  if (notaMatch && method === 'DELETE') {
+    const id = Number(notaMatch[1]);
+    notas = notas.filter((n) => n.id !== id);
+    return {} as T;
   }
 
   if (path === '/import/logcomex' && method === 'POST') {
