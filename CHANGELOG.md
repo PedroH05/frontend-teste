@@ -3,6 +3,12 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-08 — Card da captação sem limite de largura
+
+- A causa de o card parecer "pequeno" não eram os campos (já ajustados) —
+  era o `max-w-3xl` (768px) travando a largura do card inteiro. Removido;
+  usa a largura toda, igual à tela de Clientes.
+
 ## 2026-10-08 — Formulário de captação com campos maiores
 
 - Pedido direto: igualar o tamanho dos campos ao do card de Clientes.

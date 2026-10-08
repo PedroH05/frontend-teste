@@ -478,7 +478,7 @@ function CaptacoesForm() {
   }
 
   return (
-    <div className="vt-form-maior mx-auto max-w-3xl space-y-5 p-6 sm:p-8" style={{ color: 'var(--vt-ink)' }}>
+    <div className="vt-form-maior space-y-5 p-6 sm:p-8" style={{ color: 'var(--vt-ink)' }}>
       <div>
         <h1 className="text-[24px] font-bold tracking-tight">
           {editId ? 'Editar captação' : 'Captação manual'}
