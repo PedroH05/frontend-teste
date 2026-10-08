@@ -439,7 +439,7 @@ function CaptacoesForm() {
           : i === 2
             ? [form.ce, form.regime, form.bl, form.despachante]
             : i === 3
-              ? [form.terminalDescarga, form.terminalCaptado, form.dataChegada]
+              ? [form.terminalDescarga, form.terminalCaptado]
               : i === 4
                 ? showDocs
                   ? [form.observacao, form.docBl, form.docCe, form.docPl, form.prejuizoPublico]
@@ -798,17 +798,6 @@ function CaptacoesForm() {
               </Select>
             </FieldContent>
           </Field>
-          <Field>
-            <FieldLabel htmlFor="dataChegada">Data de chegada</FieldLabel>
-            <FieldContent>
-              <Input
-                id="dataChegada"
-                type="date"
-                value={form.dataChegada ?? ''}
-                onChange={(e) => set('dataChegada', e.target.value)}
-              />
-            </FieldContent>
-          </Field>
         </div>
       )}
 
@@ -952,7 +941,6 @@ function CaptacoesForm() {
             <div className="grid grid-cols-3 gap-x-4 gap-y-2.5">
               <RecapItem label="Atracação" value={form.terminalDescarga} />
               <RecapItem label="Parceiro" value={form.terminalCaptado} />
-              <RecapItem label="Data de chegada" value={fmtDateBR(form.dataChegada)} />
             </div>
           </RecapSection>
 

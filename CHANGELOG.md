@@ -3,6 +3,13 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-08 — Tirado "Data de chegada" do passo Terminal
+
+- Pedido direto: redundante com "Data de chegada (destino)" do passo
+  Carregamento. Só saiu da tela (campo, `completudeStep` e Revisão) — o
+  dado (`dataChegada`) continua existindo no backend; captações antigas
+  não perdem o valor salvo, só deixa de ser editável aqui.
+
 ## 2026-10-08 — Card da captação sem limite de largura
 
 - A causa de o card parecer "pequeno" não eram os campos (já ajustados) —

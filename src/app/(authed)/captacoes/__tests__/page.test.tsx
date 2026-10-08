@@ -118,9 +118,8 @@ describe('CaptacoesPage', () => {
     expect(body.dataChegadaDestino).toBe('2026-10-10');
   });
 
-  it('dataChegadaDestino (Carregamento) é diferente de dataChegada (Terminal) — pedido 08/10/2026', async () => {
+  it('passo Terminal (4º) não tem mais Data de chegada — só existe no Carregamento (pedido 08/10/2026)', async () => {
     const user = userEvent.setup();
-    filaApi('/captacoes', {});
     render(<CaptacoesPage />);
 
     await user.type(screen.getByLabelText('Cliente'), 'tecno');
@@ -128,41 +127,8 @@ describe('CaptacoesPage', () => {
       await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
     }
     // passo 3 = Terminal
-    await user.type(screen.getByLabelText('Data de chegada'), '2026-10-05');
-    for (let i = 0; i < 2; i++) {
-      await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
-    }
-    // passo 5 = Carregamento
-    await user.type(screen.getByLabelText('Data de chegada (destino)'), '2026-10-12');
-    await user.click(screen.getByRole('button', { name: 'Salvar' }));
-
-    const chamadaSalvar = apiFetchMock.mock.calls.find((c) => c[0] === '/captacoes' && c[1]);
-    const body = JSON.parse((chamadaSalvar as [string, { body: string }])[1].body);
-    expect(body.dataChegada).toBe('2026-10-05');
-    expect(body.dataChegadaDestino).toBe('2026-10-12');
-  });
-
-  it('passo Terminal (4º) salva a data de chegada', async () => {
-    const user = userEvent.setup();
-    filaApi('/captacoes', {});
-    render(<CaptacoesPage />);
-
-    await user.type(screen.getByLabelText('Cliente'), 'tecno');
-    for (let i = 0; i < 3; i++) {
-      await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
-    }
-    // passo 3 = Terminal
-    expect(screen.getByLabelText('Data de chegada')).toBeInTheDocument();
-    await user.type(screen.getByLabelText('Data de chegada'), '2026-10-05');
-
-    for (let i = 0; i < 3; i++) {
-      await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
-    }
-    await user.click(screen.getByRole('button', { name: 'Salvar' }));
-
-    const chamadaSalvar = apiFetchMock.mock.calls.find((c) => c[0] === '/captacoes' && c[1]);
-    const body = JSON.parse((chamadaSalvar as [string, { body: string }])[1].body);
-    expect(body.dataChegada).toBe('2026-10-05');
+    expect(screen.queryByLabelText('Data de chegada')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Atracação')).toBeInTheDocument();
   });
 
   it('Enter num campo avança pra próxima etapa, sem precisar clicar em Próximo (pedido 16/09/2026)', async () => {

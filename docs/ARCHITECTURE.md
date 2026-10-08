@@ -269,6 +269,12 @@ do `(authed)/layout.tsx`.
   do carregamento). Rótulo na tela: "Data de chegada (destino)". Mesma
   regra de `'YYYY-MM-DD'`/`null` dos outros campos do passo. Mudança de
   schema em produção ainda pendente.
+- **Campo "Data de chegada" removido do passo Terminal** (08/10/2026,
+  mesmo dia): pedido direto, redundante com "Data de chegada (destino)" do
+  Carregamento. Só a tela — `dataChegada` continua existindo no backend e
+  no `FormState` (prefill em modo edição preserva o valor salvo, só não
+  tem mais campo editável nem linha na Revisão pra ele); captações antigas
+  não perdem o dado, só deixa de ser editável por aqui.
 - **Blocos de risco da Carteira corrigidos** (01/10/2026, `lib/risco.ts`):
   - **"Concluído" saiu da lista `BANDS`** (não é mais um bloco de contagem).
     `banda()` ainda classifica `stage === 'SAIU'` como `'conc'` — o badge de
