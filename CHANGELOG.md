@@ -3,6 +3,16 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-08 — Reabrir o desenho mostra o que já tinha
+
+- Pedido direto: "se eu quiser abrir aquele desenho... ele não aparece, só
+  o cardzin pequeno". Antes, reabrir "Editar desenho" começava sempre em
+  branco — só a miniatura mostrava o resultado. Agora o PNG salvo entra
+  como imagem dentro da cena do Excalidraw (`convertToExcalidrawElements`,
+  mantendo a proporção, até 600px no lado maior) — dá pra ver e desenhar
+  por cima. Não são os traços originais editáveis (só o PNG final foi
+  salvo, não a cena) — o que volta é a imagem, não os elementos um a um.
+
 ## 2026-10-08 — Desenhar na nota, com Excalidraw de verdade
 
 - Pedido direto: "usa o excalidraw". Botão "Abrir quadro"/"Editar desenho"

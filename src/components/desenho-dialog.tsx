@@ -2,7 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { useRef, useState } from 'react';
-import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
+import type { ExcalidrawImperativeAPI, ExcalidrawInitialDataState, BinaryFileData } from '@excalidraw/excalidraw/types';
+import type { FileId } from '@excalidraw/excalidraw/element/types';
 import { X } from 'lucide-react';
 
 import '@excalidraw/excalidraw/index.css';
@@ -16,6 +17,47 @@ const Excalidraw = dynamic(async () => (await import('@excalidraw/excalidraw')).
     </div>
   ),
 });
+
+// Carrega o PNG salvo como uma imagem dentro da cena do Excalidraw, pra
+// quem reabrir ver o desenho de antes (e poder desenhar por cima) — antes
+// o quadro sempre abria em branco, só a miniatura mostrava o resultado.
+// Não é a cena editável original (só salvamos o PNG final, não os traços),
+// então o que volta é a imagem, não os elementos individuais.
+async function cenaComImagem(dataUrl: string): Promise<ExcalidrawInitialDataState> {
+  const { convertToExcalidrawElements } = await import('@excalidraw/excalidraw');
+  const tamanho = await new Promise<{ width: number; height: number }>((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.naturalWidth || 400, height: img.naturalHeight || 300 });
+    img.onerror = () => resolve({ width: 400, height: 300 });
+    img.src = dataUrl;
+  });
+  // Cabe numa área razoável do quadro sem distorcer a proporção.
+  const maxLado = 600;
+  const escala = Math.min(1, maxLado / Math.max(tamanho.width, tamanho.height));
+  const largura = tamanho.width * escala;
+  const altura = tamanho.height * escala;
+
+  const fileId = `desenho-salvo-${Date.now()}` as FileId;
+  const elements = convertToExcalidrawElements([
+    {
+      type: 'image',
+      fileId,
+      x: 0,
+      y: 0,
+      width: largura,
+      height: altura,
+    },
+  ]);
+  const files: Record<string, BinaryFileData> = {
+    [fileId]: {
+      mimeType: 'image/png',
+      id: fileId,
+      dataURL: dataUrl as BinaryFileData['dataURL'],
+      created: Date.now(),
+    },
+  };
+  return { elements, files, appState: { viewBackgroundColor: '#ffffff' } };
+}
 
 // Desenho da nota (pedido 08/10/2026 — "usa o excalidraw"): quadro de
 // verdade, não inventado. Exporta a cena como PNG e devolve em base64 —
@@ -80,20 +122,12 @@ export function DesenhoDialog({
             </button>
           </div>
         </div>
-        {valorInicial && (
-          <p
-            className="px-4 py-1.5 text-[11.5px]"
-            style={{ background: 'var(--vt-bg-jan)', color: 'var(--vt-c-jan)' }}
-          >
-            Já existe um desenho salvo nessa nota — o quadro abre em branco (só a imagem fica salva, não o rabisco
-            editável); salvar aqui substitui o anterior.
-          </p>
-        )}
         <div className="flex-1">
           <Excalidraw
             excalidrawAPI={(api) => {
               apiRef.current = api;
             }}
+            initialData={valorInicial ? cenaComImagem(valorInicial) : undefined}
           />
         </div>
       </div>
