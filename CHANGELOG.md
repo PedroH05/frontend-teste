@@ -3,6 +3,14 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-08 — Formulário de captação com campos maiores
+
+- Pedido direto: igualar o tamanho dos campos ao do card de Clientes.
+  Rótulo 13px→15px, campo de texto/data 34px→42px de altura, select igual,
+  checkbox 16px→20px, botões do rodapé um pouco maiores (12.5px→14px),
+  título da tela 21px→24px, card das etapas com mais respiro.
+- Escopado em `.vt-form-maior` (só essa tela — Clientes/Config não mudam).
+
 ## 2026-10-08 — Campo "Data de chegada (destino)" no passo Carregamento
 
 - Pedido direto. Já existia "Data de chegada" no passo Terminal (chegada

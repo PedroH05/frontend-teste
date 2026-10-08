@@ -453,8 +453,8 @@ function CaptacoesForm() {
   }
 
   const glassBtn =
-    'vt-glass-strong rounded-[11px] border border-[var(--vt-line)] px-3.5 py-2 text-[12.5px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px';
-  const primaryBtn = 'vt-btn-primary rounded-[11px] px-3.5 py-2 text-[12.5px] font-semibold transition hover:-translate-y-px';
+    'vt-glass-strong rounded-[11px] border border-[var(--vt-line)] px-4 py-2.5 text-[14px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px';
+  const primaryBtn = 'vt-btn-primary rounded-[11px] px-5 py-2.5 text-[14px] font-semibold transition hover:-translate-y-px';
 
   if (loadingEdit) {
     return (
@@ -478,9 +478,9 @@ function CaptacoesForm() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5 p-6 sm:p-8" style={{ color: 'var(--vt-ink)' }}>
+    <div className="vt-form-maior mx-auto max-w-3xl space-y-5 p-6 sm:p-8" style={{ color: 'var(--vt-ink)' }}>
       <div>
-        <h1 className="text-[21px] font-bold tracking-tight">
+        <h1 className="text-[24px] font-bold tracking-tight">
           {editId ? 'Editar captação' : 'Captação manual'}
         </h1>
         <p className="mt-0.5 text-[12.5px]" style={{ color: 'var(--vt-muted)' }}>
@@ -550,7 +550,7 @@ function CaptacoesForm() {
         })}
       </div>
 
-      <div className="vt-glass p-[18px_20px]" onKeyDown={handleStepKeyDown}>
+      <div className="vt-glass p-[24px_28px]" onKeyDown={handleStepKeyDown}>
 
       {step === 0 && (
         <div className="grid gap-4 sm:grid-cols-3">

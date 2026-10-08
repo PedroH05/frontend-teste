@@ -845,3 +845,28 @@
 .vt-tabela-compacta th { padding-left: 6px; padding-right: 6px; }
 .vt-tabela-compacta th,
 .vt-tabela-compacta td { text-align: center; }
+
+/* Formulário de captação com campos maiores, igual ao card de Clientes
+   (pedido 08/10/2026) — antes os campos/rótulos eram menores que o resto
+   do app. Escopado pra não afetar outras telas (Clientes, Config etc.). */
+.vt-form-maior [data-slot='field-label'] {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 9px;
+}
+.vt-form-maior [data-slot='input'] {
+  height: 42px;
+  font-size: 15px;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+.vt-form-maior [data-slot='select-trigger'] {
+  height: 42px;
+  font-size: 15px;
+  padding-left: 14px;
+  padding-right: 10px;
+}
+.vt-form-maior [data-slot='checkbox'] {
+  width: 20px;
+  height: 20px;
+}
