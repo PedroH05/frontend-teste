@@ -324,3 +324,16 @@ do `(authed)/layout.tsx`.
   testado dessa forma). A cobertura em
   `captacoes/__tests__/page.test.tsx` usa o prefill por query string pra
   exercitar o valor inicial em vez de abrir o popup.
+- **Filtro de período (de/até) no Histórico** (13/10/2026): o
+  `<input type="date">` de dia único saiu; `<FiltroPeriodo>`
+  (`components/filtro-periodo.tsx`) abre um popover com atalhos (Hoje,
+  Ontem, Últimos 7/30 dias, Este mês, Mês passado) e dois calendários
+  lado a lado pra escolher início e fim. Intervalo inclusivo dos dois
+  lados (início = fim filtra um dia só). Primeiro uso de
+  `components/ui/popover.tsx` (novo — `@base-ui/react/popover`, mesmo
+  padrão do `hover-card.tsx` existente, mas clique em vez de hover) nesta
+  base; o popover de mês na Carteira (item acima) é anterior e foi feito
+  na mão (ref + listener de `mousedown`), não migrado. **Mesma limitação
+  de teste do item acima** (popup não abre via clique em jsdom): a
+  matemática do intervalo foi extraída em `estaNoPeriodo()`, exportada de
+  `filtro-periodo.tsx` e testada direto, sem passar pela UI.

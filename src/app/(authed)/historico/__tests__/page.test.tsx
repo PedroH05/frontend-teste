@@ -230,4 +230,5 @@ describe('HistoricoPage', () => {
     linhas = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
     expect(linhas[0]).toContain('ETA-PROXIMA');
   });
+
 });

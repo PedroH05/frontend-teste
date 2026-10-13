@@ -10,6 +10,7 @@ import { formatData, formatDataHora } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ship-scene';
+import { FiltroPeriodo, estaNoPeriodo, type Periodo } from '@/components/filtro-periodo';
 import { ListaConteineres } from '@/components/lista-conteineres';
 import { HblCartao } from '@/components/hbl-cartao';
 import { TableSkeletonRows } from '@/components/table-skeleton';
@@ -28,7 +29,7 @@ import {
 // migration-plan/features/historico/CURRENT_BEHAVIOR.md e
 // migration-plan/prompts/05-historico.md. Sem rota de API própria — lê
 // GET /captacoes (03-captacoes) e filtra no client, igual ao original.
-type Dia = 'hoje' | 'ontem' | 'anteontem' | 'data' | 'tudo';
+type Dia = 'hoje' | 'ontem' | 'anteontem' | 'tudo';
 type StatusFiltro = 'todos' | 'conc' | 'efet' | 'and';
 
 function inicioDoDia(offsetDias: number): Date {
@@ -79,7 +80,10 @@ export default function HistoricoPage() {
       setSortDir(-1);
     }
   }
-  const [dataSel, setDataSel] = useState('');
+  // Filtro de/até (pedido 13/10/2026) — substitui o antigo input de dia
+  // único. Aplicar um período muda "dia" pra 'tudo' (os dois filtros não
+  // fazem sentido somados: período já define o recorte de datas).
+  const [periodo, setPeriodo] = useState<Periodo>({ inicio: null, fim: null });
   const [statusFiltro, setStatusFiltro] = useState<StatusFiltro>('todos');
   const [busca, setBusca] = useState('');
   const [pagina, setPagina] = useState(1);
@@ -114,13 +118,17 @@ export default function HistoricoPage() {
     if (dia === 'hoje') return inicioDoDia(0);
     if (dia === 'ontem') return inicioDoDia(1);
     if (dia === 'anteontem') return inicioDoDia(2);
-    if (dia === 'data' && dataSel) return new Date(`${dataSel}T12:00:00`);
     return null;
-  }, [dia, dataSel]);
+  }, [dia]);
 
   const linhas = useMemo(() => {
     let rows = [...captacoes];
-    if (alvo) {
+    if (periodo.inicio && periodo.fim) {
+      rows = rows.filter((c) => {
+        const d = c.createdAt ? new Date(c.createdAt) : null;
+        return d && !Number.isNaN(d.getTime()) && estaNoPeriodo(d, periodo.inicio!, periodo.fim!);
+      });
+    } else if (alvo) {
       rows = rows.filter((c) => {
         const d = c.createdAt ? new Date(c.createdAt) : null;
         return d && !Number.isNaN(d.getTime()) && d.toDateString() === alvo.toDateString();
@@ -148,22 +156,23 @@ export default function HistoricoPage() {
       rows = rows.filter((c) => JSON.stringify(c).toLowerCase().includes(q));
     }
     return rows;
-  }, [captacoes, alvo, statusFiltro, busca, sortKey, sortDir]);
+  }, [captacoes, alvo, periodo, statusFiltro, busca, sortKey, sortDir]);
 
   // Volta pra página 1 sempre que o filtro muda o conjunto exibido — senão
   // dá pra ficar numa página que não existe mais (ex.: filtrou e sobrou só
   // 1 página, mas você tava na 4). Ajuste durante o render (não em efeito)
   // pra não gerar uma renderização em cascata — ver
   // https://react.dev/learn/you-might-not-need-an-effect.
-  const [filtroAnterior, setFiltroAnterior] = useState({ alvo, statusFiltro, busca, sortKey, sortDir });
+  const [filtroAnterior, setFiltroAnterior] = useState({ alvo, periodo, statusFiltro, busca, sortKey, sortDir });
   if (
     filtroAnterior.alvo !== alvo ||
+    filtroAnterior.periodo !== periodo ||
     filtroAnterior.statusFiltro !== statusFiltro ||
     filtroAnterior.busca !== busca ||
     filtroAnterior.sortKey !== sortKey ||
     filtroAnterior.sortDir !== sortDir
   ) {
-    setFiltroAnterior({ alvo, statusFiltro, busca, sortKey, sortDir });
+    setFiltroAnterior({ alvo, periodo, statusFiltro, busca, sortKey, sortDir });
     setPagina(1);
   }
 
@@ -210,17 +219,14 @@ export default function HistoricoPage() {
                 { value: 'hoje', label: 'Hoje' },
                 { value: 'tudo', label: 'Tudo' },
               ]}
-              value={dia === 'data' ? 'tudo' : dia}
+              value={dia}
               onChange={(v: Dia) => setDia(v)}
             />
-            <Input
-              type="date"
-              title="Escolher um dia"
-              className={`w-auto ${glassInput}`}
-              value={dataSel}
-              onChange={(e) => {
-                setDataSel(e.target.value);
-                setDia(e.target.value ? 'data' : 'tudo');
+            <FiltroPeriodo
+              value={periodo}
+              onChange={(v) => {
+                setPeriodo(v);
+                if (v.inicio && v.fim) setDia('tudo');
               }}
             />
             <select

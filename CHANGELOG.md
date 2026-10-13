@@ -3,6 +3,25 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-13 — Filtro de período (de/até) no Histórico
+
+- Pedido direto: trocar o campo de data único por "aquele negócio de
+  tipo de/até". O `<input type="date">` do Histórico saiu; no lugar,
+  `<FiltroPeriodo>` (`components/filtro-periodo.tsx`) — botão que abre um
+  popover (Base UI `Popover`, `components/ui/popover.tsx`, novo) com
+  atalhos (Hoje, Ontem, Últimos 7/30 dias, Este mês, Mês passado) e dois
+  calendários lado a lado pra escolher início e fim. Intervalo inclusivo
+  dos dois lados — início = fim filtra só aquele dia.
+- Puramente client-side: Histórico já lê tudo de `GET /captacoes` e
+  filtra em memória, então não mudou rota nem schema. Aplicar um período
+  muda o segmentado pra "Tudo" (os dois filtros de data não fazem sentido
+  somados).
+- Matemática do intervalo extraída em `estaNoPeriodo()` (exportada de
+  `filtro-periodo.tsx`) e testada direto, sem passar pela UI — abrir o
+  popover de verdade trava em teste (jsdom não tem layout real, o clique
+  no gatilho do Base UI nunca resolve; mesmo motivo de `hover-card.tsx`
+  nunca ter teste de abrir).
+
 ## 2026-10-08 — Reabrir o desenho mostra o que já tinha
 
 - Pedido direto: "se eu quiser abrir aquele desenho... ele não aparece, só
