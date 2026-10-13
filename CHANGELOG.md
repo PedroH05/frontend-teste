@@ -32,6 +32,9 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
   `capitalize` do Tailwind capitaliza cada palavra, não só a primeira.
   Trocado por `nomeMes()` (array de meses + capitaliza só a primeira
   letra em JS), formato curto sem "de" ("Outubro 2026") e `whitespace-nowrap`.
+- **Números do dia maiores de novo** (mesmo dia, "ainda tá pequeno"): 14.5px
+  → 17px, peso 500 → 600. Título do mês e setas de navegação subiram
+  junto (14.5px, 28px), popover mais largo (720px) pra sobrar espaço.
 
 ## 2026-10-08 — Reabrir o desenho mostra o que já tinha
 

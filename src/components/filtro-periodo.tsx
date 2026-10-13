@@ -182,7 +182,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
 
       <PopoverContent
         align="start"
-        className="w-[min(660px,calc(100vw-2.5rem))] rounded-[14px] p-0"
+        className="w-[min(720px,calc(100vw-2.5rem))] rounded-[14px] p-0"
         style={{ background: 'var(--vt-surface)', border: '1px solid var(--vt-line)', boxShadow: 'var(--vt-sh)' }}
       >
         <div className="flex flex-col sm:flex-row">
@@ -215,34 +215,34 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
                     type="button"
                     aria-label="Mês anterior"
                     onClick={() => setMesBase((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1))}
-                    className="flex h-6 w-6 items-center justify-center rounded-[7px] text-[13px] leading-none"
+                    className="flex h-7 w-7 items-center justify-center rounded-[8px] text-[14px] leading-none"
                     style={{ background: 'var(--vt-glass-strong)', color: 'var(--vt-muted)', visibility: i === 0 ? 'visible' : 'hidden' }}
                   >
                     ‹
                   </button>
-                  <strong className="text-[13.5px] font-bold whitespace-nowrap">{nomeMes(mes)}</strong>
+                  <strong className="text-[14.5px] font-bold whitespace-nowrap">{nomeMes(mes)}</strong>
                   <button
                     type="button"
                     aria-label="Próximo mês"
                     onClick={() => setMesBase((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1))}
-                    className="flex h-6 w-6 items-center justify-center rounded-[7px] text-[13px] leading-none"
+                    className="flex h-7 w-7 items-center justify-center rounded-[8px] text-[14px] leading-none"
                     style={{ background: 'var(--vt-glass-strong)', color: 'var(--vt-muted)', visibility: i === 1 ? 'visible' : 'hidden' }}
                   >
                     ›
                   </button>
                 </div>
-                <div className="mb-1.5 grid grid-cols-7 gap-[3px]">
+                <div className="mb-2 grid grid-cols-7 gap-1">
                   {DOW.map((d, idx) => (
                     <span
                       key={idx}
-                      className="flex items-center justify-center text-[10.5px] font-bold tracking-[.03em] uppercase"
+                      className="flex items-center justify-center text-[11.5px] font-bold tracking-[.03em] uppercase"
                       style={{ color: 'var(--vt-muted2)' }}
                     >
                       {d}
                     </span>
                   ))}
                 </div>
-                <div className="grid grid-cols-7 gap-[3px]">
+                <div className="grid grid-cols-7 gap-1">
                   {diasDoMes(mes).map(({ data, noMes }, idx) => {
                     const inicioP = noMes && mesmoDia(data, rascunho.inicio);
                     const fimP = noMes && mesmoDia(data, rascunho.fim);
@@ -255,12 +255,12 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
                         type="button"
                         disabled={!noMes}
                         onClick={() => clicarDia(data)}
-                        className="relative flex aspect-square items-center justify-center rounded-[8px] text-[14.5px] leading-none"
+                        className="relative flex aspect-square items-center justify-center rounded-[9px] text-[17px] leading-none"
                         style={{
                           color: !noMes ? 'var(--vt-muted2)' : ponta ? '#fff' : 'var(--vt-ink)',
                           opacity: !noMes ? 0.4 : 1,
                           background: ponta ? 'var(--vt-red)' : noIntervalo ? 'var(--vt-red-soft)' : 'transparent',
-                          fontWeight: ponta ? 700 : noIntervalo ? 600 : mesmoDia(data, hoje) ? 700 : 500,
+                          fontWeight: ponta ? 700 : noIntervalo ? 600 : mesmoDia(data, hoje) ? 700 : 600,
                           fontVariantNumeric: 'tabular-nums',
                           cursor: noMes ? 'pointer' : 'default',
                         }}
