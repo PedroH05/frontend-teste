@@ -23,6 +23,20 @@ export function estaNoPeriodo(data: Date, inicio: Date, fim: Date): boolean {
 }
 
 const DOW = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+const MESES = [
+  'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
+];
+
+// Nome do mês do cabeçalho do calendário — curto ("Outubro 2026", sem
+// "de") e capitalizado só na primeira letra, nunca em cada palavra:
+// `toLocaleDateString` dava "novembro de 2026" e o `capitalize` do
+// Tailwind virava "De" maiúsculo, além de quebrar linha na coluna mais
+// estreita do popover (pedido 13/10/2026, bug visto em print).
+function nomeMes(d: Date): string {
+  const mes = MESES[d.getMonth()];
+  return `${mes[0].toUpperCase()}${mes.slice(1)} ${d.getFullYear()}`;
+}
 
 function meiaNoite(d: Date): Date {
   const r = new Date(d);
@@ -206,9 +220,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
                   >
                     ‹
                   </button>
-                  <strong className="text-[13.5px] font-bold capitalize tracking-tight">
-                    {mes.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                  </strong>
+                  <strong className="text-[13.5px] font-bold whitespace-nowrap">{nomeMes(mes)}</strong>
                   <button
                     type="button"
                     aria-label="Próximo mês"

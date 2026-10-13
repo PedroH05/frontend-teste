@@ -26,6 +26,12 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
   justify-center` ficava desalinhado dentro do botão; fonte do dia subiu
   de 12px pra 14.5px, letras da semana e título do mês também cresceram
   um pouco, popover um pouco mais largo pra caber.
+- **Bug real achado por print** (mesmo dia): título do mês quebrava linha
+  ("Novembro De 2026" em duas linhas, desalinhando os dois calendários) e
+  o "de" saía maiúsculo — `toLocaleDateString(...,{month:'long'})` com
+  `capitalize` do Tailwind capitaliza cada palavra, não só a primeira.
+  Trocado por `nomeMes()` (array de meses + capitaliza só a primeira
+  letra em JS), formato curto sem "de" ("Outubro 2026") e `whitespace-nowrap`.
 
 ## 2026-10-08 — Reabrir o desenho mostra o que já tinha
 
