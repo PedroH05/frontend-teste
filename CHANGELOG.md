@@ -21,6 +21,11 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
   popover de verdade trava em teste (jsdom não tem layout real, o clique
   no gatilho do Base UI nunca resolve; mesmo motivo de `hover-card.tsx`
   nunca ter teste de abrir).
+- **Ajuste fino do calendário** (mesmo dia, pedido direto — "alinhar
+  melhor" + números maiores): dia do mês sem `items-center
+  justify-center` ficava desalinhado dentro do botão; fonte do dia subiu
+  de 12px pra 14.5px, letras da semana e título do mês também cresceram
+  um pouco, popover um pouco mais largo pra caber.
 
 ## 2026-10-08 — Reabrir o desenho mostra o que já tinha
 

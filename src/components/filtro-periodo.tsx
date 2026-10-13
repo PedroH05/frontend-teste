@@ -168,12 +168,12 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
 
       <PopoverContent
         align="start"
-        className="w-[min(620px,calc(100vw-2.5rem))] rounded-[14px] p-0"
+        className="w-[min(660px,calc(100vw-2.5rem))] rounded-[14px] p-0"
         style={{ background: 'var(--vt-surface)', border: '1px solid var(--vt-line)', boxShadow: 'var(--vt-sh)' }}
       >
         <div className="flex flex-col sm:flex-row">
           <div
-            className="flex gap-1 overflow-x-auto border-b p-2 sm:w-[150px] sm:flex-none sm:flex-col sm:overflow-visible sm:border-r sm:border-b-0"
+            className="flex gap-1 overflow-x-auto border-b p-2 sm:w-[156px] sm:flex-none sm:flex-col sm:overflow-visible sm:border-r sm:border-b-0"
             style={{ borderColor: 'var(--vt-line2)' }}
           >
             {PRESETS.map((p) => (
@@ -181,7 +181,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
                 key={p.nome}
                 type="button"
                 onClick={() => aplicarPreset(p)}
-                className="shrink-0 rounded-[8px] px-2.5 py-2 text-left text-[12.5px] font-medium whitespace-nowrap"
+                className="shrink-0 rounded-[8px] px-2.5 py-[9px] text-left text-[13px] font-medium whitespace-nowrap"
                 style={
                   presetAtivo === p.nome
                     ? { background: 'var(--vt-red-soft)', color: 'var(--vt-red)', fontWeight: 700 }
@@ -196,37 +196,41 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
           <div className="flex flex-col gap-3 p-3.5 sm:flex-row sm:p-4">
             {[mesBase, new Date(mesBase.getFullYear(), mesBase.getMonth() + 1, 1)].map((mes, i) => (
               <div key={i} className="min-w-0 flex-1">
-                <div className="mb-2 flex items-center justify-between">
+                <div className="mb-2.5 flex items-center justify-between">
                   <button
                     type="button"
                     aria-label="Mês anterior"
                     onClick={() => setMesBase((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1))}
-                    className="flex h-[22px] w-[22px] items-center justify-center rounded-[7px] text-[13px]"
+                    className="flex h-6 w-6 items-center justify-center rounded-[7px] text-[13px] leading-none"
                     style={{ background: 'var(--vt-glass-strong)', color: 'var(--vt-muted)', visibility: i === 0 ? 'visible' : 'hidden' }}
                   >
                     ‹
                   </button>
-                  <strong className="text-[12.5px] font-bold capitalize">
+                  <strong className="text-[13.5px] font-bold capitalize tracking-tight">
                     {mes.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
                   </strong>
                   <button
                     type="button"
                     aria-label="Próximo mês"
                     onClick={() => setMesBase((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1))}
-                    className="flex h-[22px] w-[22px] items-center justify-center rounded-[7px] text-[13px]"
+                    className="flex h-6 w-6 items-center justify-center rounded-[7px] text-[13px] leading-none"
                     style={{ background: 'var(--vt-glass-strong)', color: 'var(--vt-muted)', visibility: i === 1 ? 'visible' : 'hidden' }}
                   >
                     ›
                   </button>
                 </div>
-                <div className="mb-1 grid grid-cols-7 gap-0.5">
+                <div className="mb-1.5 grid grid-cols-7 gap-[3px]">
                   {DOW.map((d, idx) => (
-                    <span key={idx} className="text-center text-[10px] font-bold tracking-[.03em] uppercase" style={{ color: 'var(--vt-muted2)' }}>
+                    <span
+                      key={idx}
+                      className="flex items-center justify-center text-[10.5px] font-bold tracking-[.03em] uppercase"
+                      style={{ color: 'var(--vt-muted2)' }}
+                    >
                       {d}
                     </span>
                   ))}
                 </div>
-                <div className="grid grid-cols-7 gap-0.5">
+                <div className="grid grid-cols-7 gap-[3px]">
                   {diasDoMes(mes).map(({ data, noMes }, idx) => {
                     const inicioP = noMes && mesmoDia(data, rascunho.inicio);
                     const fimP = noMes && mesmoDia(data, rascunho.fim);
@@ -239,12 +243,13 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
                         type="button"
                         disabled={!noMes}
                         onClick={() => clicarDia(data)}
-                        className="relative aspect-square rounded-[7px] text-[12px]"
+                        className="relative flex aspect-square items-center justify-center rounded-[8px] text-[14.5px] leading-none"
                         style={{
                           color: !noMes ? 'var(--vt-muted2)' : ponta ? '#fff' : 'var(--vt-ink)',
                           opacity: !noMes ? 0.4 : 1,
                           background: ponta ? 'var(--vt-red)' : noIntervalo ? 'var(--vt-red-soft)' : 'transparent',
-                          fontWeight: ponta || mesmoDia(data, hoje) ? 700 : 400,
+                          fontWeight: ponta ? 700 : noIntervalo ? 600 : mesmoDia(data, hoje) ? 700 : 500,
+                          fontVariantNumeric: 'tabular-nums',
                           cursor: noMes ? 'pointer' : 'default',
                         }}
                       >
