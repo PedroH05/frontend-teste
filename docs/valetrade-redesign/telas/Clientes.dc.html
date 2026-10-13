@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Clientes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F4F5}
+a{color:#C8102E}a:hover{color:#A50D26}
+input::placeholder{color:#8A8A93}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 960px; background: #F4F4F5; font-family: 'Geist', system-ui, sans-serif; color: #18181B; font-size: 14px">
+
+<nav aria-label="Navegação principal" style="flex: 1 1 248px; max-width: 100%; box-sizing: border-box; background: #121318; color: #FAFAFA; display: flex; flex-direction: column; gap: 22px; padding: 20px 14px">
+<div style="display: flex; align-items: center; gap: 10px; padding: 4px 6px">
+<svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M2 5h8l6 14 6-14h8L19 28h-6Z" fill="#C8102E"></path></svg>
+<div style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+<span style="font-weight: 700; font-size: 15px; letter-spacing: 0.04em">VALETRADE</span>
+<span style="font-size: 12px; color: #8B8B94">Captação Inteligente</span>
+</div>
+<button aria-label="Recolher menu" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #8B8B94; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg></button>
+</div>
+<button style="display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; background: #1C1D24; border: 1px solid #2A2B33; border-radius: 8px; color: #A1A1AA; font-family: inherit; font-size: 14px; cursor: pointer; text-align: left"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg><span style="flex: 1">Buscar…</span><kbd style="font-family: 'Geist Mono', monospace; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #2A2B33; color: #D4D4D8">Ctrl K</kbd></button>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #8B8B94; padding: 0 12px 6px">OPERAÇÃO</span>
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 8px; color: #D4D4D8; text-decoration: none; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg><span style="flex: 1">Carteira</span><span style="font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: #26272E; color: #D4D4D8">367</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #8B8B94; padding: 0 12px 6px">GESTÃO</span>
+<a href="Dashboard.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 8px; color: #D4D4D8; text-decoration: none; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></svg>Dashboard</a>
+<a href="Clientes.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 8px; background: #C8102E; color: #FFFFFF; text-decoration: none; font-weight: 600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Clientes</a>
+<a href="Historico.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 8px; color: #D4D4D8; text-decoration: none; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>Histórico</a>
+<a href="Anotacoes.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 8px; color: #D4D4D8; text-decoration: none; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>Anotações</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #8B8B94; padding: 0 12px 6px">SISTEMA</span>
+<a href="Config.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 8px; color: #D4D4D8; text-decoration: none; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"></path><path d="M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg>Config</a>
+</div>
+<div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 8px 0; border-top: 1px solid #26272E">
+<div style="position: relative; width: 34px; height: 34px; border-radius: 999px; background: #2A2B33; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #FAFAFA">CV<span style="position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 999px; background: #22C55E; border: 2px solid #121318"></span></div>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="font-size: 13px; font-weight: 600">Captação</span>
+<span style="font-size: 12px; color: #8B8B94; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">captacao@valetrade.com.br</span>
+</div>
+<button aria-label="Sair" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #8B8B94; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg></button>
+</div>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 56px">
+<div style="max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px">
+
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #63636B">Gestão<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg><span style="color: #18181B; font-weight: 500">Clientes</span></div>
+<h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.02em">Clientes</h1>
+<p style="margin: 0; color: #63636B">34 clientes cadastrados</p>
+</div>
+</header>
+
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+
+<section aria-label="Lista de clientes" style="flex: 999 1 600px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E4E7; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); overflow: hidden">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #E4E4E7">
+<label style="display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border: 1px solid #E4E4E7; border-radius: 8px; flex: 0 1 320px; box-sizing: border-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#63636B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Buscar cliente</span><input type="text" placeholder="Buscar por nome, CNPJ ou apelido…" style="flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 14px; background: transparent"></label>
+<span style="font-size: 13px; color: #63636B">Ordenado por razão social (A–Z)</span>
+</div>
+<div style="overflow-x: auto">
+<table style="width: 100%; min-width: 640px; border-collapse: collapse">
+<thead>
+<tr style="background: #FAFAFA; text-align: left">
+<th scope="col" style="padding: 12px 20px; font-size: 12px; font-weight: 500; color: #63636B">Cliente</th>
+<th scope="col" style="padding: 12px 16px; font-size: 12px; font-weight: 500; color: #63636B">CNPJ</th>
+<th scope="col" style="padding: 12px 16px; font-size: 12px; font-weight: 500; color: #63636B">Apelidos</th>
+<th scope="col" style="padding: 12px 20px; width: 96px"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Ações</span></th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-top: 1px solid #F0F0F2">
+<td style="padding: 12px 20px"><div style="display: flex; align-items: center; gap: 12px"><span style="width: 36px; height: 36px; flex: none; border-radius: 8px; background: #FDECEE; color: #A50D26; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">AL</span><a href="Main.dc.html" style="font-weight: 600; text-decoration: none; color: #18181B">ALUZEN COMPONENTES AUTOMOTIVOS LTDA</a></div></td>
+<td style="padding: 12px 16px; font-family: 'Geist Mono', monospace; font-size: 13px; color: #3F3F46; white-space: nowrap">45.314.959/0001-30</td>
+<td style="padding: 12px 16px"><span style="font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 6px; border: 1px solid #E4E4E7; color: #3F3F46">ALUZEN</span></td>
+<td style="padding: 12px 20px"><div style="display: flex; gap: 2px; justify-content: flex-end"><button aria-label="Editar ALUZEN" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #52525B; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"></path></svg></button><button aria-label="Excluir ALUZEN" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #C8102E; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg></button></div></td>
+</tr>
+<tr style="border-top: 1px solid #F0F0F2">
+<td style="padding: 12px 20px"><div style="display: flex; align-items: center; gap: 12px"><span style="width: 36px; height: 36px; flex: none; border-radius: 8px; background: #FDECEE; color: #A50D26; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">BS</span><a href="Main.dc.html" style="font-weight: 600; text-decoration: none; color: #18181B">B &amp; S AUTOMACAO E PROJETO LTDA</a></div></td>
+<td style="padding: 12px 16px; font-family: 'Geist Mono', monospace; font-size: 13px; color: #3F3F46; white-space: nowrap">10.285.386/0001-89</td>
+<td style="padding: 12px 16px"><span style="font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 6px; border: 1px solid #E4E4E7; color: #3F3F46">B &amp; S</span></td>
+<td style="padding: 12px 20px"><div style="display: flex; gap: 2px; justify-content: flex-end"><button aria-label="Editar B &amp; S" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #52525B; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"></path></svg></button><button aria-label="Excluir B &amp; S" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #C8102E; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg></button></div></td>
+</tr>
+<tr style="border-top: 1px solid #F0F0F2">
+<td style="padding: 12px 20px"><div style="display: flex; align-items: center; gap: 12px"><span style="width: 36px; height: 36px; flex: none; border-radius: 8px; background: #FDECEE; color: #A50D26; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">CT</span><a href="Main.dc.html" style="font-weight: 600; text-decoration: none; color: #18181B">COMPANHIA USINA TECPAR.</a></div></td>
+<td style="padding: 12px 16px; font-family: 'Geist Mono', monospace; font-size: 13px; color: #3F3F46; white-space: nowrap">03.669.906/0001-91</td>
+<td style="padding: 12px 16px"><span style="font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 6px; border: 1px solid #E4E4E7; color: #3F3F46">TECPAR</span></td>
+<td style="padding: 12px 20px"><div style="display: flex; gap: 2px; justify-content: flex-end"><button aria-label="Editar TECPAR" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #52525B; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"></path></svg></button><button aria-label="Excluir TECPAR" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #C8102E; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg></button></div></td>
+</tr>
+<tr style="border-top: 1px solid #F0F0F2">
+<td style="padding: 12px 20px"><div style="display: flex; align-items: center; gap: 12px"><span style="width: 36px; height: 36px; flex: none; border-radius: 8px; background: #FDECEE; color: #A50D26; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">CS</span><a href="Main.dc.html" style="font-weight: 600; text-decoration: none; color: #18181B">CSI NTF NAOTECIDOS E FILTROS LTDA</a></div></td>
+<td style="padding: 12px 16px; font-family: 'Geist Mono', monospace; font-size: 13px; color: #3F3F46; white-space: nowrap">22.436.021/0001-97</td>
+<td style="padding: 12px 16px"><span style="font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 6px; border: 1px solid #E4E4E7; color: #3F3F46">CSI</span></td>
+<td style="padding: 12px 20px"><div style="display: flex; gap: 2px; justify-content: flex-end"><button aria-label="Editar CSI" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #52525B; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"></path></svg></button><button aria-label="Excluir CSI" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #C8102E; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg></button></div></td>
+</tr>
+<tr style="border-top: 1px solid #F0F0F2">
+<td style="padding: 12px 20px"><div style="display: flex; align-items: center; gap: 12px"><span style="width: 36px; height: 36px; flex: none; border-radius: 8px; background: #FDECEE; color: #A50D26; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">DI</span><a href="Main.dc.html" style="font-weight: 600; text-decoration: none; color: #18181B">DAIDO INDUSTRIAL E COMERCIAL LTDA</a></div></td>
+<td style="padding: 12px 16px; font-family: 'Geist Mono', monospace; font-size: 13px; color: #3F3F46; white-space: nowrap">45.175.387/0001-55</td>
+<td style="padding: 12px 16px"><span style="font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 6px; border: 1px solid #E4E4E7; color: #3F3F46">DAIDO</span></td>
+<td style="padding: 12px 20px"><div style="display: flex; gap: 2px; justify-content: flex-end"><button aria-label="Editar DAIDO" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #52525B; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"></path></svg></button><button aria-label="Excluir DAIDO" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #C8102E; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg></button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-top: 1px solid #E4E4E7">
+<span style="font-size: 13px; color: #63636B">Página 1 de 7 · 34 clientes</span>
+<div style="display: flex; gap: 6px">
+<button disabled style="height: 36px; padding: 0 12px; background: #FFFFFF; border: 1px solid #E4E4E7; border-radius: 8px; font-family: inherit; font-size: 13px; color: #A1A1AA">‹ Anterior</button>
+<button style="height: 36px; padding: 0 12px; background: #FFFFFF; border: 1px solid #E4E4E7; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 500; color: #18181B; cursor: pointer">Próxima ›</button>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="novo-t" style="flex: 1 1 320px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E4E7; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); padding: 22px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 id="novo-t" style="margin: 0; font-size: 16px; font-weight: 600">Adicionar cliente</h2>
+<p style="margin: 0; font-size: 13px; color: #63636B">Os apelidos ajudam a Busca rápida a achar o cliente.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="razao" style="font-size: 13px; font-weight: 500">Razão social / Nome</label>
+<input id="razao" type="text" placeholder="Ex.: Aluzen Componentes Automotivos Ltda" style="height: 40px; padding: 0 12px; border: 1px solid #E4E4E7; border-radius: 8px; font-family: inherit; font-size: 14px; color: #18181B; outline: none">
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="cnpj" style="font-size: 13px; font-weight: 500">CNPJ</label>
+<input id="cnpj" type="text" inputmode="numeric" placeholder="00.000.000/0000-00" style="height: 40px; padding: 0 12px; border: 1px solid #E4E4E7; border-radius: 8px; font-family: 'Geist Mono', monospace; font-size: 14px; color: #18181B; outline: none">
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="apelidos" style="font-size: 13px; font-weight: 500">Apelidos</label>
+<div style="min-height: 40px; box-sizing: border-box; padding: 6px 8px; border: 1px solid #E4E4E7; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center">
+<input id="apelidos" type="text" placeholder="Digite e tecle Enter…" style="flex: 1; min-width: 120px; height: 26px; border: none; outline: none; font-family: inherit; font-size: 14px; background: transparent">
+</div>
+<span style="font-size: 12px; color: #63636B">Cada apelido vira uma etiqueta. Ex.: ALUZEN, Tecno.</span>
+</div>
+<div style="display: flex; gap: 8px; margin-top: 4px">
+<button style="flex: 1; height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #C8102E; border: none; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 600; color: #FFFFFF; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Adicionar cliente</button>
+<button style="height: 40px; padding: 0 14px; background: transparent; border: 1px solid #E4E4E7; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 500; color: #18181B; cursor: pointer">Limpar</button>
+</div>
+</section>
+
+</div>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

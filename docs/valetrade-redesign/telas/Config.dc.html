@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Config</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F4F5}
+a{color:#C8102E}a:hover{color:#A50D26}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 960px; background: #F4F4F5; font-family: 'Geist', system-ui, sans-serif; color: #18181B; font-size: 14px">
+
+<nav aria-label="Navegação principal" style="flex: 1 1 248px; max-width: 100%; box-sizing: border-box; background: #121318; color: #FAFAFA; display: flex; flex-direction: column; gap: 22px; padding: 20px 14px">
+<div style="display: flex; align-items: center; gap: 10px; padding: 4px 6px">
+<svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M2 5h8l6 14 6-14h8L19 28h-6Z" fill="#C8102E"></path></svg>
+<div style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+<span style="font-weight: 700; font-size: 15px; letter-spacing: 0.04em">VALETRADE</span>
+<span style="font-size: 12px; color: #8B8B94">Captação Inteligente</span>
+</div>
+<button aria-label="Recolher menu" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #8B8B94; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg></button>
+</div>
+<button style="display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; background: #1C1D24; border: 1px solid #2A2B33; border-radius: 8px; color: #A1A1AA; font-family: inherit; font-size: 14px; cursor: pointer; text-align: left"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg><span style="flex: 1">Buscar…</span><kbd style="font-family: 'Geist Mono', monospace; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #2A2B33; color: #D4D4D8">Ctrl K</kbd></button>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #8B8B94; padding: 0 12px 6px">OPERAÇÃO</span>
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 8px; color: #D4D4D8; text-decoration: none; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg><span style="flex: 1">Carteira</span><span style="font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: #26272E; color: #D4D4D8">367</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #8B8B94; padding: 0 12px 6px">GESTÃO</span>
+<a href="Dashboard.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 8px; color: #D4D4D8; text-decoration: none; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></svg>Dashboard</a>
+<a href="Clientes.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 8px; color: #D4D4D8; text-decoration: none; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Clientes</a>
+<a href="Historico.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 8px; color: #D4D4D8; text-decoration: none; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>Histórico</a>
+<a href="Anotacoes.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 8px; color: #D4D4D8; text-decoration: none; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>Anotações</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #8B8B94; padding: 0 12px 6px">SISTEMA</span>
+<a href="Config.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 8px; background: #C8102E; color: #FFFFFF; text-decoration: none; font-weight: 600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"></path><path d="M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg>Config</a>
+</div>
+<div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 8px 0; border-top: 1px solid #26272E">
+<div style="position: relative; width: 34px; height: 34px; border-radius: 999px; background: #2A2B33; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #FAFAFA">CV<span style="position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 999px; background: #22C55E; border: 2px solid #121318"></span></div>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="font-size: 13px; font-weight: 600">Captação</span>
+<span style="font-size: 12px; color: #8B8B94; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">captacao@valetrade.com.br</span>
+</div>
+<button aria-label="Sair" style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 8px; color: #8B8B94; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg></button>
+</div>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 56px">
+<div style="max-width: 800px; display: flex; flex-direction: column; gap: 24px">
+
+<header style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #63636B">Sistema<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg><span style="color: #18181B; font-weight: 500">Config</span></div>
+<h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.02em">Config</h1>
+<p style="margin: 0; color: #63636B">Preferências da sua sessão neste navegador.</p>
+</header>
+
+<section aria-labelledby="exib-t" style="background: #FFFFFF; border: 1px solid #E4E4E7; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.04)">
+<div style="padding: 18px 22px; border-bottom: 1px solid #F0F0F2"><h2 id="exib-t" style="margin: 0; font-size: 15px; font-weight: 600">Exibição</h2></div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 22px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span id="sw-l" style="font-weight: 500">Mostrar o nome do status</span>
+<span style="font-size: 13px; color: #63636B">{{statusHint}}</span>
+</div>
+<button role="switch" aria-checked="{{statusAria}}" aria-labelledby="sw-l" onClick="{{toggleStatus}}" style="{{trackStyle}}"><span style="{{knobStyle}}"></span></button>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 0 22px 18px">
+<span style="font-size: 12px; color: #63636B">Prévia:</span>
+<sc-if value="{{statusOn}}" hint-placeholder-val="{{ false }}">
+<span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 999px; background: #DCFCE7; color: #166534; font-size: 12px; font-weight: 600"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Efetivado</span>
+</sc-if>
+<sc-if value="{{statusOff}}" hint-placeholder-val="{{ true }}">
+<span title="Efetivado" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 999px; background: #DCFCE7; color: #166534"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Efetivado"><path d="M20 6 9 17l-5-5"></path></svg></span>
+</sc-if>
+</div>
+</section>
+
+<section aria-labelledby="tema-t" style="background: #FFFFFF; border: 1px solid #E4E4E7; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.04)">
+<div style="padding: 18px 22px; border-bottom: 1px solid #F0F0F2; display: flex; flex-direction: column; gap: 4px"><h2 id="tema-t" style="margin: 0; font-size: 15px; font-weight: 600">Tema visual</h2><span style="font-size: 13px; color: #63636B">Independente do modo claro/escuro — só a “pele” do app.</span></div>
+<div role="radiogroup" aria-labelledby="tema-t" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; padding: 18px 22px 22px">
+<label style="display: flex; flex-direction: column; gap: 12px; padding: 12px; border: 2px solid #C8102E; border-radius: 12px; cursor: pointer; background: #FFFFFF; box-shadow: 0 0 0 4px rgba(200,16,46,0.08)">
+<div aria-hidden="true" style="height: 108px; border-radius: 8px; overflow: hidden; display: flex; border: 1px solid #E4E4E7">
+<div style="width: 46px; background: #121318; padding: 10px 8px; display: flex; flex-direction: column; gap: 6px; box-sizing: border-box"><span style="height: 8px; border-radius: 3px; background: #C8102E"></span><span style="height: 6px; border-radius: 3px; background: #3A3B44"></span><span style="height: 6px; border-radius: 3px; background: #3A3B44"></span></div>
+<div style="flex: 1; background: #F4F4F5; padding: 10px; display: flex; flex-direction: column; gap: 8px"><span style="height: 8px; width: 60%; border-radius: 3px; background: #D4D4D8"></span><div style="flex: 1; background: #FFFFFF; border: 1px solid #E4E4E7; border-radius: 6px"></div></div>
+</div>
+<div style="display: flex; align-items: flex-start; gap: 10px">
+<input type="radio" name="tema" checked style="margin: 3px 0 0; accent-color: #C8102E; width: 16px; height: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="display: flex; align-items: center; gap: 8px; font-weight: 600">Novo<span style="font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: #FDECEE; color: #A50D26">Atual</span></span>
+<span style="font-size: 13px; color: #63636B; line-height: 1.45">Sidebar preta sólida, item ativo vermelho, fundo pérola chapado.</span>
+</div>
+</div>
+</label>
+<label style="display: flex; flex-direction: column; gap: 12px; padding: 12px; border: 2px solid #E4E4E7; border-radius: 12px; cursor: pointer; background: #FFFFFF">
+<div aria-hidden="true" style="height: 108px; border-radius: 8px; overflow: hidden; display: flex; border: 1px solid #E4E4E7">
+<div style="width: 46px; background: #FBFAF7; border-right: 1px solid #ECE8E0; padding: 10px 8px; display: flex; flex-direction: column; gap: 6px; box-sizing: border-box"><span style="height: 8px; border-radius: 3px; border: 1.5px solid #C8102E; box-sizing: border-box"></span><span style="height: 6px; border-radius: 3px; background: #E4E0D8"></span><span style="height: 6px; border-radius: 3px; background: #E4E0D8"></span></div>
+<div style="flex: 1; background: #F3EFE8; padding: 10px; display: flex; flex-direction: column; gap: 8px"><span style="height: 8px; width: 60%; border-radius: 3px; background: #DDD7CC"></span><div style="flex: 1; background: #FBFAF7; border: 1px solid #ECE8E0; border-radius: 6px"></div></div>
+</div>
+<div style="display: flex; align-items: flex-start; gap: 10px">
+<input type="radio" name="tema" style="margin: 3px 0 0; accent-color: #C8102E; width: 16px; height: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-weight: 600">Clássico</span>
+<span style="font-size: 13px; color: #63636B; line-height: 1.45">Sidebar em vidro translúcido seguindo o tema claro/escuro, fundo creme com gradiente suave.</span>
+</div>
+</div>
+</label>
+</div>
+</section>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { statusOn: false };
+}
+renderVals() {
+const on = !!this.state.statusOn;
+return {
+statusOn: on,
+statusOff: !on,
+statusAria: on ? 'true' : 'false',
+statusHint: on ? 'Ligado: o ícone e o nome do status aparecem nas tabelas.' : 'Desligado: só o ícone colorido nas tabelas (o nome aparece ao passar o mouse).',
+toggleStatus: () => this.setState({ statusOn: !on }),
+trackStyle: 'flex: none; position: relative; width: 44px; height: 24px; padding: 0; border: none; border-radius: 999px; cursor: pointer; transition: background 150ms; background: ' + (on ? '#C8102E' : '#D4D4D8'),
+knobStyle: 'position: absolute; top: 2px; left: ' + (on ? '22px' : '2px') + '; width: 20px; height: 20px; border-radius: 999px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0,0,0,0.2); transition: left 150ms'
+};
+}
+}
+</script>
+</body>
+</html>
