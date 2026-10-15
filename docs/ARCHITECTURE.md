@@ -337,3 +337,9 @@ do `(authed)/layout.tsx`.
   de teste do item acima** (popup não abre via clique em jsdom): a
   matemática do intervalo foi extraída em `estaNoPeriodo()`, exportada de
   `filtro-periodo.tsx` e testada direto, sem passar pela UI.
+- **Histórico: alternador Hoje/Tudo removido (15/10/2026)**: o
+  `SegmentedControl` Hoje/Tudo (`dia`/`alvo` em `historico/page.tsx`) saiu
+  — ficou redundante depois do `<FiltroPeriodo>` acima existir, já que o
+  preset "Hoje" dentro dele cobre o mesmo caso. Sem período aplicado a
+  tabela mostra tudo (era o comportamento do antigo "Tudo", que já era o
+  padrão). `SegmentedControl` continua em uso no Dashboard — só saiu daqui.

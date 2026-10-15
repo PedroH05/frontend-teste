@@ -3,6 +3,19 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-15 — Histórico: tirado o alternador Hoje/Tudo
+
+- Pedido direto: desde o filtro de período (de/até) do Histórico existir
+  (13/10/2026), o alternador "Hoje"/"Tudo" (`SegmentedControl`) ficou
+  redundante — o preset "Hoje" já está dentro do próprio `<FiltroPeriodo>`
+  e faz a mesma coisa. Removido de vez: `dia`/`alvo`/`Dia`/`inicioDoDia`
+  saíram de `historico/page.tsx`, sem período aplicado a tabela mostra tudo
+  (era o padrão do antigo "Tudo").
+- `ontem`/`anteontem` (valores do tipo `Dia`) já estavam mortos antes dessa
+  mudança — o segmentado só expunha "Hoje"/"Tudo" na UI.
+- `SegmentedControl` (`components/segmented-control.tsx`) não foi tocado —
+  ainda em uso no Dashboard.
+
 ## 2026-10-13 — Filtro de período (de/até) no Histórico
 
 - Pedido direto: trocar o campo de data único por "aquele negócio de
@@ -13,9 +26,7 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
   calendários lado a lado pra escolher início e fim. Intervalo inclusivo
   dos dois lados — início = fim filtra só aquele dia.
 - Puramente client-side: Histórico já lê tudo de `GET /captacoes` e
-  filtra em memória, então não mudou rota nem schema. Aplicar um período
-  muda o segmentado pra "Tudo" (os dois filtros de data não fazem sentido
-  somados).
+  filtra em memória, então não mudou rota nem schema.
 - Matemática do intervalo extraída em `estaNoPeriodo()` (exportada de
   `filtro-periodo.tsx`) e testada direto, sem passar pela UI — abrir o
   popover de verdade trava em teste (jsdom não tem layout real, o clique
