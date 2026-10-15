@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 // Geist/Geist Mono (redesign 13/10/2026, docs/valetrade-redesign/HANDOFF.md
@@ -19,7 +20,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="pt-BR"
       className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <TooltipProvider>{children}</TooltipProvider>
+      </body>
     </html>
   );
 }

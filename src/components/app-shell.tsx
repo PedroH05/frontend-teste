@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, LogOut, Package, History as HistoryIcon, PanelLeftClose, PanelLeftOpen, Settings, StickyNote, Users } from 'lucide-react';
+import { LayoutDashboard, LogOut, Package, History as HistoryIcon, Search, Settings, StickyNote, User, Users } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import { disableMockMode, isMockMode } from '@/lib/mock-mode';
 import { apiFetch } from '@/lib/api';
@@ -13,13 +13,40 @@ import { applySkin, getSkin } from '@/lib/skin';
 import { applySidebarRecolhida, getSidebarRecolhida } from '@/lib/sidebar';
 import { applyStatusTexto, getStatusTexto } from '@/lib/status-texto';
 import type { CockpitRow } from '@/lib/types';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
 
-// Sidebar/layout portado de captacao-valetrade/public/index.html (.side,
-// .brand, .nav, .side-foot, #navInd/moveNavInd()). Ver
-// migration-plan/execution/PARITY_AUDIT_2026-09-09.md — item "navegação
-// entre telas" e "logout" (antes ausentes na migração). Precisa ser um
-// Layout de verdade (src/app/(authed)/layout.tsx), não recriado por
-// página, senão o indicador não tem de onde deslizar.
+// Sidebar/layout redesenhado (docs/valetrade-redesign/HANDOFF.md seção 2,
+// 15/10/2026) com a Sidebar de verdade do shadcn, no lugar do .vt-side/
+// .vt-nav/indicador deslizante escrito à mão. Precisa ser um Layout de
+// verdade (src/app/(authed)/layout.tsx), não recriado por página — igual
+// já valia antes.
+//
+// `recolhida` continua sendo a fonte da verdade (localStorage via
+// lib/sidebar.ts, que também seta `data-sidebar` na raiz do documento —
+// outras telas leem esse atributo por CSS, ex. colunas extras da
+// Carteira/Histórico só aparecem recolhida). `SidebarProvider` é só
+// controlado por cima dele (open = !recolhida), não ganhou uma segunda
+// fonte de verdade.
+//
+// Botão "Buscar… Ctrl K": só visual por enquanto — o atalho de busca
+// global é item da seção 6 do HANDOFF ("a confirmar com o time"), ainda
+// não tem onClick nem listener de teclado.
 
 const NAV_ITEMS = [
   { section: 'Operação', items: [{ href: '/carteira', label: 'Carteira', icon: Package }] },
@@ -38,29 +65,10 @@ const NAV_ITEMS = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const navRefs = useRef(new Map<string, HTMLAnchorElement>());
-  const indRef = useRef<HTMLDivElement>(null);
   const [mock, setMock] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [criticos, setCriticos] = useState(0);
   const [recolhida, setRecolhida] = useState(false);
-  const asideRef = useRef<HTMLElement>(null);
-
-  // Posiciona a faixa do item ativo no bloco de link atual. Chamada ao trocar
-  // de página, ao recolher/expandir e no fim da animação de largura da sidebar
-  // (senão a faixa fica fora do esquadro no meio do deslize).
-  function posicionaIndicador() {
-    const active = [...navRefs.current.entries()].find(([href]) => pathname?.startsWith(href));
-    const ind = indRef.current;
-    if (!active || !ind) {
-      if (ind) ind.style.opacity = '0';
-      return;
-    }
-    const el = active[1];
-    ind.style.top = `${el.offsetTop}px`;
-    ind.style.height = `${el.offsetHeight}px`;
-    ind.style.opacity = '1';
-  }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza com localStorage (sistema externo), só existe no cliente
@@ -122,23 +130,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Move a "saliência" de vidro pro item ativo — mede a posição real do
-  // link em vez de calcular por índice, igual moveNavInd() no original.
-  useLayoutEffect(() => {
-    posicionaIndicador();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- posicionaIndicador só lê pathname e refs; as dependências são as que disparam o reposicionamento
-  }, [pathname, recolhida]);
-
-  useEffect(() => {
-    const aside = asideRef.current;
-    if (!aside) return;
-    const aoTerminar = (e: TransitionEvent) => {
-      if (e.propertyName === 'width') posicionaIndicador();
-    };
-    aside.addEventListener('transitionend', aoTerminar);
-    return () => aside.removeEventListener('transitionend', aoTerminar);
-  });
-
   async function handleLogout() {
     disableMockMode();
     try {
@@ -152,66 +143,97 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div className="vt-ambient-bg" />
-      <div className="flex h-screen overflow-hidden">
-        <aside ref={asideRef} className={`vt-side${recolhida ? ' vt-side-recolhida' : ''}`}>
-          <div ref={indRef} className="vt-nav-ind" />
-          <div className="vt-brand">
-            {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática pequena, next/image não compensa aqui */}
-            <img src="/valetrade-logo.png" alt="Valetrade" className="h-9 w-9 shrink-0 object-contain" />
-            {!recolhida && (
-              <div className="min-w-0 flex-1">
-                <b className="vt-brand-shine block text-[15px] tracking-wide">VALETRADE</b>
-                <small className="text-[10.5px]" style={{ color: 'var(--vt-muted)' }}>
-                  Captação Inteligente
-                </small>
+      <SidebarProvider open={!recolhida} onOpenChange={(open) => setRecolhida(!open)}>
+        <Sidebar collapsible="icon">
+          <SidebarHeader>
+            <div className="flex items-center gap-2.5 px-1 py-1">
+              {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática pequena, next/image não compensa aqui */}
+              <img src="/valetrade-logo.png" alt="Valetrade" className="h-8 w-8 shrink-0 object-contain" />
+              <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+                <b className="block truncate text-[15px] font-bold tracking-wide text-sidebar-foreground">VALETRADE</b>
+                <small className="block truncate text-[10.5px] text-sidebar-foreground/60">Captação Inteligente</small>
               </div>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setRecolhida((v) => !v)}
-            className="vt-logout-btn self-end"
-            title={recolhida ? 'Expandir menu' : 'Recolher menu'}
-            aria-label={recolhida ? 'Expandir menu' : 'Recolher menu'}
-          >
-            {recolhida ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
-          </button>
-          {NAV_ITEMS.map((group) => (
-            <div key={group.section}>
-              {!recolhida && <div className="vt-nav-sec">{group.section}</div>}
-              {group.items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  title={recolhida ? item.label : undefined}
-                  ref={(el) => {
-                    if (el) navRefs.current.set(item.href, el);
-                    else navRefs.current.delete(item.href);
-                  }}
-                  className={`vt-nav${pathname?.startsWith(item.href) ? ' active' : ''}`}
-                >
-                  <item.icon className="ic" />
-                  {!recolhida && <span>{item.label}</span>}
-                  {item.href === '/carteira' && criticos > 0 && <span className="badge">{criticos}</span>}
-                </Link>
-              ))}
+              <SidebarTrigger
+                aria-label={recolhida ? 'Expandir menu' : 'Recolher menu'}
+                className="shrink-0 text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground group-data-[collapsible=icon]:hidden"
+              />
             </div>
-          ))}
-          <div className="vt-user-card">
-            <div className="vt-avatar" title="Sessão ativa" />
-            {!recolhida && (
-              <div className="vt-user-meta">
-                <div className="email" title={userEmail}>
+            <button
+              type="button"
+              disabled
+              title="Busca global — ainda não ligada (seção 6 do redesign)"
+              className="flex h-10 items-center gap-2.5 rounded-md border border-sidebar-border bg-sidebar-accent px-3 text-sm text-sidebar-foreground/60 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+            >
+              <Search className="size-4 shrink-0" />
+              <span className="flex-1 text-left group-data-[collapsible=icon]:hidden">Buscar…</span>
+              <kbd className="rounded bg-sidebar-border px-1.5 py-0.5 font-mono text-[11px] text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden">
+                Ctrl K
+              </kbd>
+            </button>
+          </SidebarHeader>
+          <SidebarContent>
+            {NAV_ITEMS.map((group) => (
+              <SidebarGroup key={group.section}>
+                <SidebarGroupLabel className="uppercase tracking-wider">{group.section}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.items.map((item) => {
+                      const active = pathname?.startsWith(item.href) ?? false;
+                      return (
+                        <SidebarMenuItem key={item.href}>
+                          <SidebarMenuButton
+                            render={<Link href={item.href} />}
+                            isActive={active}
+                            tooltip={item.label}
+                            className="data-active:bg-primary data-active:text-primary-foreground data-active:hover:bg-primary data-active:hover:text-primary-foreground"
+                          >
+                            <item.icon />
+                            <span>{item.label}</span>
+                          </SidebarMenuButton>
+                          {item.href === '/carteira' && criticos > 0 && (
+                            <SidebarMenuBadge className="rounded-full bg-white/15 text-current">
+                              {criticos}
+                            </SidebarMenuBadge>
+                          )}
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            ))}
+          </SidebarContent>
+          <SidebarFooter>
+            <div className="flex items-center gap-2.5 border-t border-sidebar-border px-1 pt-3">
+              <div className="relative shrink-0">
+                <Avatar className="size-[34px]">
+                  <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground">
+                    <User className="size-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <span
+                  title="Sessão ativa"
+                  className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-sidebar bg-success"
+                />
+              </div>
+              <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+                <div className="truncate text-[12px] text-sidebar-foreground/60" title={userEmail}>
                   {userEmail || 'Sessão ativa'}
                 </div>
               </div>
-            )}
-            <button type="button" onClick={handleLogout} className="vt-logout-btn" title="Sair">
-              <LogOut size={16} />
-            </button>
-          </div>
-        </aside>
-        <main className="min-w-0 flex-1 overflow-y-auto">
+              <button
+                type="button"
+                onClick={handleLogout}
+                title="Sair"
+                aria-label="Sair"
+                className="flex size-8 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground group-data-[collapsible=icon]:hidden"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          </SidebarFooter>
+        </Sidebar>
+        <SidebarInset className="min-w-0 overflow-y-auto bg-transparent">
           {mock && (
             <div
               className="sticky top-0 z-10 px-4 py-1.5 text-center text-[11px] font-bold tracking-wide text-white uppercase"
@@ -221,8 +243,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           )}
           {children}
-        </main>
-      </div>
+        </SidebarInset>
+      </SidebarProvider>
     </>
   );
 }

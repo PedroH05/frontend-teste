@@ -3,6 +3,35 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-15 — Redesign passo 2: Sidebar do shadcn (branch `redesign/shadcn-v2`)
+
+- `components/app-shell.tsx` reescrito: `.vt-side`/`.vt-nav`/indicador
+  deslizante escrito à mão saíram, entrou a `Sidebar` de verdade do shadcn
+  (`components/ui/sidebar.tsx` + `sheet.tsx`/`tooltip.tsx`/`avatar.tsx`,
+  instalados via CLI). ~200 linhas de CSS morta removidas de `globals.css`.
+- `recolhida`/`lib/sidebar.ts` continuam a fonte da verdade — `data-sidebar`
+  na raiz do documento (lido por Carteira/Histórico pras colunas extras)
+  não mudou de mecanismo, só quem desenha a sidebar em cima dele.
+- Botão "Buscar… Ctrl K" é só visual por enquanto (seção 6 do HANDOFF,
+  "a confirmar com o time").
+- `layout.tsx` ganhou `TooltipProvider` (exigência do `Sidebar` do shadcn,
+  usado pros labels quando recolhida).
+- Trabalho isolado na branch `redesign/shadcn-v2` — `main` sem mudança.
+
+## 2026-10-13 — Redesign passo 1: tokens de marca + fonte Geist (branch `redesign/shadcn-v2`)
+
+- Material do redesign (`docs/valetrade-redesign/`: `HANDOFF.md`, mocks em
+  `telas/*.dc.html`, prints de antes) copiado pro repo.
+- `globals.css`: tokens shadcn (`--background`/`--primary`/`--card`/etc.,
+  até então o cinza padrão do `shadcn init`, nunca usados de verdade)
+  trocados pelos valores de marca da seção 1 do HANDOFF — vermelho
+  primary, fundo pérola, sidebar escura. Novos tokens `--success*`/
+  `--warning*`. `--radius` 10px → 12px.
+- `layout.tsx`: fonte Geist/Geist Mono no lugar de IBM Plex Sans/Mono —
+  reverte decisão de 29/09/2026, de propósito (pedido do redesign).
+- Nenhuma tela foi tocada ainda nesse passo — todas continuavam usando o
+  sistema `--vt-*` próprio.
+
 ## 2026-10-13 — Filtro de período (de/até) no Histórico
 
 - Pedido direto: trocar o campo de data único por "aquele negócio de

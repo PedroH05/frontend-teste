@@ -63,18 +63,38 @@ Component (que não teria como montar o header `Authorization`).
 
 ## `AppShell` (`src/components/app-shell.tsx`)
 
-Layout persistente das telas autenticadas:
-- Sidebar com navegação (`Link` do Next) e indicador deslizante calculado
-  via `useLayoutEffect` (mede a posição real do link ativo, não hardcoda
-  índice).
+Layout persistente das telas autenticadas. Reescrito em 15/10/2026 (redesign,
+`docs/valetrade-redesign/HANDOFF.md` seção 2, branch `redesign/shadcn-v2`)
+pra usar a `Sidebar` de verdade do shadcn (`components/ui/sidebar.tsx`, CLI)
+no lugar do `.vt-side`/`.vt-nav`/indicador deslizante escrito à mão — ver
+histórico desse indicador na seção "Design system" abaixo, mantido só como
+registro, não reflete mais o código atual.
+- `SidebarProvider` é **controlado por cima** do estado que já existia
+  (`recolhida`, de `lib/sidebar.ts`) — `open={!recolhida}`. Não virou uma
+  segunda fonte de verdade: `applySidebarRecolhida` continua sendo quem seta
+  `data-sidebar` na raiz do documento e grava em `localStorage`, que é o que
+  outras telas (ex. colunas extras da Carteira/Histórico) ainda leem por
+  CSS — a troca de componente de UI não mudou esse contrato.
+- Item ativo: `isActive` (calculado comparando `pathname`) + classe
+  `data-active:bg-primary data-active:text-primary-foreground` (o padrão do
+  componente shadcn é `bg-sidebar-accent`, sobrescrito pra bater com o
+  HANDOFF). Collapse pra só ícone usa `tooltip` do `SidebarMenuButton`
+  (mostra o label ao passar o mouse quando recolhida) — precisa de
+  `TooltipProvider` envolvendo o app (`layout.tsx`).
+- Botão "Buscar… Ctrl K": só visual (`disabled`, sem `onClick`) — é item da
+  seção 6 do HANDOFF ("a confirmar com o time"), não tem atalho de teclado
+  nem busca de verdade ainda.
 - Busca `GET /auth/me` uma vez (não a cada navegação) pra mostrar o e-mail
   do usuário logado no rodapé.
 - Busca `GET /carteira` uma vez (não a cada navegação) só pra calcular o
   badge de "críticos" no item Carteira do menu — refazer essa busca a cada
   troca de página já causou lentidão perceptível notada pelo usuário; a
   correção foi trocar a dependência do efeito de `[pathname]` para `[]`.
-- Botão de tema (sol/lua) e botão de logout, juntos num "cartão de
-  usuário" no rodapé (não itens soltos de menu).
+- Avatar do rodapé é só um ícone genérico (`lucide-react` `User`) + ponto
+  verde "sessão ativa" — sem iniciais inventadas a partir do e-mail (que é
+  um alias de equipe, `captacao@valetrade.com.br`, não uma pessoa).
+- Logo continua a imagem real (`/valetrade-logo.png`), não o marco
+  genérico em SVG que aparece no mock do redesign.
 - Banner fixo no topo quando modo demo está ativo.
 
 ## Componentes importantes
@@ -93,13 +113,14 @@ Layout persistente das telas autenticadas:
 
 ## Tipografia
 
-`src/app/layout.tsx` carrega **IBM Plex Sans** (texto) e **IBM Plex Mono**
-(`font-mono` — CNPJ, código de container/BL, barras do Dashboard) via
-`next/font/google`, nas variáveis `--font-plex-sans`/`--font-plex-mono`
-(mapeadas pra `--font-sans`/`--font-mono` do Tailwind em `globals.css`).
-Trocado de Inter em 29/09/2026 — o nome das variáveis dizia "geist" desde
-o template inicial do Next.js mesmo quando a fonte real era Inter, nunca
-Geist de verdade; corrigido junto da troca.
+`src/app/layout.tsx` carrega **Geist** (texto) e **Geist Mono** (`font-mono`
+— CNPJ, código de container/BL, barras do Dashboard) via pacote `geist`
+(`geist/font/sans`, `geist/font/mono`), nas variáveis
+`--font-geist-sans`/`--font-geist-mono` (mapeadas pra `--font-sans`/
+`--font-mono` do Tailwind em `globals.css`). Troca de 13/10/2026 (redesign,
+HANDOFF seção 1) — reverte a escolha de IBM Plex Sans de 29/09/2026 (que
+tinha motivo real: densidade de dado/número), decisão explícita do
+redesign, não esquecimento.
 
 ## Design system — tokens `--vt-*`
 
@@ -115,6 +136,15 @@ par claro/escuro, ver abaixo), nunca um valor hexadecimal solto num
 componente — isso já causou bug real (badge de Regime na Carteira e o "✕"
 de aliases em Clientes usavam `rgba(40,36,28,...)` fixo, ilegível no modo
 escuro até serem trocados pelos tokens).
+
+**Tokens shadcn (`--background`/`--primary`/`--card`/etc.) agora também têm
+cor de marca de verdade** (redesign 13/10/2026, HANDOFF seção 1) — até
+então eram o cinza padrão gerado pelo `shadcn init`, nunca usados por
+nenhuma tela (só por primitivos `ui/*.tsx`). Os dois sistemas coexistem por
+enquanto: `--vt-*` continua sendo o que toda tela ainda usa, `--primary`
+etc. é o que as telas re-feitas no redesign (`AppShell` é a primeira,
+15/10/2026) passam a usar. A ideia é o redesign ir migrando tela por tela
+pros tokens shadcn até `--vt-*` virar código morto — não aconteceu ainda.
 
 **Sidebar preta sólida, sem variar por tema** (01/10/2026, pedido direto —
 referência visual do `cotacoes-valetrade-code`, outro frontend da
