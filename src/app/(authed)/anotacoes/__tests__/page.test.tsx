@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import AnotacoesPage from '../page';
@@ -51,7 +51,7 @@ describe('AnotacoesPage', () => {
       createdAt: '2026-10-08T10:00:00.000Z',
       updatedAt: '2026-10-08T10:00:00.000Z',
     });
-    await user.click(screen.getByRole('button', { name: '+ Nova nota' }));
+    await user.click(screen.getByRole('button', { name: 'Nova nota' }));
 
     const campoTitulo = await screen.findByPlaceholderText('Nome da nota');
     expect(campoTitulo).toHaveValue('Nova nota');
@@ -74,5 +74,37 @@ describe('AnotacoesPage', () => {
     // sem captacaoId no corpo — nota solta, não presa a captação nenhuma
     const chamadaCriar = apiFetchMock.mock.calls.find((c) => c[0] === '/notas' && (c[1] as RequestInit)?.method === 'POST');
     expect(chamadaCriar).toBeTruthy();
+  });
+
+  const nota = (id: number, titulo: string, texto: string | null) => ({
+    id, captacaoId: null, titulo, texto, cor: null, fixada: false, desenho: null, createdAt: '', updatedAt: '',
+  });
+
+  it('busca filtra a lista por título ou texto (redesign 21/10/2026)', async () => {
+    const user = userEvent.setup();
+    filaApi('/notas', [nota(1, 'Reunião', 'quinta'), nota(2, 'Compras', 'papel A4')]);
+    render(<AnotacoesPage />);
+    await screen.findByText('Compras');
+
+    await user.type(screen.getByPlaceholderText('Buscar notas…'), 'papel');
+    const lista = screen.getByRole('complementary', { name: 'Lista de notas' });
+    expect(within(lista).queryByText('Reunião')).not.toBeInTheDocument();
+    expect(within(lista).getByText('Compras')).toBeInTheDocument();
+    expect(within(lista).getByText('1 nota')).toBeInTheDocument();
+  });
+
+  it('excluir pede confirmação antes de apagar', async () => {
+    const user = userEvent.setup();
+    filaApi('/notas', [nota(1, 'Reunião', null)]);
+    render(<AnotacoesPage />);
+    await screen.findByDisplayValue('Reunião');
+
+    await user.click(screen.getByRole('button', { name: 'Excluir nota' }));
+    expect(await screen.findByText('Excluir a nota "Reunião"?')).toBeInTheDocument();
+    expect(apiFetchMock.mock.calls.some((c) => c[0] === '/notas/1' && (c[1] as RequestInit)?.method === 'DELETE')).toBe(false);
+
+    await user.click(screen.getByRole('button', { name: 'Excluir' }));
+    expect(apiFetchMock.mock.calls.some((c) => c[0] === '/notas/1' && (c[1] as RequestInit)?.method === 'DELETE')).toBe(true);
+    expect(await screen.findByText('Crie uma nota pra começar.')).toBeInTheDocument();
   });
 });

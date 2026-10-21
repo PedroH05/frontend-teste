@@ -3,6 +3,14 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-21 — Redesign passo 5c: Anotações (branch `redesign/shadcn-v2`)
+
+- Lista de notas num card com busca (título/texto), botão "+" e contador;
+  nota ativa em `bg-accent`. Editor num card: título grande, "Abrir quadro"
+  e "Excluir nota" no topo, rodapé com "Salva ao sair do campo" e
+  contador de caracteres.
+- Excluir nota pede confirmação num `AlertDialog` (antes `confirm()`).
+
 ## 2026-10-21 — Redesign passo 5b: Clientes (branch `redesign/shadcn-v2`)
 
 - Lista num card à esquerda (avatar com iniciais, CNPJ em mono, apelidos

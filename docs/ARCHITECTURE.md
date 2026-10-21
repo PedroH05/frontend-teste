@@ -354,6 +354,9 @@ do `(authed)/layout.tsx`.
   testado dessa forma). A cobertura em
   `captacoes/__tests__/page.test.tsx` usa o prefill por query string pra
   exercitar o valor inicial em vez de abrir o popup.
+- **Anotações redesenhada** (21/10/2026, redesign passo 5): busca da
+  lista é só no cliente (filtra título + texto das notas já carregadas, sem
+  rota nova). Exclusão via `AlertDialog` (`confirmandoExclusao`).
 - **Clientes redesenhado** (21/10/2026, redesign passo 5): lista + card
   "Adicionar cliente" lado a lado. Busca segue no topo (decisão de
   28/09/2026 vale mais que o mock). `mascaraCnpj` (local da página) formata
