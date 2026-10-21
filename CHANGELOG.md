@@ -3,6 +3,14 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-21 — Sidebar recolhida não voltava
+
+- Bug: com a sidebar recolhida, o botão de recolher/expandir sumia junto
+  (`group-data-[collapsible=icon]:hidden`), e o único jeito de voltar era o
+  atalho Ctrl+B, que ninguém conhecia. Agora, recolhida, o logo dá lugar ao
+  botão de expandir. Tooltip do botão cita o Ctrl+B. Teste novo em
+  `components/__tests__/app-shell.test.tsx`.
+
 ## 2026-10-21 — Paginação numerada (branch `redesign/shadcn-v2`)
 
 - Carteira, Histórico e Clientes: "Anterior · 1 2 3 … 74 · Próxima" no

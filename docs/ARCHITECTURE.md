@@ -81,6 +81,10 @@ registro, não reflete mais o código atual.
   HANDOFF). Collapse pra só ícone usa `tooltip` do `SidebarMenuButton`
   (mostra o label ao passar o mouse quando recolhida) — precisa de
   `TooltipProvider` envolvendo o app (`layout.tsx`).
+- Botão de recolher/expandir (`SidebarTrigger`) **nunca pode ser escondido
+  no modo recolhido** — é o único jeito visível de voltar (fora o atalho
+  Ctrl+B do próprio shadcn). Recolhida, o logo some e o botão fica no lugar
+  (bug de 21/10/2026, teste em `components/__tests__/app-shell.test.tsx`).
 - Botão "Buscar… Ctrl K": só visual (`disabled`, sem `onClick`) — é item da
   seção 6 do HANDOFF ("a confirmar com o time"), não tem atalho de teclado
   nem busca de verdade ainda.

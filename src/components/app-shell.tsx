@@ -146,16 +146,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <SidebarProvider open={!recolhida} onOpenChange={(open) => setRecolhida(!open)}>
         <Sidebar collapsible="icon">
           <SidebarHeader>
-            <div className="flex items-center gap-2.5 px-1 py-1">
+            {/* Recolhida, o logo dá lugar ao botão de expandir — antes o botão
+                sumia junto e não tinha como voltar sem o atalho Ctrl+B
+                (bug relatado 21/10/2026). */}
+            <div className="flex items-center gap-2.5 px-1 py-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
               {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática pequena, next/image não compensa aqui */}
-              <img src="/valetrade-logo.png" alt="Valetrade" className="h-8 w-8 shrink-0 object-contain" />
+              <img
+                src="/valetrade-logo.png"
+                alt="Valetrade"
+                className="h-8 w-8 shrink-0 object-contain group-data-[collapsible=icon]:hidden"
+              />
               <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
                 <b className="block truncate text-[15px] font-bold tracking-wide text-sidebar-foreground">VALETRADE</b>
                 <small className="block truncate text-[10.5px] text-sidebar-foreground/60">Captação Inteligente</small>
               </div>
               <SidebarTrigger
                 aria-label={recolhida ? 'Expandir menu' : 'Recolher menu'}
-                className="shrink-0 text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground group-data-[collapsible=icon]:hidden"
+                title={recolhida ? 'Expandir menu (Ctrl+B)' : 'Recolher menu (Ctrl+B)'}
+                className="shrink-0 text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               />
             </div>
             <button
