@@ -281,13 +281,21 @@ export default function ClientesPage() {
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <section aria-label="Lista de clientes" className="min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm">
-          <Table>
+          {/* table-fixed + larguras fixas: a tabela cabe no card sem rolar pro
+              lado (pedido 21/10/2026); nome e apelidos quebram linha. */}
+          <Table className="table-fixed">
+            <colgroup>
+              <col />
+              <col className="w-[168px]" />
+              <col className="w-[30%]" />
+              <col className="w-[84px]" />
+            </colgroup>
             <TableHeader>
               <TableRow className="bg-muted/40 hover:bg-muted/40">
-                <TableHead className="h-11 text-xs font-medium text-muted-foreground">Cliente</TableHead>
-                <TableHead className="h-11 text-xs font-medium text-muted-foreground">CNPJ</TableHead>
-                <TableHead className="h-11 text-xs font-medium text-muted-foreground">Apelidos</TableHead>
-                <TableHead className="h-11 w-[96px]">
+                <TableHead className="h-11 px-3! text-xs font-medium text-muted-foreground">Cliente</TableHead>
+                <TableHead className="h-11 px-3! text-xs font-medium text-muted-foreground">CNPJ</TableHead>
+                <TableHead className="h-11 px-3! text-xs font-medium text-muted-foreground">Apelidos</TableHead>
+                <TableHead className="h-11 px-1.5!">
                   <span className="sr-only">Ações</span>
                 </TableHead>
               </TableRow>
@@ -308,7 +316,7 @@ export default function ClientesPage() {
                 clientesPagina.map((c) =>
                   editingId === c.id ? (
                     <TableRow key={c.id} className="bg-warning-soft/50 hover:bg-warning-soft/50">
-                      <TableCell>
+                      <TableCell className="px-3! whitespace-normal">
                         <Input
                           className="h-10"
                           aria-label="Nome do cliente"
@@ -316,7 +324,7 @@ export default function ClientesPage() {
                           onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-3! whitespace-normal">
                         <Input
                           className="h-10 font-mono"
                           aria-label="CNPJ do cliente"
@@ -325,11 +333,11 @@ export default function ClientesPage() {
                           onChange={(e) => setEditForm((f) => ({ ...f, cnpj: mascaraCnpj(e.target.value) }))}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-3! whitespace-normal">
                         <AliasChips value={editForm.aliases} onChange={(v) => setEditForm((f) => ({ ...f, aliases: v }))} />
                         {editError && <p className="mt-1.5 text-xs font-medium text-destructive">{editError}</p>}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className="px-1.5!">
                         <div className="flex items-center justify-end gap-0.5">
                           <Button
                             variant="ghost"
@@ -356,21 +364,21 @@ export default function ClientesPage() {
                     </TableRow>
                   ) : (
                     <TableRow key={c.id}>
-                      <TableCell>
+                      <TableCell className="px-3! whitespace-normal">
                         <div className="flex items-center gap-3">
                           <span
                             aria-hidden="true"
-                            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-xs font-semibold text-accent-foreground"
+                            className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-[11px] font-semibold text-accent-foreground"
                           >
                             {iniciais(c.name)}
                           </span>
-                          <span className="font-semibold">{c.name}</span>
+                          <span className="min-w-0 font-semibold break-words">{c.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="font-mono text-[13px] whitespace-nowrap text-foreground/80">
+                      <TableCell className="px-3! font-mono text-[12.5px] whitespace-nowrap text-foreground/80">
                         {c.cnpj || '—'}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-3! whitespace-normal">
                         {c.aliases.length ? (
                           <div className="flex flex-wrap gap-1">
                             {c.aliases.map((a) => (
@@ -383,7 +391,7 @@ export default function ClientesPage() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className="px-1.5!">
                         <RowActions nome={c.aliases[0] || c.name} onEdit={() => startEdit(c)} onDelete={() => setExcluindo(c)} />
                       </TableCell>
                     </TableRow>
