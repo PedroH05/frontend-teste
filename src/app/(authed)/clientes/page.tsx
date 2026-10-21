@@ -279,57 +279,7 @@ export default function ClientesPage() {
         </label>
       </header>
 
-      {/* Cadastro em cima e tabela com a largura toda (21/10/2026): com o
-          card ao lado, a tabela ficava estreita e precisava rolar pro lado. */}
-      <div className="space-y-6">
-        <section aria-labelledby="novo-cliente" className="rounded-xl border bg-card p-5 shadow-sm">
-          <div className="mb-4 flex items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-lg bg-accent text-primary">
-              <UserPlus className="size-4" aria-hidden="true" />
-            </span>
-            <h2 id="novo-cliente" className="text-[15px] font-semibold">
-              Adicionar cliente
-            </h2>
-          </div>
-          <form
-            onSubmit={handleAdd}
-            className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)_minmax(0,1.3fr)_auto]"
-          >
-            <Field>
-              <FieldLabel htmlFor="cl-nome">Razão social / Nome</FieldLabel>
-              <FieldContent>
-                <Input id="cl-nome" className="h-10" value={nome} onChange={(e) => setNome(e.target.value)} required />
-              </FieldContent>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="cl-cnpj">CNPJ</FieldLabel>
-              <FieldContent>
-                <Input
-                  id="cl-cnpj"
-                  className="h-10 font-mono"
-                  inputMode="numeric"
-                  placeholder="00.000.000/0000-00"
-                  value={cnpj}
-                  onChange={(e) => setCnpj(mascaraCnpj(e.target.value))}
-                />
-              </FieldContent>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="cl-aliases">Apelidos</FieldLabel>
-              <FieldContent>
-                <AliasChips id="cl-aliases" value={aliases} onChange={setAliases} />
-              </FieldContent>
-            </Field>
-            <div className="flex flex-col gap-2 md:col-span-2 xl:col-span-1 xl:pt-[26px]">
-              <Button type="submit" className="h-10 px-4" disabled={saving}>
-                <Plus />
-                {saving ? 'Adicionando…' : 'Adicionar cliente'}
-              </Button>
-            </div>
-            {error && <p className="text-sm font-medium text-destructive md:col-span-2 xl:col-span-4">{error}</p>}
-          </form>
-        </section>
-
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <section aria-label="Lista de clientes" className="min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm">
           <Table>
             <TableHeader>
@@ -358,7 +308,7 @@ export default function ClientesPage() {
                 clientesPagina.map((c) =>
                   editingId === c.id ? (
                     <TableRow key={c.id} className="bg-warning-soft/50 hover:bg-warning-soft/50">
-                      <TableCell className="whitespace-normal">
+                      <TableCell>
                         <Input
                           className="h-10"
                           aria-label="Nome do cliente"
@@ -366,7 +316,7 @@ export default function ClientesPage() {
                           onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
                         />
                       </TableCell>
-                      <TableCell className="whitespace-normal">
+                      <TableCell>
                         <Input
                           className="h-10 font-mono"
                           aria-label="CNPJ do cliente"
@@ -375,7 +325,7 @@ export default function ClientesPage() {
                           onChange={(e) => setEditForm((f) => ({ ...f, cnpj: mascaraCnpj(e.target.value) }))}
                         />
                       </TableCell>
-                      <TableCell className="whitespace-normal">
+                      <TableCell>
                         <AliasChips value={editForm.aliases} onChange={(v) => setEditForm((f) => ({ ...f, aliases: v }))} />
                         {editError && <p className="mt-1.5 text-xs font-medium text-destructive">{editError}</p>}
                       </TableCell>
@@ -406,7 +356,7 @@ export default function ClientesPage() {
                     </TableRow>
                   ) : (
                     <TableRow key={c.id}>
-                      <TableCell className="min-w-[220px] whitespace-normal">
+                      <TableCell>
                         <div className="flex items-center gap-3">
                           <span
                             aria-hidden="true"
@@ -420,7 +370,7 @@ export default function ClientesPage() {
                       <TableCell className="font-mono text-[13px] whitespace-nowrap text-foreground/80">
                         {c.cnpj || '—'}
                       </TableCell>
-                      <TableCell className="whitespace-normal">
+                      <TableCell>
                         {c.aliases.length ? (
                           <div className="flex flex-wrap gap-1">
                             {c.aliases.map((a) => (
@@ -469,6 +419,49 @@ export default function ClientesPage() {
               </div>
             </div>
           )}
+        </section>
+
+        <section aria-labelledby="novo-cliente" className="rounded-xl border bg-card p-5 shadow-sm lg:sticky lg:top-6">
+          <div className="mb-4 flex items-center gap-2.5">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-accent text-primary">
+              <UserPlus className="size-4" aria-hidden="true" />
+            </span>
+            <h2 id="novo-cliente" className="text-[15px] font-semibold">
+              Adicionar cliente
+            </h2>
+          </div>
+          <form onSubmit={handleAdd} className="space-y-4">
+            <Field>
+              <FieldLabel htmlFor="cl-nome">Razão social / Nome</FieldLabel>
+              <FieldContent>
+                <Input id="cl-nome" className="h-10" value={nome} onChange={(e) => setNome(e.target.value)} required />
+              </FieldContent>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="cl-cnpj">CNPJ</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="cl-cnpj"
+                  className="h-10 font-mono"
+                  inputMode="numeric"
+                  placeholder="00.000.000/0000-00"
+                  value={cnpj}
+                  onChange={(e) => setCnpj(mascaraCnpj(e.target.value))}
+                />
+              </FieldContent>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="cl-aliases">Apelidos</FieldLabel>
+              <FieldContent>
+                <AliasChips id="cl-aliases" value={aliases} onChange={setAliases} />
+              </FieldContent>
+            </Field>
+            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+            <Button type="submit" className="h-10 w-full" disabled={saving}>
+              <Plus />
+              {saving ? 'Adicionando…' : 'Adicionar cliente'}
+            </Button>
+          </form>
         </section>
       </div>
 
