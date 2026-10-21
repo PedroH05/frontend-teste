@@ -51,7 +51,7 @@ import {
 } from '@/components/ui/table';
 
 // Comportamento portado de captacao-valetrade/public/index.html (render,
-// renderKpis, renderAlert, ask, exportOficial, captar, marcarCaptado,
+// renderKpis, renderAlert, exportOficial, captar, marcarCaptado,
 // efetivar, trackOpen). Ver migration-plan/features/carteira/CURRENT_BEHAVIOR.md
 // e migration-plan/prompts/04-carteira.md.
 //
@@ -61,8 +61,6 @@ import {
 // servidor do Next.
 
 const ALERT_MIN_KEY = 'alertMin';
-const TT_CONTAINER = (n: string) => `https://www.track-trace.com/container/${n}`;
-const TT_BOL = (n: string) => `https://www.track-trace.com/bol/${n}`;
 
 function despValido(desp: string): string | undefined {
   return desp && Number.isNaN(Number(desp)) ? desp : undefined;
@@ -85,11 +83,6 @@ export default function CarteiraPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filterBand, setFilterBand] = useState<string | null>(null);
-  const [chipFiltro, setChipFiltro] = useState<'critico' | 'semana' | 'semdesp' | 'aluzen' | null>(null);
-
-  function toggleChip(v: typeof chipFiltro) {
-    setChipFiltro((f) => (f === v ? null : v));
-  }
   // Padrão: registro mais recente primeiro — pedido 17/09/2026 (antes o
   // padrão era ETA mais urgente primeiro).
   const [sortKey, setSortKey] = useState<SortKey>('registrado');
@@ -103,8 +96,6 @@ export default function CarteiraPage() {
     }
   }
   const [busca, setBusca] = useState('');
-  const [ask, setAsk] = useState('');
-  const [askAnswer, setAskAnswer] = useState<React.ReactNode>(null);
   const [importing, setImporting] = useState(false);
   const [importSummary, setImportSummary] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -213,10 +204,6 @@ export default function CarteiraPage() {
     let list = enriquecidas;
     if (filterBand) list = list.filter(({ b }) => b.k === filterBand);
     if (mesFiltro) list = list.filter(({ r }) => (r.createdAt ?? '').slice(0, 7) === mesFiltro);
-    if (chipFiltro === 'critico') list = list.filter(({ b }) => b.k === 'prej');
-    else if (chipFiltro === 'semana') list = list.filter(({ b }) => ['prej', 'jan'].includes(b.k));
-    else if (chipFiltro === 'semdesp') list = list.filter(({ r }) => !r.regime || r.regime === 'AGUARDANDO');
-    else if (chipFiltro === 'aluzen') list = list.filter(({ r }) => r.cli.toLowerCase().includes('aluzen'));
     if (busca) {
       const q = busca.trim().toLowerCase();
       list = list.filter(({ r }) => JSON.stringify(r).toLowerCase().includes(q));
@@ -244,7 +231,7 @@ export default function CarteiraPage() {
       const vb = val(b);
       return (va < vb ? -1 : va > vb ? 1 : 0) * sortDir;
     });
-  }, [enriquecidas, busca, filterBand, mesFiltro, chipFiltro, sortKey, sortDir]);
+  }, [enriquecidas, busca, filterBand, mesFiltro, sortKey, sortDir]);
 
   const totalContainers = linhas.reduce((s, { r }) => s + (Number(r.qtd) || 1), 0);
 
@@ -253,16 +240,15 @@ export default function CarteiraPage() {
   // ficar numa página que não existe mais. Ajuste durante o render (não em
   // efeito) — ver https://react.dev/learn/you-might-not-need-an-effect.
   const [pagina, setPagina] = useState(1);
-  const [filtroAnterior, setFiltroAnterior] = useState({ filterBand, mesFiltro, chipFiltro, busca, sortKey, sortDir });
+  const [filtroAnterior, setFiltroAnterior] = useState({ filterBand, mesFiltro, busca, sortKey, sortDir });
   if (
     filtroAnterior.filterBand !== filterBand ||
     filtroAnterior.mesFiltro !== mesFiltro ||
-    filtroAnterior.chipFiltro !== chipFiltro ||
     filtroAnterior.busca !== busca ||
     filtroAnterior.sortKey !== sortKey ||
     filtroAnterior.sortDir !== sortDir
   ) {
-    setFiltroAnterior({ filterBand, mesFiltro, chipFiltro, busca, sortKey, sortDir });
+    setFiltroAnterior({ filterBand, mesFiltro, busca, sortKey, sortDir });
     setPagina(1);
   }
   const totalPaginas = Math.max(1, Math.ceil(linhas.length / PAGE_SIZE));
@@ -280,85 +266,6 @@ export default function CarteiraPage() {
       .sort((a, b) => a.d - b.d);
     return { prej };
   }, [enriquecidas]);
-
-  function handleAsk(override?: string) {
-    const raw = (override ?? ask).trim();
-    const code = raw.toUpperCase().replace(/\s+/g, '');
-    if (!/\s/.test(raw) && /\d/.test(raw) && /^[A-Z0-9./-]{6,}$/.test(code)) {
-      const isCont = /^[A-Z]{4}\d{7}$/.test(code);
-      const url = isCont ? TT_CONTAINER(code) : TT_BOL(code);
-      const hit = enriquecidas.find(
-        ({ r }) =>
-          (r.cont || '').toUpperCase().includes(code) ||
-          (r.bl || '').toUpperCase() === code ||
-          (r.blCap || '').toUpperCase() === code,
-      );
-      setAskAnswer(
-        <div>
-          <p>
-            {isCont ? (
-              <>
-                Detectei um <b>container</b> <span className="font-mono">{code}</span>.
-              </>
-            ) : (
-              <>
-                Parece um <b>BL / código</b> <span className="font-mono">{code}</span>.
-              </>
-            )}
-          </p>
-          {hit && (
-            <p className="mt-2">
-              📦 Está na sua carteira: <b>{hit.r.cli} {hit.r.ref.replace(hit.r.cli, '').trim()}</b> —{' '}
-              {hit.b.t}, ETA {fmtEta(hit.r.eta)} ({dLabel(hit.d)}).
-            </p>
-          )}
-          <Button className="mt-3" size="sm" onClick={() => window.open(url, '_blank', 'noopener')}>
-            Rastrear no track-trace
-          </Button>
-        </div>,
-      );
-      return;
-    }
-    const q = raw.toLowerCase();
-    let res = enriquecidas;
-    let intro = '';
-    const clientesConhecidos = ['tecno', 'aluzen', 'gv', 'huesker', 'faster', 'star', 'hb'];
-    const cli = clientesConhecidos.find((c) => q.includes(c));
-    if (/prejuí|prejui|iminente|crític|critic/.test(q)) {
-      res = enriquecidas.filter(({ b }) => b.k === 'prej');
-      intro = `${res.length} em estado crítico (doc na mão ou ETA ≤2d sem captação):`;
-    } else if (/despachante|regime|sem /.test(q)) {
-      res = enriquecidas.filter(({ r }) => !r.regime || r.regime === 'AGUARDANDO');
-      intro = `${res.length} com regime "Aguardando"/vazio:`;
-    } else if (cli) {
-      res = enriquecidas.filter(
-        ({ r }) => r.cli.toLowerCase() === cli || r.ref.toLowerCase().includes(cli),
-      );
-      intro = `${res.length} processo(s) de ${cli.toUpperCase()}:`;
-    } else if (/semana|captar/.test(q)) {
-      res = enriquecidas.filter(({ b }) => ['prej', 'jan'].includes(b.k));
-      intro = `Faltam captar ${res.length} nesta semana (≤7 dias):`;
-    } else {
-      res = enriquecidas.filter(({ b }) => ['prej', 'jan'].includes(b.k));
-      intro = 'Ação nos próximos 7 dias:';
-    }
-    setAskAnswer(
-      <div>
-        <p>{intro}</p>
-        {res.length === 0 ? (
-          <p className="text-muted-foreground">Nada encontrado.</p>
-        ) : (
-          <ul className="mt-2 space-y-1">
-            {res.slice(0, 8).map(({ r, b, d }) => (
-              <li key={r.capId ?? r.bl ?? r.ref}>
-                • <b>{r.cli} {r.ref.replace(r.cli, '').trim()}</b> — {b.t}, {dLabel(d)}, {r.regime || 'sem regime'}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>,
-    );
-  }
 
   // Linha sem captação casada (embarque só da Logcomex) — clicar nela vai
   // pro fluxo de criar uma captação nova, pré-preenchida com o que já se
@@ -504,7 +411,7 @@ export default function CarteiraPage() {
     }
   }
 
-  const filtroAtivo = !!(filterBand || busca || chipFiltro || mesFiltro);
+  const filtroAtivo = !!(filterBand || busca || mesFiltro);
   const totalCarteira = enriquecidas.length;
   const primeiraLinha = linhas.length ? (pagina - 1) * PAGE_SIZE + 1 : 0;
   const ultimaLinha = Math.min(pagina * PAGE_SIZE, linhas.length);
@@ -528,13 +435,6 @@ export default function CarteiraPage() {
       </TableHead>
     );
   }
-
-  const CHIPS: [Exclude<typeof chipFiltro, null>, string, string][] = [
-    ['critico', 'crítico', 'bg-primary'],
-    ['semana', 'falta captar essa semana', 'bg-warning'],
-    ['semdesp', 'sem despachante/regime', 'bg-muted-foreground/50'],
-    ['aluzen', 'processos da Aluzen', 'bg-foreground'],
-  ];
 
   const ABAS: { k: string | null; l: string; n: number }[] = [
     { k: null, l: 'Todos', n: totalCarteira },
@@ -680,56 +580,6 @@ export default function CarteiraPage() {
         })}
       </section>
 
-      <section aria-label="Busca rápida" className="space-y-3.5 rounded-xl border bg-card p-5 shadow-sm">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <label htmlFor="busca-rapida" className="font-semibold">
-            Busca rápida
-          </label>
-          <span className="text-[13px] text-muted-foreground">
-            cliente, contêiner ou BL — pergunte em linguagem natural
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <div className="flex h-11 min-w-0 flex-[1_1_320px] items-center gap-2.5 rounded-lg border bg-background px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30">
-            <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <input
-              id="busca-rapida"
-              placeholder="ex.: o que falta captar da Tecno? — ou cole um container/BL"
-              value={ask}
-              onChange={(e) => setAsk(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAsk()}
-              className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-            />
-            <kbd className="hidden rounded border bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground sm:inline">
-              Enter
-            </kbd>
-          </div>
-          <Button className="h-11 px-5" onClick={() => handleAsk()}>
-            Buscar
-          </Button>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="mr-1 text-xs text-muted-foreground">Sugestões</span>
-          {CHIPS.map(([id, label, dot]) => (
-            <Button
-              key={id}
-              variant="outline"
-              size="sm"
-              aria-pressed={chipFiltro === id}
-              onClick={() => toggleChip(id)}
-              className={cn(
-                'h-[30px] rounded-full px-3 text-[13px] font-normal',
-                chipFiltro === id && 'border-primary/30 bg-accent font-semibold text-primary hover:bg-accent',
-              )}
-            >
-              <span className={cn('size-[7px] rounded-full', dot)} aria-hidden="true" />
-              {label}
-            </Button>
-          ))}
-        </div>
-        {askAnswer && <div className="rounded-lg bg-muted/50 p-3.5 text-sm leading-relaxed">{askAnswer}</div>}
-      </section>
-
       {error && <p className="text-sm font-medium text-destructive">{error}</p>}
 
       <section aria-label="Processos" className="overflow-hidden rounded-xl border bg-card shadow-sm">
@@ -771,7 +621,6 @@ export default function CarteiraPage() {
                 onClick={() => {
                   setFilterBand(null);
                   setBusca('');
-                  setChipFiltro(null);
                   setMesFiltro(null);
                 }}
               >
@@ -873,9 +722,9 @@ export default function CarteiraPage() {
               <TableRow>
                 <TableCell colSpan={9}>
                   <EmptyState
-                    title={busca || filterBand || chipFiltro ? 'Nenhum processo com este filtro' : 'Radar vazio'}
+                    title={busca || filterBand || mesFiltro ? 'Nenhum processo com este filtro' : 'Radar vazio'}
                     subtitle={
-                      busca || filterBand || chipFiltro ? (
+                      busca || filterBand || mesFiltro ? (
                         'Tente limpar a busca ou o filtro de risco.'
                       ) : (
                         <>

@@ -356,8 +356,10 @@ do `(authed)/layout.tsx`.
   exercitar o valor inicial em vez de abrir o popup.
 - **Carteira e Histórico redesenhados** (21/10/2026, redesign passo 4,
   branch `redesign/shadcn-v2`). Toda a lógica de filtro/ordenação/
-  paginação/importação/exportação/busca rápida ficou igual — só o JSX
-  mudou. Pontos que importam:
+  paginação/importação/exportação ficou igual — só o JSX mudou. Exceção:
+  a **busca rápida** da Carteira (campo em linguagem natural + rastreio
+  de container/BL no track-trace + chips de sugestão) **foi removida** a
+  pedido, junto com `handleAsk`/`chipFiltro`. Pontos que importam:
   - **`StatusBadge`** (`components/status-badge.tsx`) é o badge de status
     das tabelas agora (e `STATUS_ESTILO` dá a cor/ícone por faixa pros
     cards de KPI). O texto fica num `.vt-band-texto`, então a regra de

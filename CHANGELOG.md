@@ -7,11 +7,16 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
 - **Carteira** no visual do `Main.dc.html`: breadcrumb, 4 cards de status
   com ícone, barra e "% da carteira" (clicáveis, filtram igual antes),
-  busca rápida num card com chips de sugestão, tabela num card com abas de
+  tabela num card com abas de
   status (Todos + 4, com contagem — mesmo filtro dos cards), busca na
   tabela e o filtro de mês virando botão tracejado "Mês". Alerta de
   crítico mantido, agora em vermelho suave; botão de minimizar ganhou
   ícone e nome acessível.
+- **Busca rápida da Carteira removida** (pedido direto): saiu o card
+  inteiro — campo em linguagem natural/rastreio de container/BL
+  (`handleAsk`, link pro track-trace) e os chips de sugestão (crítico,
+  semana, sem despachante, Aluzen). A busca da própria tabela e os
+  filtros de status/mês continuam.
 - **Histórico**: mesmo cabeçalho/tabela; linhas **agrupadas por dia de
   registro** ("Hoje · 21/10/2026 — 4 captações"), só quando ordenado por
   "Registrado em". Hora junto da data. Sem as abas Hoje/Tudo do mock — o

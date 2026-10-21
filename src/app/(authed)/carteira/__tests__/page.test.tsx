@@ -231,36 +231,6 @@ describe('CarteiraPage', () => {
     expect(screen.queryByText(/regime pendente/)).not.toBeInTheDocument();
   });
 
-  it('busca reconhece um código de container e oferece rastreio', async () => {
-    const user = userEvent.setup();
-    filaApi('/carteira', { rows: [] });
-    render(<CarteiraPage />);
-
-    await screen.findByText('Processos');
-    await user.type(
-      screen.getByPlaceholderText(/o que falta captar/),
-      'MSDU7175720',
-    );
-    await user.click(screen.getByRole('button', { name: 'Buscar' }));
-
-    expect(await screen.findByText(/Detectei um/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Rastrear no track-trace' })).toBeInTheDocument();
-  });
-
-  it('busca por palavra-chave "crítico" filtra a lista de risco', async () => {
-    const user = userEvent.setup();
-    filaApi('/carteira', {
-      rows: [row({ stage: 'MANIFESTADA_DOCS', cli: 'ALUZEN', ref: 'ALUZEN 002' })],
-    });
-    render(<CarteiraPage />);
-
-    await screen.findByText('Processos');
-    await user.type(screen.getByPlaceholderText(/o que falta captar/), 'o que está crítico?');
-    await user.click(screen.getByRole('button', { name: 'Buscar' }));
-
-    expect(await screen.findByText(/em estado crítico/)).toBeInTheDocument();
-  });
-
   it('pagina a tabela de processos de 5 em 5, igual ao Histórico', async () => {
     const user = userEvent.setup();
     const rows = Array.from({ length: 6 }, (_, i) =>
