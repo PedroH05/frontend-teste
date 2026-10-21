@@ -1,14 +1,56 @@
 'use client';
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { ptBR } from 'react-day-picker/locale';
+import {
+  AlertTriangle,
+  ArrowRight,
+  CalendarIcon,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Minus,
+  Plus,
+  X,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Captacao, CaptacaoInput, Cliente } from '@/lib/types';
 import { cleanDesp, DESPACHANTES_PADRAO } from '@/lib/despachante';
+import { listaConts } from '@/lib/conteineres';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress, ProgressLabel } from '@/components/ui/progress';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import { Field, FieldContent, FieldLabel } from '@/components/ui/field';
 import {
   Select,
@@ -25,7 +67,27 @@ import { NotasPainel } from '@/components/notas-painel';
 // migration-plan/prompts/03-captacoes.md pra fórmula exata de
 // stage/doc_*/doc_recebida_em (calculada no backend a partir de
 // `efetivada` + `docBl`/`docCe`/`docPl`, não recalculada aqui).
+//
+// Visual redesenhado em 21/10/2026 (docs/valetrade-redesign/HANDOFF.md
+// seções 4 e 5): stepper vertical, estado de cada etapa calculado só pelos
+// dados (não mais por "já visitada"), Revisão em três blocos.
 const STEPS = ['Identificação', 'Carga', 'Aduana', 'Terminal', 'Situação', 'Carregamento', 'Revisão'] as const;
+const REVISAO = STEPS.length - 1;
+const ETAPAS_COM_CAMPOS = [0, 1, 2, 3, 4, 5];
+
+const DESCRICOES: Record<number, string> = {
+  0: 'Quem é o cliente e qual a referência do processo.',
+  1: 'Navio, chegada prevista e contêineres.',
+  2: 'Documentos e despacho aduaneiro.',
+  3: 'De onde a carga sai e pra qual parceiro vai.',
+  4: 'Status da captação e observações.',
+  5: 'Datas de carregamento e chegada no destino.',
+};
+
+const STATUS_LABEL = {
+  PENDENTE: 'Pendente de documentação',
+  EFETIVA: 'Captação efetivada no terminal',
+} as const;
 
 function fmtDateBR(iso?: string): string {
   if (!iso) return '';
@@ -33,63 +95,36 @@ function fmtDateBR(iso?: string): string {
   return y && m && d ? `${d}/${m}/${y}` : '';
 }
 
-// Item da revisão — "não informado" em itálico cinza quando vazio, pra
-// ficar óbvio o que falta sem precisar decorar o formulário.
-function RecapItem({ label, value }: { label: string; value?: string }) {
-  return (
-    <div>
-      <div className="text-[9.5px] font-bold tracking-[.04em] uppercase" style={{ color: 'var(--vt-muted2)' }}>
-        {label}
-      </div>
-      <div
-        className="text-[12.5px] font-semibold"
-        style={value ? { color: 'var(--vt-ink)' } : { color: 'var(--vt-muted2)', fontStyle: 'italic', fontWeight: 500 }}
-      >
-        {value || 'não informado'}
-      </div>
-    </div>
-  );
+// Data "AAAA-MM-DD" sempre montada no fuso local — `new Date(iso)` leria
+// como meia-noite UTC e mostraria o dia anterior no Brasil.
+function parseISODateLocal(iso?: string): Date | undefined {
+  if (!iso) return undefined;
+  const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
+  if (!y || !m || !d) return undefined;
+  return new Date(y, m - 1, d);
 }
 
-function RecapSection({
-  n,
-  title,
-  onEdit,
-  children,
-}: {
-  n: number;
-  title: string;
-  onEdit: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="vt-glass p-[14px_16px]">
-      <div className="mb-2.5 flex items-center gap-2">
-        <span
-          className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[9.5px] font-extrabold text-white"
-          style={{ background: 'var(--vt-c-efet)' }}
-        >
-          {n}
-        </span>
-        <h3 className="flex-1 text-[12.5px] font-extrabold">{title}</h3>
-        <button type="button" onClick={onEdit} className="text-[10.5px] font-bold" style={{ color: 'var(--vt-red)' }}>
-          Editar
-        </button>
-      </div>
-      {children}
-    </div>
-  );
+function toISODateLocal(date: Date): string {
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${m}-${d}`;
 }
 
-// Quão preenchida está uma etapa já visitada — pedido 17/09/2026: a
-// bolinha ficava verde só por ter sido visitada, mesmo vazia. `boolean`
-// conta como preenchido só quando `true` (ex.: doc recebido marcado).
-function contarPreenchidos(campos: unknown[]): { preenchidos: number; total: number } {
-  const preenchidos = campos.filter((v) => {
-    if (typeof v === 'boolean') return v;
-    return v !== undefined && v !== null && String(v).trim() !== '';
-  }).length;
-  return { preenchidos, total: campos.length };
+function relativoDias(iso?: string): string | null {
+  const alvo = parseISODateLocal(iso);
+  if (!alvo) return null;
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const dias = Math.round((alvo.getTime() - hoje.getTime()) / 86_400_000);
+  if (dias === 0) return 'hoje';
+  return dias > 0 ? `em ${dias}d` : `há ${-dias}d`;
+}
+
+// `boolean` conta como preenchido só quando `true` (ex.: doc recebido
+// marcado) — mesma regra de antes do redesign (pedido 17/09/2026).
+function estaPreenchido(v: unknown): boolean {
+  if (typeof v === 'boolean') return v;
+  return v !== undefined && v !== null && String(v).trim() !== '';
 }
 
 const REGIMES = ['DTA', 'DUIMP', 'DI', 'DAC', 'AGUARDANDO'];
@@ -97,6 +132,8 @@ const ATRACACOES = ['Santos Brasil', 'BTP', 'DPW', 'ECOPORTO'];
 const PARCEIROS = ['ECOPORTO', 'MOVECTA', 'DPW'];
 
 type FormState = CaptacaoInput & { publicaConfirmado?: boolean };
+type Campo = { label: string; value: unknown; tipo?: 'data' | 'bool' | 'mono' };
+type EstadoEtapa = 'atual' | 'completa' | 'vazios' | 'pendente';
 
 const initialForm: FormState = {};
 
@@ -111,6 +148,166 @@ const CONTAINER_COLORS: [string, string][] = [
   ['#C0392B', '#96271C'],
 ];
 
+const CIRCULO: Record<EstadoEtapa, string> = {
+  atual: 'bg-primary text-primary-foreground ring-4 ring-primary/15',
+  completa: 'bg-success text-white',
+  vazios: 'border border-warning-border bg-warning-soft text-warning-text',
+  pendente: 'border border-border bg-card text-muted-foreground',
+};
+
+function Circulo({ estado, n, className }: { estado: EstadoEtapa; n: number; className?: string }) {
+  return (
+    <span
+      data-estado={estado}
+      className={cn(
+        'flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+        CIRCULO[estado],
+        className,
+      )}
+    >
+      {estado === 'completa' ? <Check className="size-3.5" strokeWidth={3} aria-label="completa" /> : n}
+    </span>
+  );
+}
+
+function plural(n: number, um: string, varios: string) {
+  return `${n} ${n === 1 ? um : varios}`;
+}
+
+function DateField({
+  id,
+  label,
+  value,
+  onChange,
+  relativo,
+}: {
+  id: string;
+  label: string;
+  value?: string;
+  onChange: (iso: string | undefined) => void;
+  relativo?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = parseISODateLocal(value);
+  const rel = relativo ? relativoDias(value) : null;
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <FieldContent>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger
+            id={id}
+            render={<Button variant="outline" className="h-10 w-full justify-start px-3 font-normal" />}
+          >
+            <CalendarIcon className="text-muted-foreground" />
+            {selected ? fmtDateBR(value) : <span className="text-muted-foreground">Selecionar data</span>}
+            {rel && <span className="ml-auto text-xs text-muted-foreground">{rel}</span>}
+          </PopoverTrigger>
+          <PopoverContent className="w-auto rounded-xl border bg-popover p-0 shadow-md">
+            <Calendar
+              mode="single"
+              locale={ptBR}
+              selected={selected}
+              defaultMonth={selected}
+              onSelect={(d) => {
+                onChange(d ? toISODateLocal(d) : undefined);
+                setOpen(false);
+              }}
+            />
+            {selected && (
+              <div className="border-t p-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-muted-foreground"
+                  onClick={() => {
+                    onChange(undefined);
+                    setOpen(false);
+                  }}
+                >
+                  Limpar data
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      </FieldContent>
+    </Field>
+  );
+}
+
+// Contêineres continuam salvos numa string só (mesmo campo de antes); aqui
+// só a apresentação virou etiquetas. Separadores iguais aos de `listaConts`.
+function ConteineresInput({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value?: string;
+  onChange: (v: string) => void;
+}) {
+  const [rascunho, setRascunho] = useState('');
+  const lista = listaConts(value);
+
+  function adicionar(texto: string) {
+    const novos = listaConts(texto);
+    if (!novos.length) return;
+    onChange([...lista, ...novos].join(' / '));
+    setRascunho('');
+  }
+
+  function remover(i: number) {
+    onChange(lista.filter((_, k) => k !== i).join(' / '));
+  }
+
+  return (
+    <div className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-lg border border-input bg-transparent px-2 py-1.5 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
+      {lista.map((c, i) => (
+        <span
+          key={`${c}-${i}`}
+          className="inline-flex items-center gap-1 rounded-md border bg-muted py-0.5 pr-1 pl-2 font-mono text-xs"
+        >
+          {c}
+          <button
+            type="button"
+            aria-label={`Remover ${c}`}
+            onClick={() => remover(i)}
+            className="rounded p-0.5 text-muted-foreground hover:bg-background hover:text-foreground"
+          >
+            <X className="size-3" />
+          </button>
+        </span>
+      ))}
+      <input
+        id={id}
+        value={rascunho}
+        placeholder={lista.length ? 'adicionar…' : 'ex.: HLBU1763320 / FFAU5450940'}
+        className="min-w-[140px] flex-1 bg-transparent px-1 font-mono text-sm outline-none placeholder:font-sans placeholder:text-muted-foreground"
+        onChange={(e) => setRascunho(e.target.value)}
+        onBlur={() => adicionar(rascunho)}
+        onPaste={(e) => {
+          const texto = e.clipboardData.getData('text');
+          if (listaConts(texto).length > 1) {
+            e.preventDefault();
+            adicionar(rascunho + ' ' + texto);
+          }
+        }}
+        onKeyDown={(e) => {
+          if (['Enter', ',', ';', ' ', '/'].includes(e.key) && rascunho.trim()) {
+            // Enter com texto vira etiqueta — não avança de etapa
+            e.preventDefault();
+            e.stopPropagation();
+            adicionar(rascunho);
+          } else if (e.key === 'Backspace' && !rascunho && lista.length) {
+            remover(lista.length - 1);
+          }
+        }}
+      />
+    </div>
+  );
+}
+
 export default function CaptacoesPage() {
   return (
     <Suspense fallback={<div className="p-6 sm:p-8"><Skeleton className="h-6 w-56" /></div>}>
@@ -124,7 +321,7 @@ function CaptacoesForm() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
-  // Carteira e Histórico levam direto pra Revisão (?step=5) ao clicar num
+  // Carteira e Histórico levam direto pra Revisão (?step=6) ao clicar num
   // processo — pedido 23/09/2026, pra reaproveitar esta tela como o "ver
   // detalhes" das duas, no lugar de um drawer à parte.
   const initialStep = (() => {
@@ -132,11 +329,9 @@ function CaptacoesForm() {
     return Number.isInteger(raw) && raw >= 0 && raw < STEPS.length ? raw : 0;
   })();
   const [step, setStep] = useState(initialStep);
-  const [visited, setVisited] = useState<Set<number>>(() => new Set([initialStep]));
 
   function goToStep(i: number) {
     setStep(i);
-    setVisited((v) => new Set(v).add(i));
   }
   // Pré-preenchimento a partir da Carteira (captar()): mesmos campos que o
   // original levava do embarque pro formulário. Só usado quando não é edição.
@@ -413,9 +608,10 @@ function CaptacoesForm() {
     router.back();
   }
 
+  // Confirmação agora é o AlertDialog do botão Excluir (redesign 21/10/2026),
+  // no lugar do confirm() nativo.
   async function handleDelete() {
     if (!editId) return;
-    if (!confirm('Excluir este processo? Esta ação não pode ser desfeita.')) return;
     setSaving(true);
     try {
       await apiFetch(`/captacoes/${editId}`, { method: 'DELETE' });
@@ -427,607 +623,815 @@ function CaptacoesForm() {
   }
 
   const showDocs = status !== 'EFETIVA';
+  const erroCliente = error === 'Informe ao menos o cliente.';
 
-  // 'todos' (verde) / 'parcial' (amarelo) / 'nenhum' (vermelho) — só chamado
-  // pra etapas já visitadas (ver render do stepper). Revisão não tem campo
-  // próprio pra editar, então conta como completa sempre que alcançada.
-  function completudeStep(i: number): 'todos' | 'parcial' | 'nenhum' {
-    const campos: unknown[] =
-      i === 0
-        ? [form.cnpj, form.cli, form.referencia]
-        : i === 1
-          ? [form.eta, form.navio, form.quantidade, form.container]
-          : i === 2
-            ? [form.ce, form.regime, form.bl, form.despachante]
-            : i === 3
-              ? [form.terminalDescarga, form.terminalCaptado]
-              : i === 4
-                ? showDocs
-                  ? [form.observacao, form.docBl, form.docCe, form.docPl, form.prejuizoPublico]
-                  : [form.observacao, form.prejuizoPublico]
-                : i === 5
-                  ? [form.dataCarregamento, form.transportadora, form.dataChegadaDestino]
-                  : [];
-    if (campos.length === 0) return 'todos';
-    const { preenchidos, total } = contarPreenchidos(campos);
-    return preenchidos === total ? 'todos' : preenchidos === 0 ? 'nenhum' : 'parcial';
+  // Campos de cada etapa — mesma lista que já decidia a cor da bolinha antes
+  // do redesign; agora também alimenta resumo do stepper e Revisão inteira.
+  function camposEtapa(i: number): Campo[] {
+    switch (i) {
+      case 0:
+        return [
+          { label: 'CNPJ', value: form.cnpj, tipo: 'mono' },
+          { label: 'Cliente', value: form.cli },
+          { label: 'Referência', value: form.referencia, tipo: 'mono' },
+        ];
+      case 1:
+        return [
+          { label: 'ETA', value: form.eta, tipo: 'data' },
+          { label: 'Navio', value: form.navio },
+          { label: 'Qtde de contêineres', value: form.quantidade },
+          { label: 'Contêineres', value: form.container, tipo: 'mono' },
+        ];
+      case 2:
+        return [
+          { label: 'CE Mercante', value: form.ce, tipo: 'mono' },
+          { label: 'Regime', value: form.regime },
+          { label: 'HBL', value: form.bl, tipo: 'mono' },
+          { label: 'Despachante', value: form.despachante },
+        ];
+      case 3:
+        return [
+          { label: 'Atracação', value: form.terminalDescarga },
+          { label: 'Parceiro (captado)', value: form.terminalCaptado },
+        ];
+      case 4:
+        return [
+          { label: 'Observação', value: form.observacao },
+          ...(showDocs
+            ? [
+                { label: 'BL recebido', value: form.docBl, tipo: 'bool' as const },
+                { label: 'CE recebido', value: form.docCe, tipo: 'bool' as const },
+                { label: 'PL recebido', value: form.docPl, tipo: 'bool' as const },
+              ]
+            : []),
+          { label: 'Tabela pública', value: form.prejuizoPublico, tipo: 'bool' },
+        ];
+      case 5:
+        return [
+          { label: 'Data de carregamento', value: form.dataCarregamento, tipo: 'data' },
+          { label: 'Transportadora', value: form.transportadora },
+          { label: 'Data de chegada (destino)', value: form.dataChegadaDestino, tipo: 'data' },
+        ];
+      default:
+        return [];
+    }
   }
 
-  const glassBtn =
-    'vt-glass-strong rounded-[11px] border border-[var(--vt-line)] px-4 py-2.5 text-[14px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px';
-  const primaryBtn = 'vt-btn-primary rounded-[11px] px-5 py-2.5 text-[14px] font-semibold transition hover:-translate-y-px';
+  function vaziosEtapa(i: number): string[] {
+    return camposEtapa(i)
+      .filter((c) => !estaPreenchido(c.value))
+      .map((c) => c.label);
+  }
+
+  // Só pelos dados (HANDOFF seção 4): etapa incompleta não fica mais
+  // vermelha igual à atual, e a Revisão não nasce verde.
+  function estadoEtapa(i: number): EstadoEtapa {
+    if (i === step) return 'atual';
+    if (i === REVISAO) return 'pendente';
+    return vaziosEtapa(i).length === 0 ? 'completa' : 'vazios';
+  }
+
+  function resumoConteudo(i: number): string | undefined {
+    switch (i) {
+      case 0:
+        return form.cli || form.cnpj || undefined;
+      case 1: {
+        const qtde = form.quantidade ? plural(form.quantidade, 'contêiner', 'contêineres') : undefined;
+        return [form.navio, qtde].filter(Boolean).join(' · ') || undefined;
+      }
+      case 2:
+        return [form.ce && `CE ${form.ce}`, form.despachante].filter(Boolean).join(' · ') || undefined;
+      case 3:
+        return [form.terminalDescarga, form.terminalCaptado].filter(Boolean).join(' → ') || undefined;
+      case 4:
+        return STATUS_LABEL[status];
+      case 5:
+        return [form.transportadora, fmtDateBR(form.dataCarregamento)].filter(Boolean).join(' · ') || undefined;
+      default:
+        return undefined;
+    }
+  }
+
+  const etapasCompletas = ETAPAS_COM_CAMPOS.filter((i) => vaziosEtapa(i).length === 0).length;
+  const etapasComVazios = ETAPAS_COM_CAMPOS.filter((i) => vaziosEtapa(i).length > 0);
+  const totalCampos = ETAPAS_COM_CAMPOS.reduce((n, i) => n + camposEtapa(i).length, 0);
+  const totalPreenchidos = ETAPAS_COM_CAMPOS.reduce(
+    (n, i) => n + camposEtapa(i).filter((c) => estaPreenchido(c.value)).length,
+    0,
+  );
+
+  const qtdConts = listaConts(form.container).length;
+  const carregamentoVazio = !form.dataCarregamento && !form.transportadora && !form.dataChegadaDestino;
+
+  function valorFicha(c: Campo): string {
+    if (c.tipo === 'data') return fmtDateBR(c.value as string);
+    if (c.tipo === 'bool') return 'Sim';
+    return String(c.value);
+  }
 
   if (loadingEdit) {
     return (
-      <div className="space-y-3 p-6 sm:p-8" role="status" aria-label="Carregando captação">
-        <Skeleton className="h-6 w-56" />
-        {[3, 3, 4].map((n, i) => (
-          <div key={i} className="vt-glass space-y-3 p-[14px_16px]">
-            <Skeleton className="h-4 w-28" />
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {Array.from({ length: n }, (_, k) => (
-                <div key={k} className="space-y-1.5">
-                  <Skeleton className="h-2.5 w-14" />
-                  <Skeleton className="h-3.5 w-24" />
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+      <div className="mx-auto w-full max-w-[1240px] space-y-6 p-6 sm:p-8" role="status" aria-label="Carregando captação">
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-8 w-64" />
+        <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+          <Skeleton className="h-[420px] rounded-xl" />
+          <Skeleton className="h-[320px] rounded-xl" />
+        </div>
       </div>
     );
   }
 
+  const triggerCls = 'h-10 w-full';
+
   return (
-    <div className="vt-form-maior space-y-5 p-6 sm:p-8" style={{ color: 'var(--vt-ink)' }}>
+    <div className="mx-auto w-full max-w-[1240px] space-y-6 p-6 sm:p-8 lg:px-10">
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-[24px] font-bold tracking-tight">
+        <div className="space-y-1.5">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink render={<Link href="/carteira" />}>Carteira</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{editId ? 'Editar captação' : 'Captação manual'}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <h1 className="text-[28px] font-semibold tracking-[-0.02em]">
             {editId ? 'Editar captação' : 'Captação manual'}
           </h1>
-          <p className="mt-0.5 text-[12.5px]" style={{ color: 'var(--vt-muted)' }}>
+          <p className="text-sm text-muted-foreground">
             Os mesmos campos da planilha — agora salvos direto na captacao-api
           </p>
         </div>
         {editId && <NotasPainel captacaoId={Number(editId)} />}
       </div>
 
-      <div className="relative flex items-start pt-1">
-        <div className="absolute top-[13px] right-0 left-0 h-[2px]" style={{ background: 'var(--vt-line)' }} />
-        <div
-          className="absolute top-[13px] left-0 h-[2px] transition-[width]"
-          style={{
-            // Acompanha a etapa atual, não a mais distante já visitada —
-            // antes ficava parada no ponto mais longe mesmo voltando pra
-            // uma etapa anterior. Pedido 17/09/2026.
-            background: 'var(--vt-c-efet)',
-            width: `${(step / (STEPS.length - 1)) * 100}%`,
-          }}
-        />
-        {STEPS.map((label, i) => {
-          const hasError = i === 0 && error === 'Informe ao menos o cliente.';
-          const completude = visited.has(i) && i !== step ? completudeStep(i) : null;
-          const state = hasError
-            ? 'error'
-            : i === step
-              ? 'active'
-              : completude === 'todos'
-                ? 'done'
-                : completude === 'parcial'
-                  ? 'parcial'
-                  : completude === 'nenhum'
-                    ? 'nenhum'
-                    : 'pending';
-          return (
-            <button
-              key={label}
-              type="button"
-              onClick={() => goToStep(i)}
-              className="relative z-10 flex flex-1 flex-col items-center gap-1.5"
-            >
-              <span
-                className="flex h-6 w-6 items-center justify-center rounded-full border-2 text-[11px] font-extrabold"
-                style={
-                  state === 'done'
-                    ? { background: 'var(--vt-c-efet)', borderColor: 'var(--vt-c-efet)', color: '#fff' }
-                    : state === 'parcial'
-                      ? { background: 'var(--vt-c-jan)', borderColor: 'var(--vt-c-jan)', color: '#fff' }
-                      : state === 'nenhum'
-                        ? { background: 'var(--vt-c-prej)', borderColor: 'var(--vt-c-prej)', color: '#fff' }
-                        : state === 'active'
-                          ? { background: 'var(--vt-red)', borderColor: 'var(--vt-red)', color: '#fff', boxShadow: '0 0 0 4px rgba(192,24,41,.15)' }
-                          : state === 'error'
-                            ? { background: '#fff', borderColor: 'var(--vt-red)', color: 'var(--vt-red)' }
-                            : { background: '#fff', borderColor: 'var(--vt-line)', color: 'var(--vt-muted2)' }
-                }
-              >
-                {state === 'done' ? '✓' : state === 'error' ? '!' : i + 1}
+      <div className="grid items-start gap-6 lg:grid-cols-[320px_1fr]">
+        <Card className="gap-4 shadow-sm lg:sticky lg:top-6">
+          <CardHeader>
+            <Progress value={(etapasCompletas / ETAPAS_COM_CAMPOS.length) * 100} className="gap-2">
+              <ProgressLabel className="text-[13px]">Progresso</ProgressLabel>
+              <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+                {etapasCompletas} de {ETAPAS_COM_CAMPOS.length} etapas completas
               </span>
-              <span
-                className="max-w-[70px] text-center text-[10px] leading-tight font-bold"
-                style={{ color: state === 'active' || state === 'error' ? 'var(--vt-ink)' : 'var(--vt-muted)' }}
-              >
-                {label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="vt-glass p-[24px_28px]" onKeyDown={handleStepKeyDown}>
-
-      {step === 0 && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field>
-            <FieldLabel htmlFor="cnpj">CNPJ do cliente</FieldLabel>
-            <FieldContent>
-              <Input
-                id="cnpj"
-                placeholder="00.000.000/0000-00"
-                value={form.cnpj ?? ''}
-                onChange={(e) => set('cnpj', e.target.value)}
-              />
-            </FieldContent>
-          </Field>
-          <Field className="relative">
-            <FieldLabel htmlFor="cli">
-              Cliente {error === 'Informe ao menos o cliente.' && <span style={{ color: 'var(--vt-c-prej)' }}>*</span>}
-            </FieldLabel>
-            <FieldContent>
-              <Input
-                id="cli"
-                autoComplete="off"
-                value={form.cli ?? ''}
-                onChange={(e) => {
-                  set('cli', e.target.value);
-                  setSugestaoAberta(true);
-                }}
-                onFocus={() => setSugestaoAberta(true)}
-                onBlur={() => setTimeout(() => setSugestaoAberta(false), 150)}
-                style={error === 'Informe ao menos o cliente.' ? { borderColor: 'var(--vt-c-prej)', background: 'rgba(192,24,41,.04)' } : undefined}
-              />
-              {error === 'Informe ao menos o cliente.' && (
-                <span className="text-[10.5px] font-semibold" style={{ color: 'var(--vt-c-prej)' }}>
-                  Campo obrigatório
-                </span>
-              )}
-              {sugestaoAberta && sugestoesCliente.length > 0 && (
-                <ul
-                  className="vt-glass-strong absolute top-full left-0 z-10 mt-1 w-full overflow-hidden rounded-[9px] border border-[var(--vt-line)] shadow-[var(--vt-sh)]"
-                  role="listbox"
-                >
-                  {sugestoesCliente.map((c) => (
-                    <li key={c.id}>
+            </Progress>
+          </CardHeader>
+          <CardContent className="px-2">
+            <nav aria-label="Etapas">
+              <ol className="space-y-0.5">
+                {STEPS.map((label, i) => {
+                  const estado = estadoEtapa(i);
+                  const vazios = i === REVISAO ? 0 : vaziosEtapa(i).length;
+                  const resumo =
+                    estado === 'vazios'
+                      ? plural(vazios, 'campo vazio', 'campos vazios')
+                      : i === REVISAO
+                        ? undefined
+                        : resumoConteudo(i);
+                  return (
+                    <li key={label}>
                       <button
                         type="button"
-                        role="option"
-                        aria-selected={false}
-                        className="w-full px-3 py-1.5 text-left text-[12px] font-semibold hover:bg-[color-mix(in_srgb,var(--vt-red)_8%,transparent)]"
-                        style={{ color: 'var(--vt-ink)' }}
-                        // onMouseDown (não onClick) dispara antes do onBlur do
-                        // input, senão a lista some antes do clique registrar.
-                        onMouseDown={() => selecionarCliente(c)}
-                      >
-                        {c.aliases[0] || c.name}
-                        {c.cnpj && (
-                          <span className="ml-1.5 font-normal" style={{ color: 'var(--vt-muted2)' }}>
-                            {c.cnpj}
-                          </span>
+                        onClick={() => goToStep(i)}
+                        aria-current={i === step ? 'step' : undefined}
+                        className={cn(
+                          'flex w-full items-start gap-3 rounded-lg px-2.5 py-2.5 text-left transition-colors hover:bg-muted',
+                          i === step && 'bg-accent hover:bg-accent',
                         )}
+                      >
+                        <Circulo estado={estado} n={i + 1} />
+                        <span className="min-w-0 pt-0.5">
+                          <span className="block text-sm font-medium">{label}</span>
+                          {resumo && (
+                            <span
+                              className={cn(
+                                'block truncate text-xs',
+                                estado === 'vazios' ? 'text-warning-text' : 'text-muted-foreground',
+                              )}
+                            >
+                              {resumo}
+                            </span>
+                          )}
+                        </span>
                       </button>
                     </li>
-                  ))}
-                </ul>
-              )}
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="referencia">Referência</FieldLabel>
-            <FieldContent>
-              <Input
-                id="referencia"
-                value={form.referencia ?? ''}
-                onChange={(e) => set('referencia', e.target.value)}
-              />
-            </FieldContent>
-          </Field>
-        </div>
-      )}
+                  );
+                })}
+              </ol>
+            </nav>
+          </CardContent>
+        </Card>
 
-      {step === 1 && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field>
-            <FieldLabel htmlFor="eta">ETA</FieldLabel>
-            <FieldContent>
-              <Input
-                id="eta"
-                type="date"
-                value={form.eta ?? ''}
-                onChange={(e) => set('eta', e.target.value)}
-              />
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="navio">Navio</FieldLabel>
-            <FieldContent>
-              <Input
-                id="navio"
-                value={form.navio ?? ''}
-                onChange={(e) => set('navio', e.target.value)}
-              />
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="quantidade">Qtde de contêineres</FieldLabel>
-            <FieldContent>
-              <Input
-                id="quantidade"
-                type="number"
-                min={1}
-                value={form.quantidade ?? ''}
-                onChange={(e) => set('quantidade', e.target.value ? Number(e.target.value) : undefined)}
-              />
-            </FieldContent>
-          </Field>
-          <Field className="sm:col-span-3">
-            <FieldLabel htmlFor="container">Container(s)</FieldLabel>
-            <FieldContent>
-              <Input
-                id="container"
-                placeholder="ex.: HLBU1763320 / FFAU5450940"
-                value={form.container ?? ''}
-                onChange={(e) => set('container', e.target.value)}
-              />
-            </FieldContent>
-          </Field>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field>
-            <FieldLabel htmlFor="ce">CE Mercante</FieldLabel>
-            <FieldContent>
-              <Input id="ce" value={form.ce ?? ''} onChange={(e) => set('ce', e.target.value)} />
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="regime">Regime aduaneiro</FieldLabel>
-            <FieldContent>
-              <Select value={form.regime} onValueChange={(v) => set('regime', v as string)}>
-                <SelectTrigger id="regime">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {REGIMES.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {r}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="bl">HBL</FieldLabel>
-            <FieldContent>
-              <Input
-                id="bl"
-                placeholder="ex.: HBCN066406"
-                value={form.bl ?? ''}
-                onChange={(e) => set('bl', e.target.value)}
-              />
-            </FieldContent>
-          </Field>
-          <Field className="sm:col-span-3">
-            <FieldLabel htmlFor="despachante">Despachante</FieldLabel>
-            <FieldContent>
-              <Select
-                value={exibirDespCustom ? '__new' : form.despachante || undefined}
-                onValueChange={(v) => {
-                  if (v === '__new') {
-                    setMostrarDespCustom(true);
-                    set('despachante', despachanteEhCustom ? form.despachante : '');
-                  } else {
-                    setMostrarDespCustom(false);
-                    set('despachante', v as string);
-                  }
-                }}
-              >
-                <SelectTrigger id="despachante">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DESPACHANTES_PADRAO.map((d) => (
-                    <SelectItem key={d} value={d}>
-                      {d}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="__new">+ novo despachante…</SelectItem>
-                </SelectContent>
-              </Select>
-              {exibirDespCustom && (
-                <Input
-                  className="mt-1.5"
-                  placeholder="Nome do despachante"
-                  aria-label="Nome do novo despachante"
-                  value={form.despachante ?? ''}
-                  onChange={(e) => set('despachante', e.target.value)}
-                />
-              )}
-            </FieldContent>
-          </Field>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field>
-            <FieldLabel htmlFor="atrac">Atracação</FieldLabel>
-            <FieldContent>
-              <Select
-                value={form.terminalDescarga}
-                onValueChange={(v) => set('terminalDescarga', v as string)}
-              >
-                <SelectTrigger id="atrac">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ATRACACOES.map((a) => (
-                    <SelectItem key={a} value={a}>
-                      {a}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="parc">Parceiro (captado)</FieldLabel>
-            <FieldContent>
-              <Select
-                value={form.terminalCaptado}
-                onValueChange={(v) => set('terminalCaptado', v as string)}
-              >
-                <SelectTrigger id="parc">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PARCEIROS.map((p) => (
-                    <SelectItem key={p} value={p}>
-                      {p}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldContent>
-          </Field>
-        </div>
-      )}
-
-      {step === 4 && (
-        <div className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor="status">Status da captação</FieldLabel>
-              <FieldContent>
-                <Select value={status} onValueChange={(v) => setStatus(v as 'PENDENTE' | 'EFETIVA')}>
-                  <SelectTrigger id="status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PENDENTE">Pendente de documentação</SelectItem>
-                    <SelectItem value="EFETIVA">Captação efetivada no terminal</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FieldContent>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="observacao">Observação</FieldLabel>
-              <FieldContent>
-                <Input
-                  id="observacao"
-                  value={form.observacao ?? ''}
-                  onChange={(e) => set('observacao', e.target.value)}
-                />
-              </FieldContent>
-            </Field>
-          </div>
-
-          {showDocs && (
-            <div className="vt-glass space-y-2 p-4">
-              <p className="text-[13px] font-bold">Documentos recebidos do cliente</p>
-              <div className="flex gap-6">
-                {(['docBl', 'docCe', 'docPl'] as const).map((key, i) => (
-                  <label key={key} className="flex items-center gap-2 text-[13px] font-semibold" style={{ color: 'var(--vt-ink)' }}>
-                    <Checkbox
-                      checked={form[key] ?? false}
-                      onCheckedChange={(c) => set(key, c === true)}
-                    />
-                    {['BL', 'CE', 'PL'][i]}
-                  </label>
-                ))}
-              </div>
-              <p className="text-[12px]" style={{ color: 'var(--vt-muted)' }}>
-                {form.docBl && form.docCe && form.docPl
-                  ? '⚠ Documentação completa recebida — precisa ser efetivada no terminal HOJE (crítico).'
-                  : 'Marque o que já chegou. Documentação completa e ainda não efetivada = alerta de prejuízo.'}
-              </p>
-            </div>
-          )}
-
-          <div className="vt-glass p-4">
-            <label className="flex items-center gap-2 text-[13px] font-semibold" style={{ color: 'var(--vt-ink)' }}>
-              <Checkbox
-                checked={form.prejuizoPublico ?? false}
-                onCheckedChange={(c) => handlePublicaChange(c === true)}
-              />
-              Marcar como tabela pública
-            </label>
-            <p className="mt-1 text-[12px]" style={{ color: 'var(--vt-muted)' }}>
-              Use apenas quando o prejuízo desta carga entra na tabela pública.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {step === 5 && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor="dataCarregamento">Data de carregamento</FieldLabel>
-            <FieldContent>
-              <Input
-                id="dataCarregamento"
-                type="date"
-                value={form.dataCarregamento ?? ''}
-                onChange={(e) => set('dataCarregamento', e.target.value)}
-              />
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="transportadora">Transportadora</FieldLabel>
-            <FieldContent>
-              <Input
-                id="transportadora"
-                placeholder="ex.: Rodomax"
-                value={form.transportadora ?? ''}
-                onChange={(e) => set('transportadora', e.target.value)}
-              />
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="dataChegadaDestino">Data de chegada (destino)</FieldLabel>
-            <FieldContent>
-              <Input
-                id="dataChegadaDestino"
-                type="date"
-                value={form.dataChegadaDestino ?? ''}
-                onChange={(e) => set('dataChegadaDestino', e.target.value)}
-              />
-            </FieldContent>
-          </Field>
-        </div>
-      )}
-
-      {step === 6 && (
-        <div className="space-y-2.5">
-          <RecapSection n={1} title="Identificação" onEdit={() => goToStep(0)}>
-            <div className="grid grid-cols-3 gap-x-4 gap-y-2.5">
-              <RecapItem label="CNPJ" value={form.cnpj} />
-              <RecapItem label="Cliente" value={form.cli} />
-              <RecapItem label="Referência" value={form.referencia} />
-            </div>
-          </RecapSection>
-
-          <RecapSection n={2} title="Carga" onEdit={() => goToStep(1)}>
-            <div className="grid grid-cols-3 gap-x-4 gap-y-2.5">
-              <RecapItem label="ETA" value={fmtDateBR(form.eta)} />
-              <RecapItem label="Navio" value={form.navio} />
-              <RecapItem label="Qtde" value={form.quantidade ? `${form.quantidade} contêineres` : undefined} />
-              <div className="col-span-3">
-                <RecapItem label="Container(s)" value={form.container} />
-              </div>
-            </div>
-          </RecapSection>
-
-          <RecapSection n={3} title="Aduana" onEdit={() => goToStep(2)}>
-            <div className="grid grid-cols-3 gap-x-4 gap-y-2.5">
-              <RecapItem label="CE Mercante" value={form.ce} />
-              <RecapItem label="Regime" value={form.regime} />
-              <RecapItem label="HBL" value={form.bl} />
-              <div className="col-span-3">
-                <RecapItem label="Despachante" value={form.despachante} />
-              </div>
-            </div>
-          </RecapSection>
-
-          <RecapSection n={4} title="Terminal" onEdit={() => goToStep(3)}>
-            <div className="grid grid-cols-3 gap-x-4 gap-y-2.5">
-              <RecapItem label="Atracação" value={form.terminalDescarga} />
-              <RecapItem label="Parceiro" value={form.terminalCaptado} />
-            </div>
-          </RecapSection>
-
-          <RecapSection n={5} title="Situação" onEdit={() => goToStep(4)}>
-            <div className="mb-3.5 flex flex-wrap gap-x-7 gap-y-2.5">
-              <div>
-                <div className="text-[9.5px] font-bold tracking-[.04em] uppercase" style={{ color: 'var(--vt-muted2)' }}>Status</div>
-                <span className={`vt-band ${status === 'EFETIVA' ? 'b-efet' : 'b-jan'}`}>
-                  {status === 'EFETIVA' ? 'Captação efetivada no terminal' : 'Pendente de documentação'}
+        <div className="min-w-0 space-y-4">
+          {step < REVISAO ? (
+            <Card className="gap-6 py-6 shadow-sm">
+              <CardHeader className="px-6">
+                <span className="text-xs font-semibold tracking-wider text-primary uppercase">
+                  Etapa {step + 1} de {STEPS.length}
                 </span>
-              </div>
-              <RecapItem label="Observação" value={form.observacao} />
-              <RecapItem label="Tabela pública" value={form.prejuizoPublico ? 'Sim' : 'Não'} />
-            </div>
-            {showDocs && (
-              <div>
-                <div className="text-[9.5px] font-bold tracking-[.04em] uppercase" style={{ color: 'var(--vt-muted2)' }}>
-                  Documentos recebidos
-                </div>
-                <div className="mt-1 flex gap-3.5">
-                  {(['docBl', 'docCe', 'docPl'] as const).map((key, i) => (
-                    <span key={key} className="flex items-center gap-1.5 text-[11.5px] font-semibold">
-                      <span
-                        className="flex h-3.5 w-3.5 items-center justify-center rounded-[4px] border text-[9px] text-white"
-                        style={
-                          form[key]
-                            ? { background: 'var(--vt-c-efet)', borderColor: 'var(--vt-c-efet)' }
-                            : { borderColor: 'var(--vt-line)' }
-                        }
-                      >
-                        {form[key] ? '✓' : ''}
+                <CardTitle className="text-lg font-semibold">{STEPS[step]}</CardTitle>
+                <CardDescription>{DESCRICOES[step]}</CardDescription>
+              </CardHeader>
+              <CardContent className="px-6" onKeyDown={handleStepKeyDown}>
+                {step === 0 && (
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <Field>
+                      <FieldLabel htmlFor="cnpj">CNPJ do cliente</FieldLabel>
+                      <FieldContent>
+                        <Input
+                          id="cnpj"
+                          className="h-10 font-mono"
+                          placeholder="00.000.000/0000-00"
+                          value={form.cnpj ?? ''}
+                          onChange={(e) => set('cnpj', e.target.value)}
+                        />
+                      </FieldContent>
+                    </Field>
+                    <Field className="relative">
+                      <FieldLabel htmlFor="cli">
+                        Cliente {erroCliente && <span className="text-destructive">*</span>}
+                      </FieldLabel>
+                      <FieldContent>
+                        <Input
+                          id="cli"
+                          className="h-10"
+                          autoComplete="off"
+                          aria-invalid={erroCliente || undefined}
+                          value={form.cli ?? ''}
+                          onChange={(e) => {
+                            set('cli', e.target.value);
+                            setSugestaoAberta(true);
+                          }}
+                          onFocus={() => setSugestaoAberta(true)}
+                          onBlur={() => setTimeout(() => setSugestaoAberta(false), 150)}
+                        />
+                        {erroCliente && (
+                          <span className="text-xs font-medium text-destructive">Campo obrigatório</span>
+                        )}
+                        {sugestaoAberta && sugestoesCliente.length > 0 && (
+                          <ul
+                            className="absolute top-full left-0 z-20 mt-1 w-full overflow-hidden rounded-lg border bg-popover p-1 shadow-md"
+                            role="listbox"
+                          >
+                            {sugestoesCliente.map((c) => (
+                              <li key={c.id}>
+                                <button
+                                  type="button"
+                                  role="option"
+                                  aria-selected={false}
+                                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
+                                  // onMouseDown (não onClick) dispara antes do onBlur do
+                                  // input, senão a lista some antes do clique registrar.
+                                  onMouseDown={() => selecionarCliente(c)}
+                                >
+                                  <span className="font-medium">{c.aliases[0] || c.name}</span>
+                                  {c.cnpj && (
+                                    <span className="ml-auto font-mono text-xs text-muted-foreground">{c.cnpj}</span>
+                                  )}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </FieldContent>
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="referencia">Referência</FieldLabel>
+                      <FieldContent>
+                        <Input
+                          id="referencia"
+                          className="h-10 font-mono"
+                          value={form.referencia ?? ''}
+                          onChange={(e) => set('referencia', e.target.value)}
+                        />
+                      </FieldContent>
+                    </Field>
+                  </div>
+                )}
+
+                {step === 1 && (
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <DateField id="eta" label="ETA" value={form.eta} relativo onChange={(v) => set('eta', v)} />
+                    <Field>
+                      <FieldLabel htmlFor="navio">Navio</FieldLabel>
+                      <FieldContent>
+                        <Input
+                          id="navio"
+                          className="h-10"
+                          value={form.navio ?? ''}
+                          onChange={(e) => set('navio', e.target.value)}
+                        />
+                      </FieldContent>
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="quantidade">Qtde de contêineres</FieldLabel>
+                      <FieldContent>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="size-10"
+                            aria-label="Diminuir quantidade"
+                            disabled={!form.quantidade || form.quantidade <= 1}
+                            onClick={() => set('quantidade', Math.max(1, (form.quantidade ?? 1) - 1))}
+                          >
+                            <Minus />
+                          </Button>
+                          <Input
+                            id="quantidade"
+                            type="number"
+                            min={1}
+                            className="h-10 w-20 text-center tabular-nums"
+                            value={form.quantidade ?? ''}
+                            onChange={(e) => set('quantidade', e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="size-10"
+                            aria-label="Aumentar quantidade"
+                            onClick={() => set('quantidade', (form.quantidade ?? 0) + 1)}
+                          >
+                            <Plus />
+                          </Button>
+                        </div>
+                      </FieldContent>
+                    </Field>
+                    <Field className="sm:col-span-2">
+                      <FieldLabel htmlFor="container">Contêineres</FieldLabel>
+                      <FieldContent>
+                        <ConteineresInput
+                          id="container"
+                          value={form.container}
+                          onChange={(v) => set('container', v)}
+                        />
+                        {qtdConts > 0 && (
+                          <p
+                            className={cn(
+                              'flex items-center gap-1.5 text-xs font-medium',
+                              !form.quantidade
+                                ? 'text-muted-foreground'
+                                : qtdConts === form.quantidade
+                                  ? 'text-success-text'
+                                  : 'text-warning-text',
+                            )}
+                          >
+                            {form.quantidade && qtdConts === form.quantidade && <CheckCircle2 className="size-3.5" />}
+                            {form.quantidade && qtdConts !== form.quantidade && <AlertTriangle className="size-3.5" />}
+                            {plural(qtdConts, 'contêiner informado', 'contêineres informados')}
+                            {form.quantidade
+                              ? qtdConts === form.quantidade
+                                ? ' — bate com a quantidade'
+                                : ` — a quantidade diz ${form.quantidade}`
+                              : ''}
+                          </p>
+                        )}
+                      </FieldContent>
+                    </Field>
+                  </div>
+                )}
+
+                {step === 2 && (
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <Field>
+                      <FieldLabel htmlFor="ce">CE Mercante</FieldLabel>
+                      <FieldContent>
+                        <Input
+                          id="ce"
+                          className="h-10 font-mono"
+                          value={form.ce ?? ''}
+                          onChange={(e) => set('ce', e.target.value)}
+                        />
+                      </FieldContent>
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="bl">HBL</FieldLabel>
+                      <FieldContent>
+                        <Input
+                          id="bl"
+                          className="h-10 font-mono"
+                          placeholder="ex.: HBCN066406"
+                          value={form.bl ?? ''}
+                          onChange={(e) => set('bl', e.target.value)}
+                        />
+                      </FieldContent>
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="regime">Regime aduaneiro</FieldLabel>
+                      <FieldContent>
+                        <Select value={form.regime} onValueChange={(v) => set('regime', v as string)}>
+                          <SelectTrigger id="regime" className={triggerCls}>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {REGIMES.map((r) => (
+                              <SelectItem key={r} value={r}>
+                                {r}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FieldContent>
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="despachante">Despachante</FieldLabel>
+                      <FieldContent>
+                        <Select
+                          value={exibirDespCustom ? '__new' : form.despachante || undefined}
+                          onValueChange={(v) => {
+                            if (v === '__new') {
+                              setMostrarDespCustom(true);
+                              set('despachante', despachanteEhCustom ? form.despachante : '');
+                            } else {
+                              setMostrarDespCustom(false);
+                              set('despachante', v as string);
+                            }
+                          }}
+                        >
+                          <SelectTrigger id="despachante" className={triggerCls}>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DESPACHANTES_PADRAO.map((d) => (
+                              <SelectItem key={d} value={d}>
+                                {d}
+                              </SelectItem>
+                            ))}
+                            <SelectItem value="__new">+ novo despachante…</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {exibirDespCustom && (
+                          <Input
+                            className="mt-1.5 h-10"
+                            placeholder="Nome do despachante"
+                            aria-label="Nome do novo despachante"
+                            value={form.despachante ?? ''}
+                            onChange={(e) => set('despachante', e.target.value)}
+                          />
+                        )}
+                      </FieldContent>
+                    </Field>
+                  </div>
+                )}
+
+                {step === 3 && (
+                  <div className="grid items-end gap-3 sm:grid-cols-[1fr_auto_1fr]">
+                    <Field>
+                      <FieldLabel htmlFor="atrac">Atracação</FieldLabel>
+                      <FieldContent>
+                        <Select value={form.terminalDescarga} onValueChange={(v) => set('terminalDescarga', v as string)}>
+                          <SelectTrigger id="atrac" className={triggerCls}>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ATRACACOES.map((a) => (
+                              <SelectItem key={a} value={a}>
+                                {a}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FieldContent>
+                    </Field>
+                    <ArrowRight
+                      aria-hidden="true"
+                      className="mx-auto mb-2.5 size-5 rotate-90 text-muted-foreground sm:rotate-0"
+                    />
+                    <Field>
+                      <FieldLabel htmlFor="parc">Parceiro (captado)</FieldLabel>
+                      <FieldContent>
+                        <Select value={form.terminalCaptado} onValueChange={(v) => set('terminalCaptado', v as string)}>
+                          <SelectTrigger id="parc" className={triggerCls}>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PARCEIROS.map((p) => (
+                              <SelectItem key={p} value={p}>
+                                {p}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FieldContent>
+                    </Field>
+                  </div>
+                )}
+
+                {step === 4 && (
+                  <div className="space-y-5">
+                    <Field>
+                      <FieldLabel htmlFor="status">Status da captação</FieldLabel>
+                      <FieldContent>
+                        <Select value={status} onValueChange={(v) => setStatus(v as 'PENDENTE' | 'EFETIVA')}>
+                          <SelectTrigger id="status" className={cn(triggerCls, 'sm:max-w-sm')}>
+                            <span
+                              aria-hidden="true"
+                              className={cn('size-2 shrink-0 rounded-full', status === 'EFETIVA' ? 'bg-success' : 'bg-warning')}
+                            />
+                            <SelectValue>{STATUS_LABEL[status]}</SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="PENDENTE">{STATUS_LABEL.PENDENTE}</SelectItem>
+                            <SelectItem value="EFETIVA">{STATUS_LABEL.EFETIVA}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FieldContent>
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="observacao">
+                        Observação <span className="font-normal text-muted-foreground">(opcional)</span>
+                      </FieldLabel>
+                      <FieldContent>
+                        <Textarea
+                          id="observacao"
+                          rows={3}
+                          value={form.observacao ?? ''}
+                          onChange={(e) => set('observacao', e.target.value)}
+                        />
+                      </FieldContent>
+                    </Field>
+
+                    {showDocs && (
+                      <div className="space-y-2.5 rounded-lg border p-4">
+                        <p className="text-sm font-medium">Documentos recebidos do cliente</p>
+                        <div className="flex gap-6">
+                          {(['docBl', 'docCe', 'docPl'] as const).map((key, i) => (
+                            <label key={key} className="flex items-center gap-2 text-sm font-medium">
+                              <Checkbox checked={form[key] ?? false} onCheckedChange={(c) => set(key, c === true)} />
+                              {['BL', 'CE', 'PL'][i]}
+                            </label>
+                          ))}
+                        </div>
+                        <p
+                          className={cn(
+                            'text-xs',
+                            form.docBl && form.docCe && form.docPl ? 'font-medium text-primary' : 'text-muted-foreground',
+                          )}
+                        >
+                          {form.docBl && form.docCe && form.docPl
+                            ? '⚠ Documentação completa recebida — precisa ser efetivada no terminal HOJE (crítico).'
+                            : 'Marque o que já chegou. Documentação completa e ainda não efetivada = alerta de prejuízo.'}
+                        </p>
+                      </div>
+                    )}
+
+                    <label className="flex cursor-pointer items-start gap-3 rounded-lg border p-4 hover:bg-muted/50">
+                      <Checkbox
+                        className="mt-0.5"
+                        checked={form.prejuizoPublico ?? false}
+                        onCheckedChange={(c) => handlePublicaChange(c === true)}
+                      />
+                      <span>
+                        <span className="block text-sm font-medium">Marcar como tabela pública</span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground">
+                          Use apenas quando o prejuízo desta carga entra na tabela pública.
+                        </span>
                       </span>
-                      {['BL', 'CE', 'PL'][i]}
-                    </span>
+                    </label>
+                  </div>
+                )}
+
+                {step === 5 && (
+                  <div className="space-y-5">
+                    {carregamentoVazio && (
+                      <Alert className="border-warning-border bg-warning-soft text-warning-text">
+                        <AlertTriangle />
+                        <AlertTitle>Nada preenchido nesta etapa</AlertTitle>
+                        <AlertDescription className="text-warning-text/90">
+                          Dá pra salvar e completar depois.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <DateField
+                        id="dataCarregamento"
+                        label="Data de carregamento"
+                        value={form.dataCarregamento}
+                        onChange={(v) => set('dataCarregamento', v)}
+                      />
+                      <DateField
+                        id="dataChegadaDestino"
+                        label="Data de chegada (destino)"
+                        value={form.dataChegadaDestino}
+                        onChange={(v) => set('dataChegadaDestino', v)}
+                      />
+                      <Field>
+                        <FieldLabel htmlFor="transportadora">Transportadora</FieldLabel>
+                        <FieldContent>
+                          <Input
+                            id="transportadora"
+                            className="h-10"
+                            placeholder="ex.: Rodomax"
+                            value={form.transportadora ?? ''}
+                            onChange={(e) => set('transportadora', e.target.value)}
+                          />
+                        </FieldContent>
+                      </Field>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <div className="space-y-0.5">
+                <span className="text-xs font-semibold tracking-wider text-primary uppercase">
+                  Etapa {STEPS.length} de {STEPS.length}
+                </span>
+                <h2 className="text-lg font-semibold">Revisão</h2>
+              </div>
+
+              {/* 1 · Resumo do processo */}
+              <Card className="gap-0 py-0 shadow-sm">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b bg-muted/50 px-6 py-5">
+                  <div className="min-w-0 flex-1">
+                    <div className={cn('text-[22px] font-semibold', !form.cli && 'text-muted-foreground')}>
+                      {form.cli || 'Cliente não informado'}
+                    </div>
+                    {form.cnpj && <div className="font-mono text-xs text-muted-foreground">{form.cnpj}</div>}
+                  </div>
+                  {form.referencia && (
+                    <span className="rounded-md border bg-card px-2 py-1 font-mono text-xs">{form.referencia}</span>
+                  )}
+                  <Badge
+                    className={cn(
+                      'gap-1 border-0',
+                      status === 'EFETIVA' ? 'bg-success-soft text-success-text' : 'bg-warning-soft text-warning-text',
+                    )}
+                  >
+                    {status === 'EFETIVA' && <Check className="size-3" />}
+                    {STATUS_LABEL[status]}
+                  </Badge>
+                </div>
+                <dl className="grid grid-cols-2 gap-5 px-6 py-5 md:grid-cols-4">
+                  {[
+                    {
+                      label: 'Navio',
+                      valor: form.navio,
+                      meta: form.eta ? `ETA ${fmtDateBR(form.eta)} · ${relativoDias(form.eta)}` : undefined,
+                    },
+                    {
+                      label: 'Contêineres',
+                      valor: form.quantidade ? String(form.quantidade) : qtdConts ? String(qtdConts) : undefined,
+                      meta: listaConts(form.container).join(', ') || undefined,
+                      mono: true,
+                    },
+                    {
+                      label: 'Rota',
+                      valor:
+                        form.terminalDescarga || form.terminalCaptado
+                          ? `${form.terminalDescarga || '—'} → ${form.terminalCaptado || '—'}`
+                          : undefined,
+                      meta: 'Atracação → Parceiro',
+                    },
+                    { label: 'Despacho', valor: form.despachante, meta: form.regime },
+                  ].map((cel) => (
+                    <div key={cel.label} className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">{cel.label}</dt>
+                      <dd className={cn('mt-1 truncate text-[15px] font-semibold', !cel.valor && 'text-warning-text')}>
+                        {cel.valor || 'Vazio'}
+                      </dd>
+                      {cel.meta && (
+                        <dd className={cn('mt-0.5 truncate text-xs text-muted-foreground', cel.mono && 'font-mono')}>
+                          {cel.meta}
+                        </dd>
+                      )}
+                    </div>
+                  ))}
+                </dl>
+              </Card>
+
+              {/* 2 · O que ficou vazio */}
+              {etapasComVazios.length > 0 && (
+                <Alert className="gap-3 border-warning-border bg-warning-soft px-4 py-4 text-warning-text">
+                  <AlertTriangle />
+                  <AlertTitle className="text-sm font-semibold">
+                    {plural(etapasComVazios.length, 'etapa com campos vazios', 'etapas com campos vazios')}
+                  </AlertTitle>
+                  <AlertDescription className="text-warning-text/90">
+                    Dá pra salvar assim e completar depois.
+                    <ul className="mt-3 divide-y divide-warning-border">
+                      {etapasComVazios.map((i) => (
+                        <li key={i} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2">
+                          <Badge variant="outline" className="border-warning-border bg-card text-warning-text">
+                            {i + 1} · {STEPS[i]}
+                          </Badge>
+                          <span className="min-w-0 flex-1 text-xs">{vaziosEtapa(i).join(', ')}</span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-warning-border bg-card text-warning-text hover:bg-card/80"
+                            onClick={() => goToStep(i)}
+                          >
+                            Preencher
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* 3 · Ficha completa */}
+              <Card className="gap-0 py-0 shadow-sm">
+                <div className="flex items-center justify-between border-b px-6 py-4">
+                  <h2 className="text-[15px] font-semibold">Ficha completa</h2>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {totalPreenchidos} de {totalCampos} campos preenchidos
+                  </span>
+                </div>
+                <div className="divide-y">
+                  {ETAPAS_COM_CAMPOS.map((i) => (
+                    <section key={i} className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-start">
+                      <div className="flex w-40 shrink-0 items-center gap-2.5">
+                        <Circulo estado={estadoEtapa(i)} n={i + 1} className="size-6 text-[11px]" />
+                        <h3 className="text-sm font-medium">{STEPS[i]}</h3>
+                      </div>
+                      <dl className="grid min-w-0 flex-1 grid-cols-2 gap-x-5 gap-y-3 md:grid-cols-3">
+                        {camposEtapa(i).map((c) => (
+                          <div key={c.label} className="min-w-0">
+                            <dt className="text-[11px] text-muted-foreground">{c.label}</dt>
+                            {estaPreenchido(c.value) ? (
+                              <dd className={cn('mt-0.5 text-[13px] font-medium break-words', c.tipo === 'mono' && 'font-mono')}>
+                                {valorFicha(c)}
+                              </dd>
+                            ) : (
+                              <dd className="mt-0.5 flex items-center gap-1.5 text-[13px] font-medium text-warning-text">
+                                <span aria-hidden="true" className="size-1.5 rounded-full bg-warning" />
+                                Vazio
+                              </dd>
+                            )}
+                          </div>
+                        ))}
+                      </dl>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="h-auto shrink-0 self-start px-0"
+                        onClick={() => goToStep(i)}
+                        aria-label={`Editar ${STEPS[i]}`}
+                      >
+                        Editar
+                      </Button>
+                    </section>
                   ))}
                 </div>
-              </div>
-            )}
-          </RecapSection>
+              </Card>
+            </>
+          )}
 
-          <RecapSection n={6} title="Carregamento" onEdit={() => goToStep(5)}>
-            <div className="grid grid-cols-3 gap-x-4 gap-y-2.5">
-              <RecapItem label="Data de carregamento" value={fmtDateBR(form.dataCarregamento)} />
-              <RecapItem label="Transportadora" value={form.transportadora} />
-              <RecapItem label="Data de chegada (destino)" value={fmtDateBR(form.dataChegadaDestino)} />
-            </div>
-          </RecapSection>
-        </div>
-      )}
+          {error && !erroCliente && <p className="text-sm font-medium text-destructive">{error}</p>}
 
-      </div>
-
-      {error && error !== 'Informe ao menos o cliente.' && (
-        <p className="text-[13px] font-semibold" style={{ color: 'var(--vt-c-prej)' }}>{error}</p>
-      )}
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" className={glassBtn} onClick={handleExit}>
-            Sair
-          </Button>
-          <Button variant="ghost" className={glassBtn} onClick={() => goToStep(Math.max(0, step - 1))} disabled={step === 0}>
-            ‹ Anterior
-          </Button>
-        </div>
-        <div className="flex items-center gap-2">
-          {editId && (
+          {/* Sem overflow-hidden (não usa <Card>): o caminhão do Salvar
+              aparece abaixo do botão e sai andando pra direita. */}
+          <div className="flex flex-wrap items-center gap-2 rounded-xl bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/10">
+            <Button variant="outline" className="h-10 px-4" onClick={handleExit}>
+              Sair
+            </Button>
             <Button
-              variant="ghost"
-              className="rounded-[11px] px-3.5 py-2 text-[12.5px] font-semibold"
-              style={{ color: 'var(--vt-c-prej)' }}
-              onClick={handleDelete}
-              disabled={saving}
+              variant="outline"
+              className="h-10 px-3"
+              onClick={() => goToStep(Math.max(0, step - 1))}
+              disabled={step === 0}
             >
-              Excluir
+              <ChevronLeft />
+              Anterior
             </Button>
-          )}
-          {step < STEPS.length - 1 && (
-            <Button variant="ghost" className={glassBtn} onClick={() => goToStep(Math.min(STEPS.length - 1, step + 1))}>
-              Próximo ›
-            </Button>
-          )}
-          <span ref={wrapRef} className="vt-save-wrap">
+            <span className="flex-1" />
+            {editId && (
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={<Button variant="ghost" className="h-10 px-4 text-destructive hover:text-destructive" />}
+                  disabled={saving}
+                >
+                  Excluir
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir este processo?</AlertDialogTitle>
+                    <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction variant="destructive" onClick={handleDelete} disabled={saving}>
+                      Excluir processo
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            {step < REVISAO && (
+              <Button variant="outline" className="h-10 px-3" onClick={() => goToStep(Math.min(REVISAO, step + 1))}>
+                Próximo
+                <ChevronRight />
+              </Button>
+            )}
+            <span ref={wrapRef} className="vt-save-wrap">
               <svg
                 ref={truckRef}
                 className="vt-save-truck"
@@ -1069,16 +1473,11 @@ function CaptacoesForm() {
                 <circle cx="50" cy="23" r="3.6" fill="#1c1a16" />
                 <circle cx="50" cy="23" r="1.6" fill="#8a857c" />
               </svg>
-              <Button
-                ref={btnRef}
-                variant="ghost"
-                className={`vt-save-btn ${primaryBtn}`}
-                onClick={handleSubmit}
-                disabled={saving}
-              >
+              <Button ref={btnRef} className="vt-save-btn h-10 px-5" onClick={handleSubmit} disabled={saving}>
                 {saving ? 'Salvando…' : 'Salvar'}
               </Button>
             </span>
+          </div>
         </div>
       </div>
     </div>

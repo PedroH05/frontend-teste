@@ -3,6 +3,30 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-21 — Redesign passo 3: wizard "Editar captação" + Revisão (branch `redesign/shadcn-v2`)
+
+- `captacoes/page.tsx` reescrito no visual do HANDOFF (seções 4 e 5):
+  stepper vertical com `Progress` e resumo por etapa, etapa num `Card`,
+  barra de ações embaixo, breadcrumb no topo.
+- Estado da etapa agora vem só dos dados (atual / completa / com vazios /
+  pendente) — saiu o "só colore depois de visitada", o vermelho de
+  "nenhum campo" e o "!" no passo 1. Mesma lista de campos de antes.
+- Revisão em três blocos: Resumo do processo, "O que ficou vazio" (com
+  "Preencher") e Ficha completa.
+- Datas viram calendário (`Popover` + `Calendar`, ETA com "em Nd"),
+  contêineres viram etiquetas com conferência da quantidade, quantidade
+  com −/+, Observação em `Textarea`, alerta âmbar quando Carregamento está
+  todo vazio.
+- Excluir pede confirmação num `AlertDialog` (antes `confirm()` nativo).
+  Sair, aviso de dado não salvo e animação do caminhão: sem mudança.
+- Componentes shadcn novos via CLI: `card`, `progress`, `alert`,
+  `alert-dialog`, `textarea`, `calendar`, `command` (+ `dialog`,
+  `input-group`), `breadcrumb`. Dependências novas: `react-day-picker`,
+  `date-fns`, `cmdk` (`command` ainda sem uso — fica pro Ctrl K da
+  seção 6).
+- Nenhuma regra de negócio mudou (payload, validação de cliente,
+  despachante, prefill, `?step=`, notas).
+
 ## 2026-10-15 — Redesign passo 2: Sidebar do shadcn (branch `redesign/shadcn-v2`)
 
 - `components/app-shell.tsx` reescrito: `.vt-side`/`.vt-nav`/indicador

@@ -143,7 +143,7 @@ então eram o cinza padrão gerado pelo `shadcn init`, nunca usados por
 nenhuma tela (só por primitivos `ui/*.tsx`). Os dois sistemas coexistem por
 enquanto: `--vt-*` continua sendo o que toda tela ainda usa, `--primary`
 etc. é o que as telas re-feitas no redesign (`AppShell` é a primeira,
-15/10/2026) passam a usar. A ideia é o redesign ir migrando tela por tela
+15/10/2026; wizard de captação a segunda, 21/10/2026) passam a usar. A ideia é o redesign ir migrando tela por tela
 pros tokens shadcn até `--vt-*` virar código morto — não aconteceu ainda.
 
 **Sidebar preta sólida, sem variar por tema** (01/10/2026, pedido direto —
@@ -354,6 +354,53 @@ do `(authed)/layout.tsx`.
   testado dessa forma). A cobertura em
   `captacoes/__tests__/page.test.tsx` usa o prefill por query string pra
   exercitar o valor inicial em vez de abrir o popup.
+- **Wizard "Editar captação" redesenhado** (21/10/2026, redesign passo 3,
+  HANDOFF seções 4 e 5, branch `redesign/shadcn-v2`). Duas colunas:
+  stepper vertical (`Card` + `Progress` "X de 6 etapas completas", resumo
+  do que foi preenchido em cada linha) e a etapa atual num `Card`, com
+  barra de ações embaixo. Mudanças de comportamento visíveis:
+  - **Estado de cada etapa vem só dos dados** — saiu o estado `visited`
+    (bolinha só colorida depois de visitada). Quatro estados: `atual`,
+    `completa` (verde, check), `vazios` (âmbar, resumo vira "N campos
+    vazios" — junta os antigos "parcial" e "nenhum") e `pendente` (só a
+    Revisão, quando não é a atual). Some o "!" vermelho no passo 1 quando
+    falta cliente; o aviso fica no campo (`aria-invalid` + "Campo
+    obrigatório"). A lista de campos por etapa (`camposEtapa`) é a mesma
+    que já decidia a cor antes — inclusive `boolean` só conta quando
+    `true`, então "Tabela pública" desmarcada aparece como vazio.
+  - **Revisão em três blocos**, tudo derivado de `camposEtapa`: Resumo do
+    processo, alerta "O que ficou vazio" (só aparece se houver vazio, com
+    "Preencher" levando pra etapa) e Ficha completa ("X de Y campos
+    preenchidos", vazio = ponto âmbar + "Vazio").
+  - **Campos:** datas (ETA, carregamento, chegada no destino) viram
+    `DateField` local (`Popover` + `Calendar` do shadcn, `react-day-picker`
+    com `ptBR`; ETA mostra "em Nd"/"há Nd"). A data é montada/serializada
+    no fuso local (`parseISODateLocal`/`toISODateLocal`) — `new Date(iso)`
+    leria como meia-noite UTC e voltaria um dia. Contêineres viram
+    etiquetas (`ConteineresInput`), mas continuam salvos numa string só,
+    agora normalizada com " / " quando editada pelas etiquetas; separadores
+    iguais aos de `listaConts`. Linha embaixo confere com a quantidade
+    (verde se bate, âmbar se não). Quantidade ganhou −/+. Observação virou
+    `Textarea`. Atracação → Parceiro lado a lado com seta. Carregamento
+    todo vazio mostra `Alert` âmbar "Dá pra salvar e completar depois".
+  - **Excluir abre `AlertDialog`** no lugar do `confirm()` nativo. "Sair"
+    e o aviso de dado não salvo continuam com `confirm()` nativo, de
+    propósito. Animação do caminhão no Salvar mantida igual — a barra de
+    ações não usa `<Card>` porque o `overflow-hidden` dele cortaria o
+    caminhão.
+  - Container da página tem `w-full` junto do `mx-auto max-w-[1240px]`:
+    o `SidebarInset` é `flex-col`, e item flex com margem automática
+    encolhe até o conteúdo — sem isso cada etapa ficava com uma largura
+    (a Revisão, de conteúdo mais largo, maior que as outras). Telas novas
+    do redesign com esse mesmo container precisam do `w-full` também.
+  - Cliente continua campo livre com sugestão da lista de `/clientes` (só
+    restilizado, não virou `Command`): trocar pra um Combobox de seleção
+    impediria digitar cliente não cadastrado.
+  - **Limitação de teste:** o `Popover` do `@base-ui/react` leva ~45s pra
+    abrir no jsdom (cálculo de posição síncrono sem layout real; no
+    navegador é instantâneo, o `FiltroPeriodo` usa o mesmo). O teste do
+    wizard troca `@/components/ui/popover` por um abre/fecha simples via
+    `vi.mock`. `AlertDialog` não tem esse problema.
 - **Filtro de período (de/até) no Histórico** (13/10/2026): o
   `<input type="date">` de dia único saiu; `<FiltroPeriodo>`
   (`components/filtro-periodo.tsx`) abre um popover com atalhos (Hoje,

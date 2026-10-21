@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import CaptacoesPage from '../page';
@@ -35,6 +35,73 @@ vi.mock('@/lib/api', async () => {
   return { ...actual, apiFetch: (...args: unknown[]) => apiFetchMock(...(args as [string])) };
 });
 
+// Popover do @base-ui trava ~45s no jsdom ao abrir (cálculo de posição sem
+// layout real) — aqui vira um abre/fecha simples; o que se testa é o
+// DateField (escolher dia, salvar ISO), não o posicionamento.
+vi.mock('@/components/ui/popover', async () => {
+  const React = await import('react');
+  type Ctx = { open: boolean; setOpen: (o: boolean) => void };
+  const PopoverCtx = React.createContext<Ctx>({ open: false, setOpen: () => {} });
+  function Popover({
+    open,
+    onOpenChange,
+    children,
+  }: {
+    open: boolean;
+    onOpenChange: (o: boolean) => void;
+    children: React.ReactNode;
+  }) {
+    return <PopoverCtx.Provider value={{ open, setOpen: onOpenChange }}>{children}</PopoverCtx.Provider>;
+  }
+  function PopoverTrigger({
+    render,
+    children,
+    ...props
+  }: {
+    render: React.ReactElement<Record<string, unknown>>;
+    children: React.ReactNode;
+  }) {
+    const { open, setOpen } = React.useContext(PopoverCtx);
+    return React.cloneElement(render, { ...props, onClick: () => setOpen(!open) }, children);
+  }
+  function PopoverContent({ children }: { children: React.ReactNode }) {
+    const { open } = React.useContext(PopoverCtx);
+    return open ? <div data-slot="popover-content">{children}</div> : null;
+  }
+  return { Popover, PopoverTrigger, PopoverContent };
+});
+
+const PROXIMO = { name: 'Próximo' } as const;
+
+// Botão da etapa no stepper (não o "Editar X" da Ficha completa).
+function etapa(nome: string) {
+  const nav = screen.getByRole('navigation', { name: 'Etapas' });
+  return within(nav).getByRole('button', { name: new RegExp(nome) });
+}
+function estadoDa(nome: string) {
+  return etapa(nome).querySelector('[data-estado]')?.getAttribute('data-estado');
+}
+
+// Dia 15 do mês que o calendário abre (o atual, sem data escolhida) — não
+// depende do relógio da máquina que roda o teste.
+function dia15DoMesAtual() {
+  const hoje = new Date();
+  const d = new Date(hoje.getFullYear(), hoje.getMonth(), 15);
+  const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-15`;
+  return { iso, br: d.toLocaleDateString('pt-BR') };
+}
+
+async function escolherDia15(user: ReturnType<typeof userEvent.setup>, label: string) {
+  await user.click(screen.getByLabelText(label));
+  const { iso } = dia15DoMesAtual();
+  const botaoDia = document.querySelector(`td[data-day="${iso}"] button`);
+  if (!botaoDia) throw new Error('calendário não abriu');
+  // fireEvent, não user.click: o foco do userEvent faz o react-day-picker
+  // re-renderizar o dia antes do clique chegar, e o clique se perde.
+  fireEvent.click(botaoDia as HTMLElement);
+  await waitFor(() => expect(screen.getByLabelText(label)).not.toHaveTextContent('Selecionar data'));
+}
+
 describe('CaptacoesPage', () => {
   afterEach(() => {
     for (const k of Object.keys(filas)) delete filas[k];
@@ -49,14 +116,15 @@ describe('CaptacoesPage', () => {
     // navega até o último passo (Revisão) sem preencher nada — 6 passos pra
     // chegar nela, agora que Carregamento (6º) entrou antes dela (01/10/2026)
     for (let i = 0; i < 6; i++) {
-      await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+      await user.click(screen.getByRole('button', PROXIMO));
     }
     await user.click(screen.getByRole('button', { name: 'Salvar' }));
 
-    // erro agora aparece junto do campo (stepper aponta o passo 1 com "!"),
-    // não mais como banner solto — ver goToStep(0) em handleSubmit.
+    // erro aparece junto do campo e o stepper volta pra etapa 1 — ver
+    // goToStep(0) em handleSubmit.
     expect(await screen.findByText('Campo obrigatório')).toBeInTheDocument();
-    expect(screen.getByText('!')).toBeInTheDocument(); // stepper aponta o passo 1
+    expect(etapa('Identificação')).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByLabelText(/Cliente/)).toHaveAttribute('aria-invalid', 'true');
     expect(apiFetchMock).not.toHaveBeenCalledWith('/captacoes', expect.anything());
   });
 
@@ -68,7 +136,7 @@ describe('CaptacoesPage', () => {
     await user.type(screen.getByLabelText('Cliente'), 'tecno');
 
     for (let i = 0; i < 6; i++) {
-      await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+      await user.click(screen.getByRole('button', PROXIMO));
     }
     await user.click(screen.getByRole('button', { name: 'Salvar' }));
 
@@ -86,37 +154,37 @@ describe('CaptacoesPage', () => {
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/historico'), { timeout: 2000 });
   });
 
-  it('passo Carregamento (6º) salva data de carregamento e transportadora (pedido 01/10/2026)', async () => {
+  it('passo Carregamento (6º) salva datas (pelo calendário) e transportadora (pedido 01/10/2026)', async () => {
     const user = userEvent.setup();
     filaApi('/captacoes', {});
     render(<CaptacoesPage />);
 
     await user.type(screen.getByLabelText('Cliente'), 'tecno');
-    for (let i = 0; i < 4; i++) {
-      await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
-    }
-    // passo 4 = Situação; passo 5 = Carregamento
-    await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+    await user.click(etapa('Carregamento'));
 
-    expect(screen.getByRole('button', { name: /Carregamento/ })).toBeInTheDocument();
-    await user.type(screen.getByLabelText('Data de carregamento'), '2026-10-01');
+    // tudo vazio — aviso de que dá pra completar depois
+    expect(screen.getByText('Dá pra salvar e completar depois.')).toBeInTheDocument();
+
+    await escolherDia15(user, 'Data de carregamento');
     await user.type(screen.getByLabelText('Transportadora'), 'RODOMAX');
-    await user.type(screen.getByLabelText('Data de chegada (destino)'), '2026-10-10');
-    await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+    await escolherDia15(user, 'Data de chegada (destino)');
+    expect(screen.queryByText('Dá pra salvar e completar depois.')).not.toBeInTheDocument();
 
-    // Revisão mostra a seção nova (heading, não o rótulo do stepper)
+    await user.click(screen.getByRole('button', PROXIMO));
+
+    // Revisão: Carregamento completo na Ficha
+    const { iso, br } = dia15DoMesAtual();
     expect(screen.getByRole('heading', { name: 'Carregamento' })).toBeInTheDocument();
-    expect(screen.getByText('01/10/2026')).toBeInTheDocument();
+    expect(screen.getAllByText(br)).toHaveLength(2);
     expect(screen.getByText('RODOMAX')).toBeInTheDocument();
-    expect(screen.getByText('10/10/2026')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Salvar' }));
 
     const chamadaSalvar = apiFetchMock.mock.calls.find((c) => c[0] === '/captacoes' && c[1]);
     const body = JSON.parse((chamadaSalvar as [string, { body: string }])[1].body);
-    expect(body.dataCarregamento).toBe('2026-10-01');
+    expect(body.dataCarregamento).toBe(iso);
     expect(body.transportadora).toBe('RODOMAX');
-    expect(body.dataChegadaDestino).toBe('2026-10-10');
+    expect(body.dataChegadaDestino).toBe(iso);
   });
 
   it('passo Terminal (4º) não tem mais Data de chegada — só existe no Carregamento (pedido 08/10/2026)', async () => {
@@ -125,7 +193,7 @@ describe('CaptacoesPage', () => {
 
     await user.type(screen.getByLabelText('Cliente'), 'tecno');
     for (let i = 0; i < 3; i++) {
-      await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+      await user.click(screen.getByRole('button', PROXIMO));
     }
     // passo 3 = Terminal
     expect(screen.queryByLabelText('Data de chegada')).not.toBeInTheDocument();
@@ -143,25 +211,95 @@ describe('CaptacoesPage', () => {
     expect(screen.queryByLabelText('Cliente')).not.toBeInTheDocument();
   });
 
-  it('bolinha da etapa fica amarela (parcial) ou verde (completa) conforme o preenchimento — pedido 17/09/2026', async () => {
+  it('estado da etapa vem só dos dados: âmbar com "N campos vazios" ou verde quando completa (HANDOFF seção 4)', async () => {
     const user = userEvent.setup();
     render(<CaptacoesPage />);
 
+    // nada visitado ainda e já mostra o que falta — não depende de posição
+    expect(estadoDa('Identificação')).toBe('atual');
+    expect(estadoDa('Carga')).toBe('vazios');
+    expect(etapa('Carga')).toHaveTextContent('4 campos vazios');
+    expect(estadoDa('Revisão')).toBe('pendente'); // não nasce verde
+
     // só "Cliente" preenchido dos 3 campos da etapa 1 (cnpj, cli, referencia)
     await user.type(screen.getByLabelText('Cliente'), 'TECNO');
-    await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+    await user.click(screen.getByRole('button', PROXIMO));
+    expect(estadoDa('Identificação')).toBe('vazios');
+    expect(etapa('Identificação')).toHaveTextContent('2 campos vazios');
 
-    const botaoEtapa1 = screen.getByRole('button', { name: /Identificação/ });
-    expect(botaoEtapa1.querySelector('span')).toHaveStyle({ background: 'var(--vt-c-jan)' });
-    expect(botaoEtapa1.querySelector('span')?.textContent).toBe('1'); // parcial não vira ✓
-
-    await user.click(screen.getByRole('button', { name: '‹ Anterior' }));
+    await user.click(screen.getByRole('button', { name: 'Anterior' }));
     await user.type(screen.getByLabelText('Referência'), 'REF001');
     await user.type(screen.getByLabelText('CNPJ do cliente'), '12.345.678/0001-99');
-    await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+    await user.click(screen.getByRole('button', PROXIMO));
 
-    expect(botaoEtapa1.querySelector('span')).toHaveStyle({ background: 'var(--vt-c-efet)' });
-    expect(botaoEtapa1.querySelector('span')?.textContent).toBe('✓');
+    expect(estadoDa('Identificação')).toBe('completa');
+    expect(etapa('Identificação')).toHaveTextContent('TECNO'); // resumo do que foi preenchido
+    expect(screen.getByText('1 de 6 etapas completas')).toBeInTheDocument();
+  });
+
+  it('contêineres viram etiquetas e a linha embaixo confere com a quantidade', async () => {
+    const user = userEvent.setup();
+    filaApi('/captacoes', {});
+    render(<CaptacoesPage />);
+    await user.type(screen.getByLabelText('Cliente'), 'tecno');
+    await user.click(etapa('Carga'));
+
+    await user.click(screen.getByRole('button', { name: 'Aumentar quantidade' }));
+    await user.click(screen.getByRole('button', { name: 'Aumentar quantidade' }));
+    expect(screen.getByLabelText('Qtde de contêineres')).toHaveValue(2);
+
+    // Enter com texto vira etiqueta (não avança de etapa); hífen faz parte do código
+    await user.type(screen.getByLabelText('Contêineres'), 'MSCU452849-8{Enter}');
+    expect(screen.getByLabelText('ETA')).toBeInTheDocument();
+    expect(screen.getByText('1 contêiner informado — a quantidade diz 2')).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Contêineres'), 'TCLU9981023,');
+    expect(screen.getByText('2 contêineres informados — bate com a quantidade')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Remover MSCU452849-8' }));
+    expect(screen.queryByText('MSCU452849-8')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Diminuir quantidade' }));
+    expect(screen.getByText('1 contêiner informado — bate com a quantidade')).toBeInTheDocument();
+
+    await user.click(etapa('Revisão'));
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+    const chamadaSalvar = apiFetchMock.mock.calls.find((c) => c[0] === '/captacoes' && c[1]);
+    const body = JSON.parse((chamadaSalvar as [string, { body: string }])[1].body);
+    expect(body.container).toBe('TCLU9981023');
+    expect(body.quantidade).toBe(1);
+  });
+
+  it('Revisão lista o que ficou vazio e "Preencher" leva pra etapa', async () => {
+    const user = userEvent.setup();
+    useSearchParamsMock.mockReturnValue(new URLSearchParams({ cli: 'TECNO', step: '6' }));
+    render(<CaptacoesPage />);
+
+    expect(screen.getByText('6 etapas com campos vazios')).toBeInTheDocument();
+    expect(screen.getByText('Dá pra salvar assim e completar depois.')).toBeInTheDocument();
+    expect(screen.getByText('CNPJ, Referência')).toBeInTheDocument();
+    expect(screen.getByText('1 de 21 campos preenchidos')).toBeInTheDocument();
+    expect(screen.getAllByText('Vazio').length).toBeGreaterThan(0);
+
+    await user.click(screen.getAllByRole('button', { name: 'Preencher' })[1]); // 2 · Carga
+    expect(etapa('Carga')).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByLabelText('Navio')).toBeInTheDocument();
+  });
+
+  it('Excluir pede confirmação no AlertDialog antes de apagar', async () => {
+    const user = userEvent.setup();
+    const captacaoId = mockCaptacoes[0].id;
+    useSearchParamsMock.mockReturnValue(new URLSearchParams({ edit: String(captacaoId) }));
+    filaApi('/captacoes', [mockCaptacoes[0]]);
+    render(<CaptacoesPage />);
+
+    await user.click(await screen.findByRole('button', { name: 'Excluir' }));
+    expect(await screen.findByText('Excluir este processo?')).toBeInTheDocument();
+    expect(apiFetchMock).not.toHaveBeenCalledWith(`/captacoes/${captacaoId}`, expect.anything());
+
+    await user.click(screen.getByRole('button', { name: 'Excluir processo' }));
+    expect(apiFetchMock).toHaveBeenCalledWith(`/captacoes/${captacaoId}`, { method: 'DELETE' });
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/historico'));
   });
 
   it('avisa antes de sair da tela clicando num link, se tiver dado digitado não salvo — pedido 17/09/2026', async () => {
@@ -246,8 +384,8 @@ describe('CaptacoesPage', () => {
     useSearchParamsMock.mockReturnValue(new URLSearchParams({ cli: 'TECNO', despachante: 'NIRRON' }));
     const user = userEvent.setup();
     render(<CaptacoesPage />);
-    await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
-    await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+    await user.click(screen.getByRole('button', PROXIMO));
+    await user.click(screen.getByRole('button', PROXIMO));
 
     expect(screen.getByRole('combobox', { name: 'Despachante' })).toHaveTextContent('NIRRON');
     expect(screen.queryByPlaceholderText('Nome do despachante')).not.toBeInTheDocument();
@@ -257,8 +395,8 @@ describe('CaptacoesPage', () => {
     useSearchParamsMock.mockReturnValue(new URLSearchParams({ cli: 'TECNO', despachante: 'NOVOLOG' }));
     const user = userEvent.setup();
     render(<CaptacoesPage />);
-    await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
-    await user.click(screen.getByRole('button', { name: 'Próximo ›' }));
+    await user.click(screen.getByRole('button', PROXIMO));
+    await user.click(screen.getByRole('button', PROXIMO));
 
     expect(screen.getByPlaceholderText('Nome do despachante')).toHaveValue('NOVOLOG');
   });
