@@ -3,6 +3,17 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-21 — Carteira e Histórico: tabela mais larga
+
+- Bug relatado com print: HBL, Container, CE e Atracação → Parceiro passavam
+  da borda e era preciso rolar a tabela pro lado. O container da página
+  tinha `max-w-[1240px]` (largura de página de texto), pequeno demais pras
+  9 colunas com a sidebar recolhida. Agora `max-w-[1800px]` e padding
+  lateral menor (`lg:px-6`) nas duas telas. Conferido no navegador com a
+  sidebar aberta (7 colunas) e recolhida (9 colunas): sem barra de rolagem.
+- Dashboard, Clientes, Anotações e Config seguem em 1240px (não têm tabela
+  larga).
+
 ## 2026-10-21 — Sidebar recolhida não voltava
 
 - Bug: com a sidebar recolhida, o botão de recolher/expandir sumia junto

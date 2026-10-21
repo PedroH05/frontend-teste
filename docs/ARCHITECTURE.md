@@ -398,6 +398,13 @@ do `(authed)/layout.tsx`.
   enquanto digita — só dígitos, até 14, idempotente em texto já formatado.
   Exclusão via `AlertDialog` controlado (`excluindo`); `handleDelete` não
   chama mais `confirm()`. `RowActions` aceita `nome` pro `aria-label`.
+- **Largura das telas com tabela** (21/10/2026): Carteira e Histórico usam
+  `max-w-[1800px]` e `lg:px-6`; as demais telas seguem `max-w-[1240px]`
+  (HANDOFF seção 1, pensado pra tela de formulário/cards). Com a sidebar
+  recolhida a tabela mostra 9 colunas (HBL e Container entram, regra
+  `.vt-extra-col`) e em 1240px precisava rolar pro lado. Ao mexer nessas
+  tabelas, conferir com a sidebar recolhida e valores do tamanho real (HBL
+  com "+N", CE de 15 dígitos, "SANTOS BRASIL → ECOPORTO").
 - **Dashboard redesenhado** (21/10/2026, redesign passo 5, pedido "use
   criatividade, dê mais vida", aprovado no artefato "Dashboard
   Valetrade"). Destaque escuro (mesma cor da sidebar) com contêineres do

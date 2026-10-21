@@ -436,7 +436,7 @@ export default function CarteiraPage() {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-[1240px] space-y-6 p-6 sm:p-8 lg:px-10">
+    <div className="mx-auto w-full max-w-[1800px] space-y-6 p-6 sm:p-8 lg:px-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1.5">
           <Breadcrumb>
