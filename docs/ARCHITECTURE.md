@@ -354,6 +354,11 @@ do `(authed)/layout.tsx`.
   testado dessa forma). A cobertura em
   `captacoes/__tests__/page.test.tsx` usa o prefill por query string pra
   exercitar o valor inicial em vez de abrir o popup.
+- **Config redesenhada** (21/10/2026, redesign passo 5): `Switch` do
+  shadcn (`components/ui/switch.tsx`) + prévia com `StatusBadge`; tema
+  visual como `radiogroup` de inputs nativos dentro de cards. Testes do
+  base-ui `Switch` precisam de `PointerEvent` — polyfill em
+  `vitest.setup.ts`.
 - **Anotações redesenhada** (21/10/2026, redesign passo 5): busca da
   lista é só no cliente (filtra título + texto das notas já carregadas, sem
   rota nova). Exclusão via `AlertDialog` (`confirmandoExclusao`).

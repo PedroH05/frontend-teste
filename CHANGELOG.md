@@ -3,6 +3,16 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-21 — Redesign passo 5d: Config (branch `redesign/shadcn-v2`)
+
+- Card "Exibição" com o `Switch` do shadcn pra "Mostrar o nome do status"
+  e prévia ao vivo com os badges de status de verdade (`StatusBadge`).
+- Card "Tema visual" com as duas opções como radio em card, amostra
+  desenhada e selo "Atual".
+- Config ganhou testes (não tinha). `vitest.setup.ts` ganhou polyfill de
+  `PointerEvent` (o `Switch` do base-ui precisa e o jsdom não tem).
+- Com isso todas as telas do HANDOFF estão no visual novo.
+
 ## 2026-10-21 — Redesign passo 5c: Anotações (branch `redesign/shadcn-v2`)
 
 - Lista de notas num card com busca (título/texto), botão "+" e contador;
