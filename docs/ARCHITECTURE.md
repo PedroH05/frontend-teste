@@ -393,9 +393,9 @@ do `(authed)/layout.tsx`.
     estado visível e desligadas com `prefers-reduced-motion`. O
     `CountUp` mostra o valor direto quando não há `matchMedia` (jsdom).
   - Botão "Painel de TV" do mock não entrou (seção 6).
-- **Tabelas sem divisória vertical** (21/10/2026): a regra global de
-  `[data-slot='table-head'/'table-cell']` com `border-right` saiu e o hover
-  da linha usa `--muted`, como nas tabelas do HANDOFF.
+- **Divisória vertical entre colunas** (todas as tabelas): saiu no passo
+  do Dashboard e voltou no mesmo dia a pedido, agora com `--border`. Hover
+  da linha usa `--muted`.
 - **Carteira e Histórico redesenhados** (21/10/2026, redesign passo 4,
   branch `redesign/shadcn-v2`). Toda a lógica de filtro/ordenação/
   paginação/importação/exportação ficou igual — só o JSX mudou. Exceção:

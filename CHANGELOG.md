@@ -43,7 +43,8 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
   teste próprio. Sem dependência nova (gráficos em SVG).
 - Abas Hoje/Semana/Mês/Total no estilo do redesign; `SegmentedControl` e
   o CSS `.vt-seg`/`.vt-native-select` (sem uso) apagados.
-- Tabelas do app sem divisória vertical entre colunas.
+- Tabelas: hover da linha no token novo. (A divisória vertical entre colunas
+  chegou a sair aqui, mas voltou no mesmo dia a pedido.)
 
 ## 2026-10-21 — Redesign passo 4: Carteira + Histórico (branch `redesign/shadcn-v2`)
 

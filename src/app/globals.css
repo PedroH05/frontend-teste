@@ -431,10 +431,14 @@
 [data-slot='table-row'] {
   transition: background .1s;
 }
-/* Redesign (21/10/2026): sem divisória vertical entre colunas e hover no
-   token shadcn, igual às tabelas do HANDOFF. */
+/* Hover no token shadcn (redesign). Divisória vertical entre colunas volta
+   em 21/10/2026 a pedido — tinha saído junto com o Dashboard. */
 [data-slot='table-row']:hover {
   background: color-mix(in oklch, var(--muted) 60%, transparent);
+}
+[data-slot='table-head']:not(:last-child),
+[data-slot='table-cell']:not(:last-child) {
+  border-right: 1px solid var(--border);
 }
 
 .vt-pulse {
