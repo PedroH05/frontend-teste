@@ -23,8 +23,9 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
 ## 2026-10-21 — Redesign passo 5b: Clientes (branch `redesign/shadcn-v2`)
 
-- Lista num card à esquerda (avatar com iniciais, CNPJ em mono, apelidos
-  como badge) e card fixo "Adicionar cliente" à direita. Busca continua no
+- Lista num card (avatar com iniciais, CNPJ em mono, apelidos
+  como badge) com a largura toda e "Adicionar cliente" numa linha em cima
+  (ao lado da tabela ela ficava estreita e rolava pro lado). Busca continua no
   topo, junto do título (pedido 28/09/2026 — o mock punha na tabela), e
   continua sem contador junto do título.
 - CNPJ com máscara enquanto digita (cadastro e edição).

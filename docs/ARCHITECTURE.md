@@ -362,7 +362,10 @@ do `(authed)/layout.tsx`.
 - **Anotações redesenhada** (21/10/2026, redesign passo 5): busca da
   lista é só no cliente (filtra título + texto das notas já carregadas, sem
   rota nova). Exclusão via `AlertDialog` (`confirmandoExclusao`).
-- **Clientes redesenhado** (21/10/2026, redesign passo 5): lista + card
+- **Clientes redesenhado** (21/10/2026, redesign passo 5): cadastro em cima
+  (form em linha) e tabela com a largura toda — com o card ao lado a tabela
+  rolava pro lado; nome e apelidos com `whitespace-normal` (o `TableCell`
+  do shadcn vem `nowrap`). Antes: lista + card
   "Adicionar cliente" lado a lado. Busca segue no topo (decisão de
   28/09/2026 vale mais que o mock). `mascaraCnpj` (local da página) formata
   enquanto digita — só dígitos, até 14, idempotente em texto já formatado.
