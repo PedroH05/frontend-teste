@@ -288,7 +288,7 @@ export default function ClientesPage() {
               <col />
               <col className="w-[168px]" />
               <col className="w-[30%]" />
-              <col className="w-[84px]" />
+              <col className="w-[60px]" />
             </colgroup>
             <TableHeader>
               <TableRow className="bg-muted/40 hover:bg-muted/40">

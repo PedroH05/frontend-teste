@@ -29,6 +29,8 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
   continua sem contador junto do título.
 - CNPJ com máscara enquanto digita (cadastro e edição).
 - Excluir pede confirmação num `AlertDialog` (antes `confirm()`).
+- Lápis e lixeira de cada linha agora ficam dentro de um menu "⋯"
+  (`RowActions`). Tabela com larguras fixas pra caber no card sem rolar.
   `RowActions` ganhou os tokens do redesign e `aria-label` com o nome.
 
 ## 2026-10-21 — Redesign passo 5a: Dashboard com mais vida (branch `redesign/shadcn-v2`)

@@ -13,6 +13,35 @@ vi.mock('next/navigation', () => ({
 const { ApiError } = await vi.importActual<typeof import('@/lib/api')>('@/lib/api');
 
 const apiFetchMock = vi.fn();
+
+// Menu do @base-ui trava no jsdom igual ao Popover (posicionamento sem
+// layout real) — aqui vira um abre/fecha simples. O que se testa é a ação.
+vi.mock('@/components/ui/dropdown-menu', async () => {
+  const React = await import('react');
+  const Ctx = React.createContext<{ open: boolean; setOpen: (o: boolean) => void }>({ open: false, setOpen: () => {} });
+  function DropdownMenu({ children }: { children: React.ReactNode }) {
+    const [open, setOpen] = React.useState(false);
+    return <Ctx.Provider value={{ open, setOpen }}>{children}</Ctx.Provider>;
+  }
+  function DropdownMenuTrigger({ render, children }: { render: React.ReactElement<Record<string, unknown>>; children: React.ReactNode }) {
+    const { open, setOpen } = React.useContext(Ctx);
+    return React.cloneElement(render, { onClick: () => setOpen(!open) }, children);
+  }
+  function DropdownMenuContent({ children }: { children: React.ReactNode }) {
+    const { open } = React.useContext(Ctx);
+    return open ? <div role="menu">{children}</div> : null;
+  }
+  function DropdownMenuItem({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
+    const { setOpen } = React.useContext(Ctx);
+    return (
+      <button type="button" role="menuitem" onClick={() => { setOpen(false); onClick?.(); }}>
+        {children}
+      </button>
+    );
+  }
+  const DropdownMenuSeparator = () => <hr />;
+  return { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator };
+});
 vi.mock('@/lib/api', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api')>('@/lib/api');
   return { ...actual, apiFetch: (...args: unknown[]) => apiFetchMock(...args) };
@@ -114,7 +143,8 @@ describe('ClientesPage', () => {
     render(<ClientesPage />);
     await screen.findByText('TECNO');
 
-    await user.click(screen.getByTitle('Editar'));
+    await user.click(screen.getByRole('button', { name: 'Ações de TECNO' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Editar' }));
     const nameInput = screen.getByDisplayValue('TECNO');
     await user.clear(nameInput);
     await user.type(nameInput, 'TECNO AMERICA');
@@ -147,7 +177,8 @@ describe('ClientesPage', () => {
     render(<ClientesPage />);
     await screen.findByText('TECNO');
 
-    await user.click(screen.getByRole('button', { name: 'Excluir TEC' }));
+    await user.click(screen.getByRole('button', { name: 'Ações de TEC' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Excluir' }));
     expect(await screen.findByText('Excluir este cliente do cadastro?')).toBeInTheDocument();
     expect(apiFetchMock).not.toHaveBeenCalledWith('/clientes/7', expect.anything());
 

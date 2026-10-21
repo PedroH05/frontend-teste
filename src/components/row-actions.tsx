@@ -1,11 +1,18 @@
 'use client';
 
-import { Pencil, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
-// Par de ícones editar/excluir padrão pra qualquer tabela da aplicação.
-// Ver conversa de 11/09/2026: extraído daqui em vez de repetir o mesmo par
-// de <Button> em cada página com pequenas diferenças de classe.
+// Ações de linha padrão pra qualquer tabela da aplicação (conversa de
+// 11/09/2026). Desde 21/10/2026 é um menu "⋯" com Editar e Excluir dentro,
+// no lugar do par de ícones solto (pedido direto).
 export function RowActions({
   onEdit,
   onDelete,
@@ -20,27 +27,33 @@ export function RowActions({
   nome?: string;
 }) {
   return (
-    <div className="flex items-center justify-end gap-0.5">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-9 text-muted-foreground hover:text-foreground"
-        title={editTitle}
-        aria-label={nome ? `${editTitle} ${nome}` : editTitle}
-        onClick={onEdit}
-      >
-        <Pencil />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-9 text-destructive hover:bg-accent hover:text-destructive"
-        title={deleteTitle}
-        aria-label={nome ? `${deleteTitle} ${nome}` : deleteTitle}
-        onClick={onDelete}
-      >
-        <Trash2 />
-      </Button>
+    <div className="flex justify-center">
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-9 text-muted-foreground hover:text-foreground"
+              aria-label={nome ? `Ações de ${nome}` : 'Ações'}
+              title="Ações"
+            />
+          }
+        >
+          <MoreHorizontal />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-[150px]">
+          <DropdownMenuItem onClick={onEdit}>
+            <Pencil />
+            {editTitle}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" onClick={onDelete}>
+            <Trash2 />
+            {deleteTitle}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

@@ -104,6 +104,11 @@ registro, não reflete mais o código atual.
   toda a aplicação (Carteira, Histórico, Clientes). Não recriar esse par
   numa tela nova.
 - `components/status-badge.tsx` — badge de status das tabelas (redesign).
+- `components/row-actions.tsx` — menu "⋯" (DropdownMenu do shadcn) com
+  Editar e Excluir, desde 21/10/2026 (antes era o par lápis/lixeira
+  solto). Testes que usam precisam mockar `@/components/ui/dropdown-menu`
+  — o Menu do base-ui trava no jsdom igual ao Popover (ver
+  `clientes/__tests__/page.test.tsx`).
   `segmented-control.tsx` (pílula deslizante) foi apagado em 21/10/2026: o
   Dashboard, último a usar, passou pras abas no estilo do redesign.
 - `components/ship-scene.tsx` — decoração animada (SVG de navio) e
