@@ -13,8 +13,6 @@ import {
   CalendarDays,
   CheckCircle2,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Download,
   Plus,
   Search,
@@ -28,6 +26,7 @@ import { ListaConteineres } from '@/components/lista-conteineres';
 import { HblCartao } from '@/components/hbl-cartao';
 import { StatusBadge, STATUS_ESTILO } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
+import { Paginacao } from '@/components/paginacao';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
@@ -838,26 +837,7 @@ export default function CarteiraPage() {
             <span className="tabular-nums">
               Mostrando {primeiraLinha}–{ultimaLinha} de {linhas.length} processos · Página {pagina} de {totalPaginas}
             </span>
-            <div className="flex items-center gap-1.5">
-              <Button
-                variant="outline"
-                className="h-9 px-3"
-                disabled={pagina <= 1}
-                onClick={() => setPagina((p) => Math.max(1, p - 1))}
-              >
-                <ChevronLeft />
-                Anterior
-              </Button>
-              <Button
-                variant="outline"
-                className="h-9 px-3"
-                disabled={pagina >= totalPaginas}
-                onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
-              >
-                Próxima
-                <ChevronRight />
-              </Button>
-            </div>
+            <Paginacao pagina={pagina} totalPaginas={totalPaginas} onChange={setPagina} />
           </div>
         )}
       </section>

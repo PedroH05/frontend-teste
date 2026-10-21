@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Check, ChevronLeft, ChevronRight, Plus, Search, UserPlus, X } from 'lucide-react';
+import { Check, Plus, Search, UserPlus, X } from 'lucide-react';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Cliente } from '@/lib/types';
 import { Button } from '@/components/ui/button';
+import { Paginacao } from '@/components/paginacao';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Field, FieldContent, FieldLabel } from '@/components/ui/field';
@@ -405,26 +406,7 @@ export default function ClientesPage() {
               <span className="tabular-nums">
                 Página {pagina} de {totalPaginas} · {clientesFiltrados.length} clientes
               </span>
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  className="h-9 px-3"
-                  disabled={pagina <= 1}
-                  onClick={() => setPagina((p) => Math.max(1, p - 1))}
-                >
-                  <ChevronLeft />
-                  Anterior
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-9 px-3"
-                  disabled={pagina >= totalPaginas}
-                  onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
-                >
-                  Próxima
-                  <ChevronRight />
-                </Button>
-              </div>
+              <Paginacao pagina={pagina} totalPaginas={totalPaginas} onChange={setPagina} />
             </div>
           )}
         </section>

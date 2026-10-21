@@ -3,6 +3,12 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-21 — Paginação numerada (branch `redesign/shadcn-v2`)
+
+- Carteira, Histórico e Clientes: "Anterior · 1 2 3 … 74 · Próxima" no
+  lugar de só Anterior/Próxima (item da seção 6 do HANDOFF, aprovado).
+  Componente único `components/paginacao.tsx`, com teste.
+
 ## 2026-10-21 — Carteira: aviso de crítico vira selo (branch `redesign/shadcn-v2`)
 
 - A faixa vermelha "N processo(s) viram tabela pública hoje…" saiu (pedido:

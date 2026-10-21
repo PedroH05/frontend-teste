@@ -104,6 +104,9 @@ registro, não reflete mais o código atual.
   toda a aplicação (Carteira, Histórico, Clientes). Não recriar esse par
   numa tela nova.
 - `components/status-badge.tsx` — badge de status das tabelas (redesign).
+- `components/paginacao.tsx` — paginação numerada (Carteira, Histórico,
+  Clientes). `paginasVisiveis()` decide os números: primeira, última, a
+  atual e vizinhas, o resto vira "…". Tabela nova paginada deve usar este.
 - `components/row-actions.tsx` — menu "⋯" (DropdownMenu do shadcn) com
   Editar e Excluir, desde 21/10/2026 (antes era o par lápis/lixeira
   solto). Testes que usam precisam mockar `@/components/ui/dropdown-menu`

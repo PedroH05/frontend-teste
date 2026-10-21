@@ -7,8 +7,6 @@ import {
   ArrowRight,
   ArrowUp,
   ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
   ChevronsUpDown,
   Plus,
   Search,
@@ -19,6 +17,7 @@ import type { Captacao } from '@/lib/types';
 import { shortTerm } from '@/lib/risco';
 import { formatData } from '@/lib/format';
 import { Button } from '@/components/ui/button';
+import { Paginacao } from '@/components/paginacao';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -425,26 +424,7 @@ export default function HistoricoPage() {
             <span className="tabular-nums">
               Mostrando {primeiraLinha}–{ultimaLinha} de {linhas.length} processos · Página {pagina} de {totalPaginas}
             </span>
-            <div className="flex items-center gap-1.5">
-              <Button
-                variant="outline"
-                className="h-9 px-3"
-                disabled={pagina <= 1}
-                onClick={() => setPagina((p) => Math.max(1, p - 1))}
-              >
-                <ChevronLeft />
-                Anterior
-              </Button>
-              <Button
-                variant="outline"
-                className="h-9 px-3"
-                disabled={pagina >= totalPaginas}
-                onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
-              >
-                Próxima
-                <ChevronRight />
-              </Button>
-            </div>
+            <Paginacao pagina={pagina} totalPaginas={totalPaginas} onChange={setPagina} />
           </div>
         )}
       </section>
