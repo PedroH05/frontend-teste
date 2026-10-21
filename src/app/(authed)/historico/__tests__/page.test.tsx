@@ -48,6 +48,15 @@ function base(overrides: Partial<Captacao>): Captacao {
   };
 }
 
+// Linhas de captação, sem o cabeçalho da tabela nem os separadores de dia.
+function linhasDeDados() {
+  return screen
+    .getAllByRole('row')
+    .slice(1)
+    .filter((r) => r.getAttribute('data-slot') !== 'grupo-dia')
+    .map((r) => r.textContent);
+}
+
 describe('HistoricoPage', () => {
   afterEach(() => {
     apiFetchMock.mockReset();
@@ -137,7 +146,7 @@ describe('HistoricoPage', () => {
 
     // BL não aparece como texto na tabela do Histórico — busca por ele com
     // espaço no final e confere que a linha continua lá.
-    await user.type(screen.getByPlaceholderText('buscar cliente, BL, navio…'), 'HBCN066406 ');
+    await user.type(screen.getByPlaceholderText('Buscar cliente, BL, navio…'), 'HBCN066406 ');
 
     expect(screen.getByText('TECNO')).toBeInTheDocument();
   });
@@ -184,13 +193,42 @@ describe('HistoricoPage', () => {
     render(<HistoricoPage />);
     await screen.findByText('RECENTE');
 
-    const linhasIniciais = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    const linhasIniciais = linhasDeDados();
     expect(linhasIniciais[0]).toContain('RECENTE'); // padrão: mais recente primeiro
 
     await user.click(screen.getByRole('columnheader', { name: /Registrado em/ }));
 
-    const linhasInvertidas = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    const linhasInvertidas = linhasDeDados();
     expect(linhasInvertidas[0]).toContain('ANTIGA'); // depois de clicar: mais antigo primeiro
+  });
+
+  it('agrupa por dia de registro com a contagem do dia (redesign 21/10/2026)', async () => {
+    const ontem = new Date();
+    ontem.setDate(ontem.getDate() - 1);
+    apiFetchMock.mockResolvedValueOnce([
+      base({ id: 1, cli: 'HOJE A' }),
+      base({ id: 2, cli: 'HOJE B' }),
+      base({ id: 3, cli: 'DE ONTEM', createdAt: ontem.toISOString() }),
+    ]);
+    render(<HistoricoPage />);
+    await screen.findByText('HOJE A');
+
+    const grupos = screen.getAllByRole('row').filter((r) => r.getAttribute('data-slot') === 'grupo-dia');
+    expect(grupos).toHaveLength(2);
+    expect(grupos[0]).toHaveTextContent(`Hoje · ${new Date().toLocaleDateString('pt-BR')}`);
+    expect(grupos[0]).toHaveTextContent('2 captações');
+    expect(grupos[1]).toHaveTextContent('Ontem');
+    expect(grupos[1]).toHaveTextContent('1 captação');
+  });
+
+  it('ordenado por ETA, não agrupa por dia de registro', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce([base({ id: 1, cli: 'X', eta: '2026-12-01' })]);
+    render(<HistoricoPage />);
+    await screen.findByText('X');
+
+    await user.click(screen.getByRole('columnheader', { name: /^ETA/ }));
+    expect(screen.getAllByRole('row').filter((r) => r.getAttribute('data-slot') === 'grupo-dia')).toHaveLength(0);
   });
 
   it('dá pra ordenar por ETA também, não só por Registrado em (pedido 17/09/2026)', async () => {
@@ -205,13 +243,13 @@ describe('HistoricoPage', () => {
     await user.click(screen.getByRole('columnheader', { name: /^ETA/ }));
 
     // 1º clique na coluna ETA: mais recente/distante primeiro (padrão de toda troca de coluna)
-    let linhas = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    let linhas = linhasDeDados();
     expect(linhas[0]).toContain('ETA-DISTANTE');
 
     await user.click(screen.getByRole('columnheader', { name: /^ETA/ }));
 
     // 2º clique: inverte — ETA mais próxima primeiro
-    linhas = screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    linhas = linhasDeDados();
     expect(linhas[0]).toContain('ETA-PROXIMA');
   });
 

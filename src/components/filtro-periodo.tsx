@@ -156,8 +156,8 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
   return (
     <Popover open={aberto} onOpenChange={alternar}>
       <div
-        className="vt-glass-strong inline-flex items-center gap-1.5 rounded-[11px] border px-3 py-[7px] text-[12.5px] font-semibold"
-        style={{ borderColor: temValor ? 'var(--vt-red)' : 'var(--vt-line)', color: temValor ? 'var(--vt-red)' : 'var(--vt-ink)' }}
+        className="inline-flex h-10 items-center gap-1.5 rounded-lg border bg-background px-3 text-sm font-medium"
+        style={{ borderColor: temValor ? 'var(--primary)' : 'var(--border)', color: temValor ? 'var(--primary)' : 'var(--foreground)' }}
       >
         <PopoverTrigger className="inline-flex items-center gap-1.5">
           <Calendar size={14} />
@@ -173,7 +173,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
             aria-label="Limpar período"
             onClick={() => onChange({ inicio: null, fim: null })}
             className="rounded-[5px] p-px"
-            style={{ color: 'var(--vt-muted)' }}
+            style={{ color: 'var(--muted-foreground)' }}
           >
             <X size={13} />
           </button>
@@ -183,12 +183,12 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
       <PopoverContent
         align="start"
         className="w-[min(720px,calc(100vw-2.5rem))] rounded-[14px] p-0"
-        style={{ background: 'var(--vt-surface)', border: '1px solid var(--vt-line)', boxShadow: 'var(--vt-sh)' }}
+        style={{ background: 'var(--popover)', border: '1px solid var(--border)', boxShadow: '0 4px 12px rgba(0,0,0,.08)' }}
       >
         <div className="flex flex-col sm:flex-row">
           <div
             className="flex gap-1 overflow-x-auto border-b p-2 sm:w-[156px] sm:flex-none sm:flex-col sm:overflow-visible sm:border-r sm:border-b-0"
-            style={{ borderColor: 'var(--vt-line2)' }}
+            style={{ borderColor: 'var(--border)' }}
           >
             {PRESETS.map((p) => (
               <button
@@ -198,8 +198,8 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
                 className="shrink-0 rounded-[8px] px-2.5 py-[9px] text-left text-[13px] font-medium whitespace-nowrap"
                 style={
                   presetAtivo === p.nome
-                    ? { background: 'var(--vt-red-soft)', color: 'var(--vt-red)', fontWeight: 700 }
-                    : { color: 'var(--vt-ink)' }
+                    ? { background: 'var(--accent)', color: 'var(--primary)', fontWeight: 700 }
+                    : { color: 'var(--foreground)' }
                 }
               >
                 {p.nome}
@@ -216,7 +216,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
                     aria-label="Mês anterior"
                     onClick={() => setMesBase((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1))}
                     className="flex h-7 w-7 items-center justify-center rounded-[8px] text-[14px] leading-none"
-                    style={{ background: 'var(--vt-glass-strong)', color: 'var(--vt-muted)', visibility: i === 0 ? 'visible' : 'hidden' }}
+                    style={{ background: 'var(--background)', color: 'var(--muted-foreground)', visibility: i === 0 ? 'visible' : 'hidden' }}
                   >
                     ‹
                   </button>
@@ -226,7 +226,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
                     aria-label="Próximo mês"
                     onClick={() => setMesBase((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1))}
                     className="flex h-7 w-7 items-center justify-center rounded-[8px] text-[14px] leading-none"
-                    style={{ background: 'var(--vt-glass-strong)', color: 'var(--vt-muted)', visibility: i === 1 ? 'visible' : 'hidden' }}
+                    style={{ background: 'var(--background)', color: 'var(--muted-foreground)', visibility: i === 1 ? 'visible' : 'hidden' }}
                   >
                     ›
                   </button>
@@ -236,7 +236,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
                     <span
                       key={idx}
                       className="flex items-center justify-center text-[11.5px] font-bold tracking-[.03em] uppercase"
-                      style={{ color: 'var(--vt-muted2)' }}
+                      style={{ color: 'var(--muted-foreground)' }}
                     >
                       {d}
                     </span>
@@ -257,9 +257,9 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
                         onClick={() => clicarDia(data)}
                         className="relative flex aspect-square items-center justify-center rounded-[9px] text-[17px] leading-none"
                         style={{
-                          color: !noMes ? 'var(--vt-muted2)' : ponta ? '#fff' : 'var(--vt-ink)',
+                          color: !noMes ? 'var(--muted-foreground)' : ponta ? '#fff' : 'var(--foreground)',
                           opacity: !noMes ? 0.4 : 1,
-                          background: ponta ? 'var(--vt-red)' : noIntervalo ? 'var(--vt-red-soft)' : 'transparent',
+                          background: ponta ? 'var(--primary)' : noIntervalo ? 'var(--accent)' : 'transparent',
                           fontWeight: ponta ? 700 : noIntervalo ? 600 : mesmoDia(data, hoje) ? 700 : 600,
                           fontVariantNumeric: 'tabular-nums',
                           cursor: noMes ? 'pointer' : 'default',
@@ -275,16 +275,16 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-2.5" style={{ borderColor: 'var(--vt-line2)' }}>
-          <span className="text-[12px]" style={{ color: 'var(--vt-muted)' }}>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-2.5" style={{ borderColor: 'var(--border)' }}>
+          <span className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
             {rascunho.inicio && rascunho.fim ? (
               <>
-                de <b style={{ color: 'var(--vt-ink)' }}>{fmtLongo(rascunho.inicio)}</b> até{' '}
-                <b style={{ color: 'var(--vt-ink)' }}>{fmtLongo(rascunho.fim)}</b>
+                de <b style={{ color: 'var(--foreground)' }}>{fmtLongo(rascunho.inicio)}</b> até{' '}
+                <b style={{ color: 'var(--foreground)' }}>{fmtLongo(rascunho.fim)}</b>
               </>
             ) : rascunho.inicio ? (
               <>
-                de <b style={{ color: 'var(--vt-ink)' }}>{fmtLongo(rascunho.inicio)}</b> até — escolha a data final
+                de <b style={{ color: 'var(--foreground)' }}>{fmtLongo(rascunho.inicio)}</b> até — escolha a data final
               </>
             ) : (
               'Escolha a data de início'
@@ -298,7 +298,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
                 setPresetAtivo(null);
               }}
               className="rounded-[9px] border px-3 py-[6px] text-[12px] font-semibold"
-              style={{ borderColor: 'var(--vt-line)', color: 'var(--vt-ink)' }}
+              style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
             >
               Limpar
             </button>
@@ -306,7 +306,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
               type="button"
               onClick={aplicar}
               disabled={!rascunho.inicio || !rascunho.fim}
-              className="vt-btn-primary rounded-[9px] px-3.5 py-[6px] text-[12px] font-bold disabled:opacity-40"
+              className="h-8 rounded-lg bg-primary px-3.5 text-[13px] font-semibold text-primary-foreground hover:bg-primary/85 disabled:opacity-40"
             >
               Aplicar
             </button>

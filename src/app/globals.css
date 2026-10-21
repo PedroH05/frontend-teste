@@ -658,6 +658,16 @@
 }
 :root:not([data-status-texto='mostrar']) .vt-band-status::before { width: 21px; height: 21px; }
 :root:not([data-status-texto='mostrar']) td:has(> .vt-band-status) { text-align: center; }
+/* Mesmo comportamento pro StatusBadge do redesign (components/status-badge.tsx). */
+:root:not([data-status-texto='mostrar']) [data-slot='status-badge'] {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  justify-content: center;
+  gap: 0;
+  border-radius: 8px;
+}
+:root:not([data-status-texto='mostrar']) [data-slot='status-badge'] svg { width: 18px; height: 18px; }
 
 /* Tabelas de captação: espaçamento lateral menor pra caber em telas e zoom
    de empresa sem barra de rolagem lateral (pedido 06/10/2026). */

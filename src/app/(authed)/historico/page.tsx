@@ -1,14 +1,32 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useEffect } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  ArrowDown,
+  ArrowRight,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsUpDown,
+  Plus,
+  Search,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Captacao } from '@/lib/types';
 import { shortTerm } from '@/lib/risco';
-import { formatData, formatDataHora } from '@/lib/format';
+import { formatData } from '@/lib/format';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { StatusBadge } from '@/components/status-badge';
 import { EmptyState } from '@/components/ship-scene';
 import { FiltroPeriodo, estaNoPeriodo, type Periodo } from '@/components/filtro-periodo';
 import { ListaConteineres } from '@/components/lista-conteineres';
@@ -47,6 +65,44 @@ type SortKey = 'registrado' | 'eta';
 
 function despValido(desp: string | null): string | undefined {
   return desp && Number.isNaN(Number(desp)) ? desp : undefined;
+}
+
+// Dia/hora sempre no fuso local — `createdAt` vem em UTC, e uma captação
+// das 22h no Brasil não pode cair no grupo do dia seguinte.
+function dataValida(iso: string | null): Date | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function chaveDia(iso: string | null): string {
+  const d = dataValida(iso);
+  if (!d) return '';
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function dataLocal(iso: string | null): string {
+  const d = dataValida(iso);
+  return d ? d.toLocaleDateString('pt-BR') : '—';
+}
+
+function horaDe(iso: string | null): string {
+  const d = dataValida(iso);
+  return d ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+}
+
+const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+
+function rotuloDia(iso: string | null): string {
+  const d = dataValida(iso);
+  if (!d) return 'Sem data';
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const dia = new Date(d);
+  dia.setHours(0, 0, 0, 0);
+  const diff = Math.round((hoje.getTime() - dia.getTime()) / 86_400_000);
+  const nome = diff === 0 ? 'Hoje' : diff === 1 ? 'Ontem' : DIAS_SEMANA[d.getDay()];
+  return `${nome} · ${d.toLocaleDateString('pt-BR')}`;
 }
 
 export default function HistoricoPage() {
@@ -160,201 +216,238 @@ export default function HistoricoPage() {
     [linhas, pagina],
   );
 
-  const glassInput = 'vt-glass-strong rounded-[11px] border-[var(--vt-line)] text-[13px]';
+
+  // Tabela agrupada por dia de registro (HANDOFF seção 3) — só quando a
+  // ordem é por "Registrado em"; ordenado por ETA, dias de registro
+  // misturados não fariam sentido como grupo. A contagem do grupo é do
+  // dia inteiro (no filtro atual), não só do pedaço que cabe na página.
+  const agruparPorDia = sortKey === 'registrado';
+  const porDia = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const c of linhas) {
+      const k = chaveDia(c.createdAt);
+      m.set(k, (m.get(k) ?? 0) + 1);
+    }
+    return m;
+  }, [linhas]);
+
+  const primeiraLinha = linhas.length ? (pagina - 1) * PAGE_SIZE + 1 : 0;
+  const ultimaLinha = Math.min(pagina * PAGE_SIZE, linhas.length);
+
+  function sortHead(k: SortKey, label: string) {
+    const ativo = sortKey === k;
+    const Seta = !ativo ? ArrowUpDown : sortDir === 1 ? ArrowUp : ArrowDown;
+    return (
+      <TableHead
+        className={cn(
+          'h-11 cursor-pointer text-xs select-none hover:text-foreground',
+          ativo ? 'font-semibold text-primary' : 'font-medium text-muted-foreground',
+        )}
+        aria-sort={ativo ? (sortDir === 1 ? 'ascending' : 'descending') : 'none'}
+        onClick={() => toggleSort(k)}
+      >
+        <span className="inline-flex items-center gap-1">
+          {label}
+          <Seta className={cn('size-3', !ativo && 'opacity-40')} aria-hidden="true" />
+        </span>
+      </TableHead>
+    );
+  }
+
+  const thCls = 'h-11 text-xs font-medium text-muted-foreground';
 
   return (
-    <div className="space-y-5 p-6 sm:p-8" style={{ color: 'var(--vt-ink)' }}>
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-[21px] font-bold tracking-tight">Histórico</h1>
-            <p className="mt-0.5 text-[12.5px]" style={{ color: 'var(--vt-muted)' }}>
-              Registro completo de tudo que já foi captado (todos os períodos)
-            </p>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="vt-glass-strong rounded-[20px] px-3 py-1.5 text-[12px] font-semibold" style={{ color: 'var(--vt-muted)' }}>
-              {linhas.length} captações
-            </span>
-            <Button
-              variant="ghost"
-              className="vt-btn-primary rounded-[11px] px-3.5 py-2 text-[12.5px] font-semibold transition hover:-translate-y-px"
-              onClick={() => router.push('/captacoes')}
-            >
-              + Nova captação
-            </Button>
-          </div>
+    <div className="mx-auto w-full max-w-[1240px] space-y-6 p-6 sm:p-8 lg:px-10">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="space-y-1.5">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>Gestão</BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Histórico</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <h1 className="text-[28px] font-semibold tracking-[-0.02em]">Histórico</h1>
+          <p className="text-sm text-muted-foreground">
+            Registro completo de tudo que já foi captado (todos os períodos)
+          </p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex h-10 items-center gap-1.5 rounded-lg border bg-card px-3 text-sm text-muted-foreground shadow-sm">
+            <span className="font-semibold text-foreground tabular-nums">{linhas.length}</span>
+            captações
+          </span>
+          <Button className="h-10 px-4" onClick={() => router.push('/captacoes')}>
+            <Plus />
+            Nova captação
+          </Button>
+        </div>
+      </header>
 
-        {error && (
-          <p className="text-[13px] font-semibold" style={{ color: 'var(--vt-c-prej)' }}>{error}</p>
-        )}
+      {error && <p className="text-sm font-medium text-destructive">{error}</p>}
 
-        <div className="vt-glass overflow-hidden">
-          <div className="flex flex-wrap items-center gap-3 p-[14px_18px]" style={{ borderBottom: '1px solid var(--vt-line2)' }}>
-            <h3 className="text-[14px] font-bold">Captações</h3>
+      <section aria-label="Captações" className="overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="mr-1 text-[15px] font-semibold">Captações</h2>
             <FiltroPeriodo value={periodo} onChange={setPeriodo} />
-            <select
-              className="vt-native-select"
-              value={statusFiltro}
-              onChange={(e) => setStatusFiltro(e.target.value as StatusFiltro)}
-            >
-              <option value="todos">Todos os status</option>
-              <option value="efet">Efetivado</option>
-              <option value="and">Em andamento</option>
-            </select>
-            <Input
-              placeholder="buscar cliente, BL, navio…"
+            <label className="relative">
+              <span className="sr-only">Filtrar por status</span>
+              <select
+                className="h-10 appearance-none rounded-lg border bg-background pr-9 pl-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                value={statusFiltro}
+                onChange={(e) => setStatusFiltro(e.target.value as StatusFiltro)}
+              >
+                <option value="todos">Todos os status</option>
+                <option value="efet">Efetivado</option>
+                <option value="and">Em andamento</option>
+              </select>
+              <ChevronsUpDown
+                className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
+            </label>
+          </div>
+          <label className="flex h-10 w-[260px] max-w-full items-center gap-2 rounded-lg border bg-background px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30">
+            <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <span className="sr-only">Buscar no histórico</span>
+            <input
+              placeholder="Buscar cliente, BL, navio…"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className={`ml-auto w-[220px] ${glassInput}`}
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
-          </div>
-          <Table className="vt-tabela-compacta">
-            <TableHeader>
-              <TableRow style={{ borderColor: 'var(--vt-line)' }}>
-                {['Status', 'Cliente'].map((h) => (
-                  <TableHead key={h} className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
-                    {h}
-                  </TableHead>
-                ))}
-                {(
-                  [
-                    ['registrado', 'Registrado em'],
-                    ['eta', 'ETA'],
-                  ] as [SortKey, string][]
-                ).map(([key, label]) => (
-                  <TableHead
-                    key={key}
-                    className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
-                    style={{ color: sortKey === key ? 'var(--vt-red)' : 'var(--vt-muted)' }}
-                    onClick={() => toggleSort(key)}
-                  >
-                    {label}{' '}
-                    <span style={{ opacity: sortKey === key ? 1 : 0.35 }}>
-                      {sortKey === key ? (sortDir === 1 ? '▲' : '▼') : '↕'}
-                    </span>
-                  </TableHead>
-                ))}
-                {['HBL', 'Container'].map((h) => (
-                  <TableHead
-                    key={h}
-                    className="vt-extra-col text-[11px] font-semibold tracking-[.05em] uppercase"
-                    style={{ color: 'var(--vt-muted)' }}
-                  >
-                    {h}
-                  </TableHead>
-                ))}
-                <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
-                  CE
-                </TableHead>
-                <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
-                  Despachante
-                </TableHead>
-                <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
-                  Atracação → Parceiro
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar']} />
-              ) : linhas.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9}>
-                    <EmptyState title="Histórico vazio" subtitle="As captações aparecem aqui conforme forem feitas." />
-                  </TableCell>
-                </TableRow>
-              ) : (
-                linhasPagina.map((c) => (
-                  <TableRow key={c.id} style={{ borderColor: 'var(--vt-line)' }}>
-                    <TableCell
-                      tabIndex={0}
-                      className="cursor-pointer"
-                      onClick={() => handleRowClick(c)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          handleRowClick(c);
-                        }
-                      }}
-                    >
-                      <span
-                        className={`vt-band vt-band-status ${c.stage === 'SAIU_TERMINAL' ? 'b-conc' : c.stage === 'EFETIVA' ? 'b-efet' : 'b-and'}`}
-                        title={STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento'}
-                        aria-label={STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento'}
-                      >
-                        <span className="vt-band-texto">{STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento'}</span>
-                      </span>
-                    </TableCell>
-                    <TableCell className="max-w-[170px] text-[12.5px]">
-                      <div className="flex flex-col gap-px">
-                        <span
-                          title={c.cli ?? undefined}
-                          className="truncate font-bold"
-                          style={{ color: 'var(--vt-red)' }}
-                        >
-                          {c.cli}
-                        </span>
-                        <span
-                          title={c.referencia ?? undefined}
-                          className="truncate"
-                          style={{ color: 'var(--vt-muted)' }}
-                        >
-                          {c.referencia}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-[12.5px] whitespace-nowrap">
-                      {formatDataHora(c.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-[12.5px]">{formatData(c.eta)}</TableCell>
-                    <TableCell className="vt-extra-col text-[12.5px]">
-                      <HblCartao valor={c.bl} />
-                    </TableCell>
-                    <TableCell className="vt-extra-col text-[12.5px]">
-                      <ListaConteineres valor={c.container} />
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap font-mono text-[12.5px] leading-snug">{c.ce || '—'}</TableCell>
-                    <TableCell className="text-[12.5px] leading-snug">
-                      {despValido(c.despachante) ?? <span style={{ color: 'var(--vt-c-prej)', fontWeight: 600 }}>inválido</span>}
-                    </TableCell>
-                    <TableCell className="text-[12.5px] leading-snug">
-                      {shortTerm(c.terminalDescarga) || '—'} <span style={{ color: 'var(--vt-red)', fontWeight: 700 }}>→</span> {shortTerm(c.terminalCaptado) || '—'}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-          {!loading && linhas.length > 0 && (
-            <div
-              className="flex items-center justify-between px-[18px] py-3 text-[12px]"
-              style={{ borderTop: '1px solid var(--vt-line2)', color: 'var(--vt-muted)' }}
-            >
-              <span>
-                Página {pagina} de {totalPaginas} · {linhas.length} processos
-              </span>
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="ghost"
-                  className="vt-glass-strong rounded-[9px] border border-[var(--vt-line)] px-2.5 py-1 text-[12px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px disabled:opacity-40"
-                  disabled={pagina <= 1}
-                  onClick={() => setPagina((p) => Math.max(1, p - 1))}
-                >
-                  ‹ Anterior
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="vt-glass-strong rounded-[9px] border border-[var(--vt-line)] px-2.5 py-1 text-[12px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px disabled:opacity-40"
-                  disabled={pagina >= totalPaginas}
-                  onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
-                >
-                  Próxima ›
-                </Button>
-              </div>
-            </div>
-          )}
+          </label>
         </div>
-      </div>
+
+        <Table className="vt-tabela-compacta">
+          <TableHeader>
+            <TableRow className="bg-muted/40 hover:bg-muted/40">
+              <TableHead className={thCls}>Status</TableHead>
+              <TableHead className={thCls}>Cliente</TableHead>
+              {sortHead('registrado', 'Registrado em')}
+              {sortHead('eta', 'ETA')}
+              <TableHead className={cn('vt-extra-col', thCls)}>HBL</TableHead>
+              <TableHead className={cn('vt-extra-col', thCls)}>Container</TableHead>
+              <TableHead className={thCls}>CE</TableHead>
+              <TableHead className={thCls}>Despachante</TableHead>
+              <TableHead className={thCls}>Atracação → Parceiro</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar']} />
+            ) : linhas.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9}>
+                  <EmptyState title="Histórico vazio" subtitle="As captações aparecem aqui conforme forem feitas." />
+                </TableCell>
+              </TableRow>
+            ) : (
+              linhasPagina.map((c, i) => {
+                const dia = chaveDia(c.createdAt);
+                const novoGrupo = agruparPorDia && (i === 0 || chaveDia(linhasPagina[i - 1].createdAt) !== dia);
+                const status = STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento';
+                const n = porDia.get(dia) ?? 0;
+                return (
+                  <Fragment key={c.id}>
+                    {novoGrupo && (
+                      <TableRow data-slot="grupo-dia" className="bg-muted/60 hover:bg-muted/60">
+                        <TableHead scope="colgroup" colSpan={9} className="h-9 text-left text-xs">
+                          <span className="inline-flex items-center gap-2 font-semibold text-foreground">
+                            {rotuloDia(c.createdAt)}
+                            <span className="font-normal text-muted-foreground">
+                              — {n} {n === 1 ? 'captação' : 'captações'}
+                            </span>
+                          </span>
+                        </TableHead>
+                      </TableRow>
+                    )}
+                    <TableRow>
+                      <TableCell
+                        tabIndex={0}
+                        className="cursor-pointer py-3.5"
+                        onClick={() => handleRowClick(c)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleRowClick(c);
+                          }
+                        }}
+                      >
+                        <StatusBadge k={categoriaDe(c.stage)} label={status} />
+                      </TableCell>
+                      <TableCell className="max-w-[190px] text-sm">
+                        <div className="flex flex-col">
+                          <span title={c.cli ?? undefined} className="truncate font-semibold">
+                            {c.cli}
+                          </span>
+                          <span title={c.referencia ?? undefined} className="truncate font-mono text-xs text-muted-foreground">
+                            {c.referencia}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm whitespace-nowrap tabular-nums">
+                        {dataLocal(c.createdAt)}
+                        <span className="text-muted-foreground"> · {horaDe(c.createdAt)}</span>
+                      </TableCell>
+                      <TableCell className="text-sm whitespace-nowrap tabular-nums">{formatData(c.eta)}</TableCell>
+                      <TableCell className="vt-extra-col text-sm">
+                        <HblCartao valor={c.bl} />
+                      </TableCell>
+                      <TableCell className="vt-extra-col text-sm">
+                        <ListaConteineres valor={c.container} />
+                      </TableCell>
+                      <TableCell className="font-mono text-[13px] whitespace-nowrap text-foreground/80">
+                        {c.ce || '—'}
+                      </TableCell>
+                      <TableCell className="text-sm leading-snug">
+                        {despValido(c.despachante) ?? <span className="font-semibold text-destructive">inválido</span>}
+                      </TableCell>
+                      <TableCell className="text-sm leading-snug">
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="font-medium">{shortTerm(c.terminalDescarga) || '—'}</span>
+                          <ArrowRight className="size-3.5 text-primary" aria-label="para" />
+                          {shortTerm(c.terminalCaptado) || '—'}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  </Fragment>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+        {!loading && linhas.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3.5 text-[13px] text-muted-foreground">
+            <span className="tabular-nums">
+              Mostrando {primeiraLinha}–{ultimaLinha} de {linhas.length} processos · Página {pagina} de {totalPaginas}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                className="h-9 px-3"
+                disabled={pagina <= 1}
+                onClick={() => setPagina((p) => Math.max(1, p - 1))}
+              >
+                <ChevronLeft />
+                Anterior
+              </Button>
+              <Button
+                variant="outline"
+                className="h-9 px-3"
+                disabled={pagina >= totalPaginas}
+                onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+              >
+                Próxima
+                <ChevronRight />
+              </Button>
+            </div>
+          </div>
+        )}
+      </section>
+    </div>
   );
 }

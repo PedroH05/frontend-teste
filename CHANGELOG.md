@@ -3,6 +3,28 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-21 — Redesign passo 4: Carteira + Histórico (branch `redesign/shadcn-v2`)
+
+- **Carteira** no visual do `Main.dc.html`: breadcrumb, 4 cards de status
+  com ícone, barra e "% da carteira" (clicáveis, filtram igual antes),
+  busca rápida num card com chips de sugestão, tabela num card com abas de
+  status (Todos + 4, com contagem — mesmo filtro dos cards), busca na
+  tabela e o filtro de mês virando botão tracejado "Mês". Alerta de
+  crítico mantido, agora em vermelho suave; botão de minimizar ganhou
+  ícone e nome acessível.
+- **Histórico**: mesmo cabeçalho/tabela; linhas **agrupadas por dia de
+  registro** ("Hoje · 21/10/2026 — 4 captações"), só quando ordenado por
+  "Registrado em". Hora junto da data. Sem as abas Hoje/Tudo do mock — o
+  filtro de período já cobre (decisão de 15/10/2026). `FiltroPeriodo`
+  re-pintado com os tokens shadcn.
+- `components/status-badge.tsx` (novo): badge de status único pras duas
+  tabelas (ícone por faixa, cores do HANDOFF). Respeita a opção "Mostrar o
+  nome do status" da Config igual ao `.vt-band` antigo.
+- Ficaram de fora (seção 6 do HANDOFF, a confirmar): filtros Despachante e
+  Período novos na Carteira, paginação numerada, "Exportar" no Histórico.
+  Menu "…" de ações por linha também não entrou — o mock não diz quais
+  ações, e o clique no status já abre o processo.
+
 ## 2026-10-21 — Redesign passo 3: wizard "Editar captação" + Revisão (branch `redesign/shadcn-v2`)
 
 - `captacoes/page.tsx` reescrito no visual do HANDOFF (seções 4 e 5):

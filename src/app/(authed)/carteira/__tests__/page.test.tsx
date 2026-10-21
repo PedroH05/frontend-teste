@@ -83,9 +83,32 @@ describe('CarteiraPage', () => {
     });
     render(<CarteiraPage />);
 
-    expect(await screen.findByText('Crítico')).toBeInTheDocument();
-    expect(screen.getByText('Efetivado')).toBeInTheDocument();
+    const resumo = await screen.findByRole('region', { name: 'Resumo por status' });
+    expect(within(resumo).getAllByRole('button')).toHaveLength(4);
+    expect(within(resumo).getByText('Crítico')).toBeInTheDocument();
+    expect(within(resumo).getByText('Efetivado')).toBeInTheDocument();
     expect(screen.queryByText('Concluído')).not.toBeInTheDocument();
+    expect(within(resumo).getAllByText('50% da carteira')).toHaveLength(2);
+  });
+
+  it('abas de status filtram a tabela e mostram a contagem (redesign 21/10/2026)', async () => {
+    const user = userEvent.setup();
+    filaApi('/carteira', {
+      rows: [row({ cli: 'CRITICO', stage: 'MANIFESTADA_DOCS', capId: 1 }), row({ cli: 'EFET', stage: 'EFETIVA', capId: 2 })],
+    });
+    render(<CarteiraPage />);
+    await screen.findByText('CRITICO');
+
+    const abas = screen.getByRole('tablist', { name: 'Filtrar por status' });
+    expect(within(abas).getByRole('tab', { name: /Todos/ })).toHaveAttribute('aria-selected', 'true');
+    expect(within(abas).getByRole('tab', { name: /Todos/ })).toHaveTextContent('2');
+
+    await user.click(within(abas).getByRole('tab', { name: /Efetivado/ }));
+    expect(screen.getByText('EFET')).toBeInTheDocument();
+    expect(screen.queryByText('CRITICO')).not.toBeInTheDocument();
+    // card do mesmo status fica marcado junto
+    const resumo = screen.getByRole('region', { name: 'Resumo por status' });
+    expect(within(resumo).getByText('Efetivado').closest('button')).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('Efetivado conta toda captação EFETIVA, não só quem tem embarque casado (pedido 01/10/2026)', async () => {
@@ -98,8 +121,9 @@ describe('CarteiraPage', () => {
     });
     render(<CarteiraPage />);
 
-    await screen.findByText('Efetivado');
-    const tile = screen.getByText('Efetivado').closest('button')!;
+    const resumo = await screen.findByRole('region', { name: 'Resumo por status' });
+    await screen.findByText('A');
+    const tile = within(resumo).getByText('Efetivado').closest('button')!;
     expect(tile.textContent).toContain('3');
   });
 
@@ -194,7 +218,7 @@ describe('CarteiraPage', () => {
     await screen.findByText('Processos');
     expect(screen.getByText(/viram tabela pública hoje/)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: '▾' }));
+    await user.click(screen.getByRole('button', { name: 'Minimizar alerta' }));
     expect(screen.queryByText(/viram tabela pública hoje/)).not.toBeInTheDocument();
   });
 
@@ -250,7 +274,7 @@ describe('CarteiraPage', () => {
     expect(screen.queryByText('CLIENTE6')).not.toBeInTheDocument();
     expect(screen.getByText(/Página 1 de 2/)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Próxima ›' }));
+    await user.click(screen.getByRole('button', { name: 'Próxima' }));
 
     expect(screen.getByText('CLIENTE6')).toBeInTheDocument();
     expect(screen.queryByText('CLIENTE1')).not.toBeInTheDocument();
@@ -264,10 +288,10 @@ describe('CarteiraPage', () => {
     render(<CarteiraPage />);
 
     await screen.findByText('CLIENTE1');
-    await user.click(screen.getByRole('button', { name: 'Próxima ›' }));
+    await user.click(screen.getByRole('button', { name: 'Próxima' }));
     expect(await screen.findByText(/Página 2 de 2/)).toBeInTheDocument();
 
-    await user.type(screen.getByPlaceholderText('buscar cliente, BL, navio…'), 'CLIENTE1');
+    await user.type(screen.getByPlaceholderText('Buscar cliente, BL, navio…'), 'CLIENTE1');
 
     expect(await screen.findByText(/Página 1 de/)).toBeInTheDocument();
   });
@@ -280,7 +304,7 @@ describe('CarteiraPage', () => {
 
     // BL não aparece como texto na tabela da Carteira (só no Histórico) —
     // busca por ele com espaço no final e confere que a linha continua lá.
-    await user.type(screen.getByPlaceholderText('buscar cliente, BL, navio…'), 'HBCN066406 ');
+    await user.type(screen.getByPlaceholderText('Buscar cliente, BL, navio…'), 'HBCN066406 ');
 
     expect(screen.getByText('TECNO')).toBeInTheDocument();
     expect(screen.queryByText('Nenhum processo com este filtro')).not.toBeInTheDocument();
@@ -294,7 +318,7 @@ describe('CarteiraPage', () => {
     render(<CarteiraPage />);
     await screen.findByText('CASADO');
 
-    await user.type(screen.getByPlaceholderText('buscar cliente, BL, navio…'), 'HBL-DIGITADO');
+    await user.type(screen.getByPlaceholderText('Buscar cliente, BL, navio…'), 'HBL-DIGITADO');
 
     expect(screen.getByText('CASADO')).toBeInTheDocument();
     expect(screen.queryByText('Nenhum processo com este filtro')).not.toBeInTheDocument();

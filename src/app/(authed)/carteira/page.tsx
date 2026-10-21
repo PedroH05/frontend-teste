@@ -4,14 +4,40 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Cliente, CockpitRow, ImportResult } from '@/lib/types';
-import { BANDS, banda, diasAte, dLabel, fmtEta, shortTerm, type Banda } from '@/lib/risco';
-import { AlertTriangle, CheckCircle2, Clock, RefreshCw } from 'lucide-react';
+import { BANDS, banda, diasAte, dLabel, fmtEta, shortTerm } from '@/lib/risco';
+import {
+  ArrowDown,
+  ArrowRight,
+  ArrowUp,
+  ArrowUpDown,
+  CalendarDays,
+  CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Download,
+  Plus,
+  Search,
+  Upload,
+  X,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { formatData, formatDataHora } from '@/lib/format';
 import { apelidoCliente } from '@/lib/apelido';
 import { ListaConteineres } from '@/components/lista-conteineres';
 import { HblCartao } from '@/components/hbl-cartao';
+import { StatusBadge, STATUS_ESTILO } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import { EmptyState } from '@/components/ship-scene';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TableSkeletonRows } from '@/components/table-skeleton';
@@ -51,20 +77,6 @@ const MESES_PT = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ];
-const MESES_ABREV = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
-
-// Ícone por banda de risco nos cards da Carteira (pedido 02/10/2026, "dar
-// mais vida" ao tema Novo — ver artefato "Dar mais vida ao tema Novo",
-// opção C escolhida). Só aparece sob o tema Novo (globals.css,
-// `.vt-risk-tile-ic` escondido no Clássico).
-const BAND_ICON: Record<Banda['k'], typeof AlertTriangle> = {
-  prej: AlertTriangle,
-  jan: Clock,
-  and: RefreshCw,
-  efet: CheckCircle2,
-  conc: CheckCircle2,
-  prog: Clock,
-};
 
 export default function CarteiraPage() {
   const router = useRouter();
@@ -334,7 +346,7 @@ export default function CarteiraPage() {
       <div>
         <p>{intro}</p>
         {res.length === 0 ? (
-          <p style={{ color: 'var(--vt-muted)' }}>Nada encontrado.</p>
+          <p className="text-muted-foreground">Nada encontrado.</p>
         ) : (
           <ul className="mt-2 space-y-1">
             {res.slice(0, 8).map(({ r, b, d }) => (
@@ -492,463 +504,489 @@ export default function CarteiraPage() {
     }
   }
 
-  const glassBtn =
-    'vt-glass-strong rounded-[11px] border border-[var(--vt-line)] px-3.5 py-2 text-[12.5px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px';
-  const primaryBtn = 'vt-btn-primary rounded-[11px] px-3.5 py-2 text-[12.5px] font-semibold transition hover:-translate-y-px';
+  const filtroAtivo = !!(filterBand || busca || chipFiltro || mesFiltro);
+  const totalCarteira = enriquecidas.length;
+  const primeiraLinha = linhas.length ? (pagina - 1) * PAGE_SIZE + 1 : 0;
+  const ultimaLinha = Math.min(pagina * PAGE_SIZE, linhas.length);
+
+  function sortHead(k: SortKey, label: string) {
+    const ativo = sortKey === k;
+    const Seta = !ativo ? ArrowUpDown : sortDir === 1 ? ArrowUp : ArrowDown;
+    return (
+      <TableHead className="h-11 text-xs font-medium">
+        <button
+          type="button"
+          onClick={() => toggleSort(k)}
+          className={cn(
+            'inline-flex items-center gap-1 hover:text-foreground',
+            ativo ? 'font-semibold text-primary' : 'text-muted-foreground',
+          )}
+        >
+          {label}
+          <Seta className={cn('size-3', !ativo && 'opacity-40')} aria-hidden="true" />
+        </button>
+      </TableHead>
+    );
+  }
+
+  const CHIPS: [Exclude<typeof chipFiltro, null>, string, string][] = [
+    ['critico', 'crítico', 'bg-primary'],
+    ['semana', 'falta captar essa semana', 'bg-warning'],
+    ['semdesp', 'sem despachante/regime', 'bg-muted-foreground/50'],
+    ['aluzen', 'processos da Aluzen', 'bg-foreground'],
+  ];
+
+  const ABAS: { k: string | null; l: string; n: number }[] = [
+    { k: null, l: 'Todos', n: totalCarteira },
+    ...BANDS.map((b) => ({ k: b.k, l: b.l, n: contagens[b.k] ?? 0 })),
+  ];
 
   return (
-    <div className="p-6 sm:p-8" style={{ color: 'var(--vt-ink)' }}>
-      <div className="mx-auto max-w-[1400px] space-y-5">
-        <div className="flex flex-wrap items-end gap-3.5">
-          <div>
-            <h1 className="text-[21px] font-bold tracking-tight">Carteira de captação</h1>
-            <p className="mt-0.5 text-[12.5px]" style={{ color: 'var(--vt-muted)' }}>
-              {linhas.length} processos · {totalContainers} contêineres
-            </p>
-          </div>
-          <div className="ml-auto flex flex-wrap gap-2">
-            <Button variant="ghost" className={glassBtn} onClick={handleExport}>
-              Exportar Captação Oficial
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".xlsx,.xls"
-              className="hidden"
-              disabled={importing}
-              aria-label="Selecionar planilha do Logcomex"
-              onChange={(e) => handleImportFile(e.target.files?.[0])}
-            />
-            <Button
-              variant="ghost"
-              className={glassBtn}
-              disabled={importing}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {importing ? 'Lendo a planilha…' : 'Importar Logcomex'}
-            </Button>
-            <Button variant="ghost" className={primaryBtn} onClick={() => router.push('/captacoes')}>
-              + Nova captação
-            </Button>
-          </div>
+    <div className="mx-auto w-full max-w-[1240px] space-y-6 p-6 sm:p-8 lg:px-10">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="space-y-1.5">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>Operação</BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Carteira</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <h1 className="text-[28px] font-semibold tracking-[-0.02em]">Carteira de captação</h1>
+          <p className="text-sm text-muted-foreground tabular-nums">
+            {linhas.length} processos · {totalContainers} contêineres
+          </p>
         </div>
-
-        {importSummary && (
-          <div className="vt-glass rounded-[16px] p-4 text-[13px]" style={{ background: 'var(--vt-bg-efet)', color: 'var(--vt-c-efet)' }}>
-            <b>{importSummary.processados}</b> processados · <b>{importSummary.porCnpj}</b> por CNPJ ·{' '}
-            <b>{importSummary.provaveis}</b> prováveis · <b>{importSummary.ignorados}</b> ignorados
-          </div>
-        )}
-
-        {alerta.prej.length > 0 && (
-          <div
-            className="relative overflow-hidden rounded-[16px] p-[13px_18px] text-[#f3efe8] shadow-[var(--vt-sh-lg)]"
-            style={{ background: 'linear-gradient(135deg, rgba(38,36,31,.96), rgba(58,26,24,.94))' }}
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" className="h-10 px-3.5" onClick={handleExport}>
+            <Download />
+            Exportar Captação Oficial
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            disabled={importing}
+            aria-label="Selecionar planilha do Logcomex"
+            onChange={(e) => handleImportFile(e.target.files?.[0])}
+          />
+          <Button
+            variant="outline"
+            className="h-10 px-3.5"
+            disabled={importing}
+            onClick={() => fileInputRef.current?.click()}
           >
-            <div className="flex flex-wrap items-center gap-3">
-              <span
-                className="vt-pulse h-[9px] w-[9px] shrink-0 rounded-full"
-                style={{ background: 'var(--vt-c-prej)' }}
-              />
-              {!alertMin && (
-                <p className="text-[13px] leading-[1.5]">
-                  <b className="text-white">{alerta.prej.length} processo(s)</b> viram tabela pública hoje se não forem
-                  efetivados —{' '}
-                  {alerta.prej.slice(0, 2).map(({ r, d }, i) => (
-                    <span key={r.capId ?? r.bl} style={{ color: '#ff9e93', fontWeight: 700 }}>
-                      {i > 0 && ' e '}
-                      {r.cli} {r.ref.replace(r.cli, '').trim()} ({dLabel(d)})
-                    </span>
-                  ))}
-                  .
-                </p>
-              )}
-              <div className="ml-auto flex shrink-0 items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setFilterBand('prej')}
-                  className="rounded-[9px] px-3 py-1.5 text-[11.5px] font-bold whitespace-nowrap"
-                  style={{ background: 'var(--vt-c-prej)', color: '#fff' }}
-                >
-                  Ver os {alerta.prej.length} críticos →
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleAlertMin}
-                  className="flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-[6px] text-[12px] transition"
-                  style={{ background: 'rgba(255,255,255,.12)', color: '#ffb9b0' }}
-                >
-                  {alertMin ? '▴' : '▾'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+            <Upload />
+            {importing ? 'Lendo a planilha…' : 'Importar Logcomex'}
+          </Button>
+          <Button className="h-10 px-4" onClick={() => router.push('/captacoes')}>
+            <Plus />
+            Nova captação
+          </Button>
+        </div>
+      </header>
 
-        <div className="flex items-stretch gap-2">
-          <div className="vt-glass grid flex-1 grid-cols-2 gap-px overflow-hidden sm:grid-cols-4" style={{ background: 'var(--vt-line)' }}>
-            {BANDS.map((b) => {
-              const n = contagens[b.k] ?? 0;
-              const active = filterBand === b.k;
-              const Icon = BAND_ICON[b.k];
-              return (
-                <button
-                  key={b.k}
-                  type="button"
-                  onClick={() => setFilterBand((f) => (f === b.k ? null : b.k))}
-                  className={`vt-risk-tile relative flex items-center gap-3 p-[13px_14px] text-left transition${
-                    b.k === 'prej' && n > 0 ? ' vt-risk-tile-pulse' : ''
-                  }`}
-                  style={{
-                    background: active ? '#fff' : 'var(--vt-glass-strong)',
-                    boxShadow: active ? `inset 0 -3px 0 var(--vt-c-${b.k})` : undefined,
-                  }}
-                >
-                  <span
-                    className="vt-risk-tile-ic"
-                    style={{ background: `var(--vt-bg-${b.k})`, color: `var(--vt-c-${b.k})` }}
-                  >
-                    <Icon size={18} />
-                  </span>
-                  <span>
-                    <div className="text-[25px] leading-none font-extrabold tracking-tight" style={{ color: `var(--vt-c-${b.k})` }}>
-                      {loading ? <Skeleton className="h-[25px] w-9" /> : n}
-                    </div>
-                    <div className="mt-1.5 text-[10.5px] font-semibold" style={{ color: 'var(--vt-muted)' }}>
-                      {b.l}
-                    </div>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+      {importSummary && (
+        <Alert className="border-success-soft bg-success-soft text-success-text">
+          <CheckCircle2 />
+          <AlertTitle>Planilha importada</AlertTitle>
+          <AlertDescription className="text-success-text/90">
+            <span>
+              <b>{importSummary.processados}</b> processados · <b>{importSummary.porCnpj}</b> por CNPJ ·{' '}
+              <b>{importSummary.provaveis}</b> prováveis · <b>{importSummary.ignorados}</b> ignorados
+            </span>
+          </AlertDescription>
+        </Alert>
+      )}
 
-          {/* Filtro de mês (pedido 01/10/2026): botão calendário, separado
-              dos cards de risco — filtra a carteira inteira por mês de
-              criação (`createdAt`), combinável com o card selecionado. */}
-          <div className="relative" ref={mesRef}>
-            <button
-              type="button"
-              aria-label="Filtrar por mês de criação"
-              aria-expanded={mesAberto}
-              onClick={() => setMesAberto((v) => !v)}
-              className="flex h-full w-[58px] flex-col items-center justify-center gap-1 rounded-[14px] p-2 text-[10px] font-bold transition"
-              style={{
-                background: mesFiltro ? 'var(--vt-c-efet)' : 'var(--vt-glass-strong)',
-                color: mesFiltro ? '#fff' : 'var(--vt-c-efet)',
-                border: '1px solid var(--vt-line)',
-              }}
+      {alerta.prej.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/20 bg-accent px-4 py-3 text-accent-foreground shadow-sm">
+          <span className="vt-pulse size-2.5 shrink-0 rounded-full bg-primary" />
+          {!alertMin && (
+            <p className="min-w-0 flex-1 text-sm leading-relaxed">
+              <b>{alerta.prej.length} processo(s)</b> viram tabela pública hoje se não forem efetivados —{' '}
+              {alerta.prej.slice(0, 2).map(({ r, d }, i) => (
+                <span key={r.capId ?? r.bl} className="font-semibold text-primary">
+                  {i > 0 && ' e '}
+                  {r.cli} {r.ref.replace(r.cli, '').trim()} ({dLabel(d)})
+                </span>
+              ))}
+              .
+            </p>
+          )}
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <Button size="sm" className="h-8" onClick={() => setFilterBand('prej')}>
+              Ver os {alerta.prej.length} críticos
+              <ArrowRight />
+            </Button>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              className="text-accent-foreground hover:bg-primary/10"
+              aria-label={alertMin ? 'Expandir alerta' : 'Minimizar alerta'}
+              onClick={toggleAlertMin}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-[18px] w-[18px]">
-                <rect x="3" y="5" width="18" height="16" rx="2" />
-                <path d="M8 3v4M16 3v4M3 10h18" />
-              </svg>
-              {mesFiltro && MESES_ABREV[Number(mesFiltro.slice(5, 7)) - 1]}
-            </button>
-            {mesAberto && (
-              <div
-                className="absolute top-[calc(100%+8px)] right-0 z-10 w-[190px] rounded-[12px] p-[6px]"
-                style={{ background: 'var(--vt-surface)', border: '1px solid var(--vt-line)', boxShadow: 'var(--vt-sh-lg)' }}
-              >
-                {mesesDisponiveis.length === 0 && (
-                  <div className="p-2 text-[12px]" style={{ color: 'var(--vt-muted)' }}>
-                    Nenhum mês ainda
-                  </div>
-                )}
-                {mesesDisponiveis.map(([chave, qtd]) => {
-                  const [ano, mes] = chave.split('-');
-                  const sel = mesFiltro === chave;
-                  return (
-                    <button
-                      key={chave}
-                      type="button"
-                      onClick={() => {
-                        setMesFiltro(chave);
-                        setMesAberto(false);
-                      }}
-                      className="flex w-full items-center justify-between rounded-[7px] px-2 py-1.5 text-[12.5px] transition"
-                      style={{
-                        background: sel ? 'var(--vt-bg-efet)' : 'transparent',
-                        color: sel ? 'var(--vt-c-efet)' : 'var(--vt-ink)',
-                        fontWeight: sel ? 700 : 500,
-                      }}
-                    >
-                      <span>
-                        {MESES_PT[Number(mes) - 1]} / {ano}
-                      </span>
-                      <span className="font-mono text-[11px]" style={{ color: 'var(--vt-muted)' }}>
-                        {qtd}
-                      </span>
-                    </button>
-                  );
-                })}
-                {mesFiltro && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMesFiltro(null);
-                      setMesAberto(false);
-                    }}
-                    className="mt-1 w-full rounded-[7px] px-2 py-1.5 text-center text-[11.5px] font-semibold underline"
-                    style={{ color: 'var(--vt-muted)' }}
-                  >
-                    limpar
-                  </button>
-                )}
-              </div>
-            )}
+              {alertMin ? <ChevronDown /> : <ChevronUp />}
+            </Button>
           </div>
         </div>
+      )}
 
-        <div className="vt-glass p-[15px_17px]">
-          <label className="mb-[9px] block text-[12px] font-bold">
-            Busca rápida — cliente, container ou BL
+      <section aria-label="Resumo por status" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {BANDS.map((b) => {
+          const n = contagens[b.k] ?? 0;
+          const ativo = filterBand === b.k;
+          const { cls, Icon } = STATUS_ESTILO[b.k];
+          const pct = totalCarteira ? (n / totalCarteira) * 100 : 0;
+          return (
+            <button
+              key={b.k}
+              type="button"
+              aria-pressed={ativo}
+              onClick={() => setFilterBand((f) => (f === b.k ? null : b.k))}
+              className={cn(
+                'flex flex-col gap-3 rounded-xl border bg-card p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md',
+                ativo && 'border-primary ring-2 ring-primary/20',
+              )}
+            >
+              <span className="flex items-center justify-between">
+                <span className="text-[13px] font-medium text-muted-foreground">{b.l}</span>
+                <span className={cn('flex size-8 items-center justify-center rounded-lg', cls)}>
+                  <Icon className="size-4" aria-hidden="true" />
+                </span>
+              </span>
+              <span className="text-[32px] leading-none font-semibold tracking-[-0.02em] tabular-nums">
+                {loading ? <Skeleton className="h-8 w-12" /> : n}
+              </span>
+              <span className="flex flex-col gap-1.5">
+                <span className="h-1.5 overflow-hidden rounded-full bg-muted">
+                  <span
+                    className={cn(
+                      'block h-full rounded-full',
+                      b.k === 'prej' ? 'bg-primary' : b.k === 'efet' ? 'bg-success' : 'bg-warning',
+                    )}
+                    style={{ width: `${pct}%` }}
+                  />
+                </span>
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {pct.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% da carteira
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </section>
+
+      <section aria-label="Busca rápida" className="space-y-3.5 rounded-xl border bg-card p-5 shadow-sm">
+        <div className="flex flex-wrap items-baseline gap-2">
+          <label htmlFor="busca-rapida" className="font-semibold">
+            Busca rápida
           </label>
-          <div className="flex gap-2">
-            <Input
+          <span className="text-[13px] text-muted-foreground">
+            cliente, contêiner ou BL — pergunte em linguagem natural
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <div className="flex h-11 min-w-0 flex-[1_1_320px] items-center gap-2.5 rounded-lg border bg-background px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30">
+            <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <input
+              id="busca-rapida"
               placeholder="ex.: o que falta captar da Tecno? — ou cole um container/BL"
               value={ask}
               onChange={(e) => setAsk(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAsk()}
-              className="vt-glass-strong rounded-[11px] border-[var(--vt-line)] text-[13px]"
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
-            <Button variant="ghost" className={primaryBtn} onClick={() => handleAsk()}>
-              Buscar
+            <kbd className="hidden rounded border bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground sm:inline">
+              Enter
+            </kbd>
+          </div>
+          <Button className="h-11 px-5" onClick={() => handleAsk()}>
+            Buscar
+          </Button>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-1 text-xs text-muted-foreground">Sugestões</span>
+          {CHIPS.map(([id, label, dot]) => (
+            <Button
+              key={id}
+              variant="outline"
+              size="sm"
+              aria-pressed={chipFiltro === id}
+              onClick={() => toggleChip(id)}
+              className={cn(
+                'h-[30px] rounded-full px-3 text-[13px] font-normal',
+                chipFiltro === id && 'border-primary/30 bg-accent font-semibold text-primary hover:bg-accent',
+              )}
+            >
+              <span className={cn('size-[7px] rounded-full', dot)} aria-hidden="true" />
+              {label}
             </Button>
+          ))}
+        </div>
+        {askAnswer && <div className="rounded-lg bg-muted/50 p-3.5 text-sm leading-relaxed">{askAnswer}</div>}
+      </section>
+
+      {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+
+      <section aria-label="Processos" className="overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="text-[15px] font-semibold">Processos</h2>
+            <div
+              role="tablist"
+              aria-label="Filtrar por status"
+              className="inline-flex flex-wrap gap-0.5 rounded-lg bg-muted p-[3px]"
+            >
+              {ABAS.map((t) => {
+                const sel = filterBand === t.k;
+                return (
+                  <button
+                    key={t.l}
+                    type="button"
+                    role="tab"
+                    aria-selected={sel}
+                    onClick={() => setFilterBand(t.k)}
+                    className={cn(
+                      'inline-flex h-[30px] items-center gap-1.5 rounded-md px-2.5 text-[13px] transition',
+                      sel ? 'bg-card font-semibold shadow-sm' : 'font-medium text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    {t.l}
+                    <span className="text-xs text-muted-foreground tabular-nums">{t.n}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <div className="mt-2.5 flex flex-wrap gap-1.5">
-            {(
-              [
-                ['critico', 'crítico', 'var(--vt-c-prej)'],
-                ['semana', 'falta captar essa semana', 'var(--vt-c-jan)'],
-                ['semdesp', 'sem despachante/regime', 'var(--vt-muted)'],
-                ['aluzen', 'processos da Aluzen', 'var(--vt-ink)'],
-              ] as [Exclude<typeof chipFiltro, null>, string, string][]
-            ).map(([id, label, dot]) => (
-              <span
-                key={id}
-                className="vt-chip"
-                onClick={() => toggleChip(id)}
-                style={
-                  chipFiltro === id
-                    ? { background: 'var(--vt-bg-prej)', borderColor: 'transparent', color: 'var(--vt-red)', fontWeight: 700 }
-                    : undefined
-                }
+          <div className="flex flex-wrap items-center gap-2">
+            {filtroAtivo && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 text-muted-foreground"
+                onClick={() => {
+                  setFilterBand(null);
+                  setBusca('');
+                  setChipFiltro(null);
+                  setMesFiltro(null);
+                }}
               >
-                <span
-                  className="mr-1.5 inline-block h-[6px] w-[6px] rounded-full align-middle"
-                  style={{ background: dot }}
-                />
-                {label}
-              </span>
-            ))}
+                <X />
+                Limpar filtro
+              </Button>
+            )}
+            <label className="flex h-10 w-[240px] max-w-full items-center gap-2 rounded-lg border bg-background px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30">
+              <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <span className="sr-only">Buscar na tabela</span>
+              <input
+                placeholder="Buscar cliente, BL, navio…"
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              />
+            </label>
+
+            {/* Filtro de mês (pedido 01/10/2026): filtra a carteira inteira
+                por mês de criação (`createdAt`), combinável com o status. */}
+            <div className="relative" ref={mesRef}>
+              <Button
+                variant="outline"
+                aria-label="Filtrar por mês de criação"
+                aria-expanded={mesAberto}
+                onClick={() => setMesAberto((v) => !v)}
+                className={cn(
+                  'h-10 border-dashed px-3.5',
+                  mesFiltro && 'border-solid border-primary/40 bg-accent text-primary hover:bg-accent',
+                )}
+              >
+                <CalendarDays />
+                {mesFiltro ? `${MESES_PT[Number(mesFiltro.slice(5, 7)) - 1]} / ${mesFiltro.slice(0, 4)}` : 'Mês'}
+              </Button>
+              {mesAberto && (
+                <div className="absolute top-[calc(100%+6px)] right-0 z-20 w-[210px] rounded-lg border bg-popover p-1 shadow-md">
+                  {mesesDisponiveis.length === 0 && (
+                    <div className="p-2 text-xs text-muted-foreground">Nenhum mês ainda</div>
+                  )}
+                  {mesesDisponiveis.map(([chave, qtd]) => {
+                    const [ano, mes] = chave.split('-');
+                    const sel = mesFiltro === chave;
+                    return (
+                      <button
+                        key={chave}
+                        type="button"
+                        onClick={() => {
+                          setMesFiltro(chave);
+                          setMesAberto(false);
+                        }}
+                        className={cn(
+                          'flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-muted',
+                          sel && 'bg-accent font-semibold text-primary hover:bg-accent',
+                        )}
+                      >
+                        <span>
+                          {MESES_PT[Number(mes) - 1]} / {ano}
+                        </span>
+                        <span className="font-mono text-[11px] text-muted-foreground">{qtd}</span>
+                      </button>
+                    );
+                  })}
+                  {mesFiltro && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMesFiltro(null);
+                        setMesAberto(false);
+                      }}
+                      className="mt-1 w-full rounded-md px-2 py-1.5 text-center text-xs font-medium text-muted-foreground hover:bg-muted"
+                    >
+                      limpar
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-          {askAnswer && <div className="mt-3 text-[13px] leading-relaxed">{askAnswer}</div>}
         </div>
 
-        {error && (
-          <p className="text-[13px] font-semibold" style={{ color: 'var(--vt-c-prej)' }}>
-            {error}
-          </p>
-        )}
-
-        <div className="vt-glass overflow-hidden">
-          <div className="flex flex-wrap items-center gap-3 p-[14px_18px]" style={{ borderBottom: '1px solid var(--vt-line2)' }}>
-            <h3 className="text-[14px] font-bold">
-              Processos
-              {(filterBand || busca || chipFiltro) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFilterBand(null);
-                    setBusca('');
-                    setChipFiltro(null);
-                  }}
-                  className="ml-2 text-[11px] font-semibold"
-                  style={{ color: 'var(--vt-muted)' }}
-                >
-                  ✕ limpar filtro
-                </button>
-              )}
-            </h3>
-            <Input
-              placeholder="buscar cliente, BL, navio…"
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              className="ml-auto w-[200px] rounded-[10px] text-[12.5px]"
-            />
-          </div>
-          <Table className="vt-tabela-compacta">
-            <TableHeader>
-              <TableRow style={{ borderColor: 'var(--vt-line)' }}>
-                {(
-                  [
-                    ['pr', 'Status'],
-                    ['cli', 'Cliente'],
-                  ] as [SortKey, string][]
-                ).map(([key, label]) => (
-                  <TableHead
-                    key={key}
-                    className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
-                    style={{ color: sortKey === key ? 'var(--vt-red)' : 'var(--vt-muted)' }}
-                    onClick={() => toggleSort(key)}
-                  >
-                    {label}{' '}
-                    <span style={{ opacity: sortKey === key ? 1 : 0.35 }}>
-                      {sortKey === key ? (sortDir === 1 ? '▲' : '▼') : '↕'}
-                    </span>
-                  </TableHead>
-                ))}
-                <TableHead
-                  className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
-                  style={{ color: sortKey === 'registrado' ? 'var(--vt-red)' : 'var(--vt-muted)' }}
-                  onClick={() => toggleSort('registrado')}
-                >
-                  Registrado em{' '}
-                  <span style={{ opacity: sortKey === 'registrado' ? 1 : 0.35 }}>
-                    {sortKey === 'registrado' ? (sortDir === 1 ? '▲' : '▼') : '↕'}
-                  </span>
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
-                  style={{ color: sortKey === 'dias' ? 'var(--vt-red)' : 'var(--vt-muted)' }}
-                  onClick={() => toggleSort('dias')}
-                >
-                  ETA / Prazo{' '}
-                  <span style={{ opacity: sortKey === 'dias' ? 1 : 0.35 }}>
-                    {sortKey === 'dias' ? (sortDir === 1 ? '▲' : '▼') : '↕'}
-                  </span>
-                </TableHead>
-                {['HBL', 'Container'].map((h) => (
-                  <TableHead
-                    key={h}
-                    className="vt-extra-col text-[11px] font-semibold tracking-[.05em] uppercase"
-                    style={{ color: 'var(--vt-muted)' }}
-                  >
-                    {h}
-                  </TableHead>
-                ))}
-                <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
-                  CE
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer text-[11px] font-semibold tracking-[.05em] uppercase select-none"
-                  style={{ color: sortKey === 'desp' ? 'var(--vt-red)' : 'var(--vt-muted)' }}
-                  onClick={() => toggleSort('desp')}
-                >
-                  Despachante{' '}
-                  <span style={{ opacity: sortKey === 'desp' ? 1 : 0.35 }}>
-                    {sortKey === 'desp' ? (sortDir === 1 ? '▲' : '▼') : '↕'}
-                  </span>
-                </TableHead>
-                <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
-                  Atracação → Parceiro
-                </TableHead>
+        <Table className="vt-tabela-compacta">
+          <TableHeader>
+            <TableRow className="bg-muted/40 hover:bg-muted/40">
+              {sortHead('pr', 'Status')}
+              {sortHead('cli', 'Cliente')}
+              {sortHead('registrado', 'Registrado em')}
+              {sortHead('dias', 'ETA / Prazo')}
+              <TableHead className="vt-extra-col h-11 text-xs font-medium text-muted-foreground">HBL</TableHead>
+              <TableHead className="vt-extra-col h-11 text-xs font-medium text-muted-foreground">Container</TableHead>
+              <TableHead className="h-11 text-xs font-medium text-muted-foreground">CE</TableHead>
+              {sortHead('desp', 'Despachante')}
+              <TableHead className="h-11 text-xs font-medium text-muted-foreground">Atracação → Parceiro</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar']} />
+            ) : linhas.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9}>
+                  <EmptyState
+                    title={busca || filterBand || chipFiltro ? 'Nenhum processo com este filtro' : 'Radar vazio'}
+                    subtitle={
+                      busca || filterBand || chipFiltro ? (
+                        'Tente limpar a busca ou o filtro de risco.'
+                      ) : (
+                        <>
+                          Clique em <b>Importar Logcomex</b> para carregar a planilha da semana.
+                        </>
+                      )
+                    }
+                  />
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar']} />
-              ) : linhas.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9}>
-                    <EmptyState
-                      title={busca || filterBand || chipFiltro ? 'Nenhum processo com este filtro' : 'Radar vazio'}
-                      subtitle={
-                        busca || filterBand || chipFiltro
-                          ? 'Tente limpar a busca ou o filtro de risco.'
-                          : <>Clique em <b>Importar Logcomex</b> para carregar a planilha da semana.</>
+            ) : (
+              linhasPagina.map(({ r, b, d }) => (
+                <TableRow key={r.capId ?? `${r.bl}-${r.ref}`}>
+                  <TableCell
+                    tabIndex={0}
+                    className="cursor-pointer py-3.5"
+                    onClick={() => handleRowClick(r)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleRowClick(r);
                       }
-                    />
+                    }}
+                  >
+                    <StatusBadge k={b.k} label={b.t} />
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    <div className="flex flex-col">
+                      <span className="font-semibold" title={r.cli}>
+                        {apelidoCliente(r.cli, r.cnpj, clientes)}
+                        {r.prov && (
+                          <Badge className="ml-1.5 h-5 border-0 bg-warning-soft px-1.5 text-[10px] text-warning-text">
+                            provável
+                          </Badge>
+                        )}
+                      </span>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {r.ref.replace(r.cli, '').trim() || r.ref}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm whitespace-nowrap tabular-nums" title={formatDataHora(r.createdAt)}>
+                    {formatData(r.createdAt)}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    <span className="inline-flex items-center gap-2 whitespace-nowrap tabular-nums">
+                      {fmtEta(r.eta)}
+                      {r.eta && (
+                        <span
+                          className={cn(
+                            'rounded-full px-2 py-px text-xs font-medium',
+                            d >= 0 && d <= 2 ? 'bg-accent text-primary' : 'bg-muted text-foreground/80',
+                          )}
+                        >
+                          {dLabel(d)}
+                        </span>
+                      )}
+                    </span>
+                  </TableCell>
+                  <TableCell className="vt-extra-col text-sm">
+                    <HblCartao valor={r.blCap || r.bl} />
+                  </TableCell>
+                  <TableCell className="vt-extra-col text-sm">
+                    <ListaConteineres valor={r.cont} />
+                  </TableCell>
+                  <TableCell className="font-mono text-[13px] whitespace-nowrap text-foreground/80">
+                    {r.ce || '—'}
+                  </TableCell>
+                  <TableCell className="text-sm leading-snug">
+                    {despValido(r.desp) ?? <span className="font-semibold text-destructive">inválido</span>}
+                  </TableCell>
+                  <TableCell className="text-sm leading-snug">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="font-medium">{shortTerm(r.atrac) || '—'}</span>
+                      <ArrowRight className="size-3.5 text-primary" aria-label="para" />
+                      {shortTerm(r.parc) || '—'}
+                    </span>
                   </TableCell>
                 </TableRow>
-              ) : (
-                linhasPagina.map(({ r, b, d }) => (
-                  <TableRow key={r.capId ?? `${r.bl}-${r.ref}`} style={{ borderColor: 'var(--vt-line)' }}>
-                    <TableCell
-                      tabIndex={0}
-                      className="cursor-pointer"
-                      onClick={() => handleRowClick(r)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          handleRowClick(r);
-                        }
-                      }}
-                    >
-                      <span className={`vt-band vt-band-status b-${b.k}`} title={b.t} aria-label={b.t}>
-                        <span className="vt-band-texto">{b.t}</span>
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-[12.5px]">
-                      <div className="flex flex-col">
-                        <span className="font-bold" style={{ color: 'var(--vt-red)' }} title={r.cli}>
-                          {apelidoCliente(r.cli, r.cnpj, clientes)}
-                          {r.prov && (
-                            <span className="vt-band ml-1" style={{ background: 'var(--vt-bg-jan)', color: 'var(--vt-c-jan)' }}>
-                              provável
-                            </span>
-                          )}
-                        </span>
-                        <span style={{ color: 'var(--vt-muted)' }}>
-                          {r.ref.replace(r.cli, '').trim() || r.ref}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-[12.5px] whitespace-nowrap" title={formatDataHora(r.createdAt)}>
-                      {formatData(r.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-[12.5px]">
-                      {fmtEta(r.eta)} · {dLabel(d)}
-                    </TableCell>
-                    <TableCell className="vt-extra-col text-[12.5px]">
-                      <HblCartao valor={r.blCap || r.bl} />
-                    </TableCell>
-                    <TableCell className="vt-extra-col text-[12.5px]">
-                      <ListaConteineres valor={r.cont} />
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap font-mono text-[12.5px]">{r.ce || '—'}</TableCell>
-                    <TableCell className="text-[12.5px] leading-snug">
-                      {despValido(r.desp) ?? <span style={{ color: 'var(--vt-c-prej)', fontWeight: 600 }}>inválido</span>}
-                    </TableCell>
-                    <TableCell className="text-[12.5px] leading-snug">
-                      {shortTerm(r.atrac) || '—'} <span style={{ color: 'var(--vt-red)', fontWeight: 700 }}>→</span> {shortTerm(r.parc) || '—'}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-          {!loading && linhas.length > 0 && (
-            <div
-              className="flex items-center justify-between px-[18px] py-3 text-[12px]"
-              style={{ borderTop: '1px solid var(--vt-line2)', color: 'var(--vt-muted)' }}
-            >
-              <span>
-                Página {pagina} de {totalPaginas} · {linhas.length} processos
-              </span>
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="ghost"
-                  className="vt-glass-strong rounded-[9px] border border-[var(--vt-line)] px-2.5 py-1 text-[12px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px disabled:opacity-40"
-                  disabled={pagina <= 1}
-                  onClick={() => setPagina((p) => Math.max(1, p - 1))}
-                >
-                  ‹ Anterior
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="vt-glass-strong rounded-[9px] border border-[var(--vt-line)] px-2.5 py-1 text-[12px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px disabled:opacity-40"
-                  disabled={pagina >= totalPaginas}
-                  onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
-                >
-                  Próxima ›
-                </Button>
-              </div>
+              ))
+            )}
+          </TableBody>
+        </Table>
+        {!loading && linhas.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3.5 text-[13px] text-muted-foreground">
+            <span className="tabular-nums">
+              Mostrando {primeiraLinha}–{ultimaLinha} de {linhas.length} processos · Página {pagina} de {totalPaginas}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                className="h-9 px-3"
+                disabled={pagina <= 1}
+                onClick={() => setPagina((p) => Math.max(1, p - 1))}
+              >
+                <ChevronLeft />
+                Anterior
+              </Button>
+              <Button
+                variant="outline"
+                className="h-9 px-3"
+                disabled={pagina >= totalPaginas}
+                onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+              >
+                Próxima
+                <ChevronRight />
+              </Button>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

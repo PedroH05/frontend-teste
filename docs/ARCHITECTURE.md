@@ -143,7 +143,7 @@ então eram o cinza padrão gerado pelo `shadcn init`, nunca usados por
 nenhuma tela (só por primitivos `ui/*.tsx`). Os dois sistemas coexistem por
 enquanto: `--vt-*` continua sendo o que toda tela ainda usa, `--primary`
 etc. é o que as telas re-feitas no redesign (`AppShell` é a primeira,
-15/10/2026; wizard de captação a segunda, 21/10/2026) passam a usar. A ideia é o redesign ir migrando tela por tela
+15/10/2026; wizard de captação, Carteira e Histórico em 21/10/2026) passam a usar. A ideia é o redesign ir migrando tela por tela
 pros tokens shadcn até `--vt-*` virar código morto — não aconteceu ainda.
 
 **Sidebar preta sólida, sem variar por tema** (01/10/2026, pedido direto —
@@ -354,6 +354,28 @@ do `(authed)/layout.tsx`.
   testado dessa forma). A cobertura em
   `captacoes/__tests__/page.test.tsx` usa o prefill por query string pra
   exercitar o valor inicial em vez de abrir o popup.
+- **Carteira e Histórico redesenhados** (21/10/2026, redesign passo 4,
+  branch `redesign/shadcn-v2`). Toda a lógica de filtro/ordenação/
+  paginação/importação/exportação/busca rápida ficou igual — só o JSX
+  mudou. Pontos que importam:
+  - **`StatusBadge`** (`components/status-badge.tsx`) é o badge de status
+    das tabelas agora (e `STATUS_ESTILO` dá a cor/ícone por faixa pros
+    cards de KPI). O texto fica num `.vt-band-texto`, então a regra de
+    `globals.css` que esconde o nome quando "Mostrar o nome do status"
+    está desligado continua valendo; uma regra irmã em
+    `[data-slot='status-badge']` deixa só o ícone num quadrado.
+  - Na Carteira, **cards de status e abas de status são o mesmo filtro**
+    (`filterBand`) — clicar num marca o outro.
+  - Filtro de mês da Carteira continua o dropdown próprio (não `Popover`
+    do base-ui) — os testes abrem ele e o `Popover` trava no jsdom (ver
+    nota do wizard).
+  - **Histórico agrupa por dia de registro** só quando ordenado por
+    "Registrado em" (linha `data-slot="grupo-dia"`, contagem do dia
+    inteiro no filtro atual, não só da página). Dia calculado no fuso
+    local, não pelo `createdAt` em UTC. Sem abas Hoje/Tudo (o mock tem;
+    foram tiradas em 15/10/2026). Filtro de status continua `<select>`
+    nativo estilizado — o `Select` do base-ui não abre em jsdom.
+  - `FiltroPeriodo` trocou as variáveis `--vt-*` pelos tokens shadcn.
 - **Wizard "Editar captação" redesenhado** (21/10/2026, redesign passo 3,
   HANDOFF seções 4 e 5, branch `redesign/shadcn-v2`). Duas colunas:
   stepper vertical (`Card` + `Progress` "X de 6 etapas completas", resumo
