@@ -3,6 +3,20 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-21 — Redesign passo 5a: Dashboard com mais vida (branch `redesign/shadcn-v2`)
+
+- Dashboard refeito a partir do artefato aprovado: destaque escuro com o
+  número do período contando na tela, comparação com o período anterior,
+  "no ritmo atual" e melhor dia; gráfico de área de 6 meses com linha
+  brilhante e tooltip; cards com mini-gráficos; rotas atracação →
+  parceiro; rosca por parceiro; mapa de calor diário (16 semanas) com
+  sequência de dias úteis; rankings com medalhas e %.
+- Tudo calculado das captações — contas novas em `lib/dashboard.ts`, com
+  teste próprio. Sem dependência nova (gráficos em SVG).
+- Abas Hoje/Semana/Mês/Total no estilo do redesign; `SegmentedControl` e
+  o CSS `.vt-seg`/`.vt-native-select` (sem uso) apagados.
+- Tabelas do app sem divisória vertical entre colunas.
+
 ## 2026-10-21 — Redesign passo 4: Carteira + Histórico (branch `redesign/shadcn-v2`)
 
 - **Carteira** no visual do `Main.dc.html`: breadcrumb, 4 cards de status

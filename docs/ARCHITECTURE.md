@@ -103,9 +103,9 @@ registro, não reflete mais o código atual.
   (`lucide-react`, `Pencil`/`Trash2`), único padrão visual desse par em
   toda a aplicação (Carteira, Histórico, Clientes). Não recriar esse par
   numa tela nova.
-- `components/segmented-control.tsx` — pílula deslizante genérica (usada em
-  filtros de período), mesmo princípio de medir posição real via DOM em vez
-  de calcular por índice.
+- `components/status-badge.tsx` — badge de status das tabelas (redesign).
+  `segmented-control.tsx` (pílula deslizante) foi apagado em 21/10/2026: o
+  Dashboard, último a usar, passou pras abas no estilo do redesign.
 - `components/ship-scene.tsx` — decoração animada (SVG de navio) e
   `EmptyState`, usado em tabelas vazias.
 - `components/ui/*` — primitivos shadcn (`base-ui`), tema aplicado via
@@ -354,6 +354,29 @@ do `(authed)/layout.tsx`.
   testado dessa forma). A cobertura em
   `captacoes/__tests__/page.test.tsx` usa o prefill por query string pra
   exercitar o valor inicial em vez de abrir o popup.
+- **Dashboard redesenhado** (21/10/2026, redesign passo 5, pedido "use
+  criatividade, dê mais vida", aprovado no artefato "Dashboard
+  Valetrade"). Destaque escuro (mesma cor da sidebar) com contêineres do
+  período, comparação com o período anterior, "no ritmo atual" (só Mês) e
+  melhor dia; gráfico de área de 6 meses com tooltip; cards com
+  mini-gráfico; Rotas (atracação → parceiro); rosca por parceiro; mapa de
+  calor de 16 semanas com sequência de dias úteis; rankings com medalha.
+  - **Toda conta nova é pura em `lib/dashboard.ts`** e testada em
+    `lib/__tests__/dashboard.test.ts`: `noPeriodoAnterior`, `variacaoPct`
+    (sem base → `null`, nunca inventa %), `projecaoMes` (média por dia até
+    hoje × dias do mês — é conta, não meta), `melhorDia`, `serieMensal`,
+    `fluxosRotas`, `mapaDeCalor`, `sequenciaDiasUteis`.
+  - As duas regras de data continuam: período/KPIs/rankings/mapa de calor
+    por `dataRegistro()` (exportada agora); série de 6 meses por
+    `capDate()` (regra do painel de TV).
+  - Gráficos são SVG à mão (sem Recharts — não precisou de dependência
+    nova). Animações em `globals.css` (`.vt-dash-*`), todas partindo de
+    estado visível e desligadas com `prefers-reduced-motion`. O
+    `CountUp` mostra o valor direto quando não há `matchMedia` (jsdom).
+  - Botão "Painel de TV" do mock não entrou (seção 6).
+- **Tabelas sem divisória vertical** (21/10/2026): a regra global de
+  `[data-slot='table-head'/'table-cell']` com `border-right` saiu e o hover
+  da linha usa `--muted`, como nas tabelas do HANDOFF.
 - **Carteira e Histórico redesenhados** (21/10/2026, redesign passo 4,
   branch `redesign/shadcn-v2`). Toda a lógica de filtro/ordenação/
   paginação/importação/exportação ficou igual — só o JSX mudou. Exceção:
@@ -443,4 +466,4 @@ do `(authed)/layout.tsx`.
   — ficou redundante depois do `<FiltroPeriodo>` acima existir, já que o
   preset "Hoje" dentro dele cobre o mesmo caso. Sem período aplicado a
   tabela mostra tudo (era o comportamento do antigo "Tudo", que já era o
-  padrão). `SegmentedControl` continua em uso no Dashboard — só saiu daqui.
+  padrão). `SegmentedControl` continuou no Dashboard até 21/10/2026 (depois apagado).

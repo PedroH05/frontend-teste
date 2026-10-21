@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import DashboardPage, { TrendChart } from '../page';
@@ -49,6 +49,11 @@ function cap(overrides: Partial<Captacao>): Captacao {
   };
 }
 
+
+function valorKpi(label: string) {
+  return screen.getByRole('group', { name: label }).querySelector('[data-slot="kpi-valor"]')?.textContent;
+}
+
 describe('DashboardPage', () => {
   it('"Total histórico" e "Tabela pública" não mudam com o filtro de período', async () => {
     const user = userEvent.setup();
@@ -58,17 +63,15 @@ describe('DashboardPage', () => {
     ]);
     render(<DashboardPage />);
 
-    await screen.findByText('Total histórico');
-    // 2 captações no total, independente do período "mês" (padrão) filtrar 0.
-    const totalCard = screen.getByText('Total histórico').previousSibling;
-    expect(totalCard?.textContent).toBe('2');
-    const publicaCard = screen.getByText('Tabela pública').previousSibling;
-    expect(publicaCard?.textContent).toBe('1');
+    await screen.findByRole('group', { name: 'Total histórico' });
+    await screen.findByText('Ritmo diário');
+    expect(valorKpi('Total histórico')).toBe('2');
+    expect(valorKpi('Tabela pública')).toBe('1');
 
-    await user.click(screen.getByRole('button', { name: 'Hoje' }));
+    await user.click(screen.getByRole('tab', { name: 'Hoje' }));
 
-    expect(screen.getByText('Total histórico').previousSibling?.textContent).toBe('2');
-    expect(screen.getByText('Tabela pública').previousSibling?.textContent).toBe('1');
+    expect(valorKpi('Total histórico')).toBe('2');
+    expect(valorKpi('Tabela pública')).toBe('1');
   });
 
   it('KPI "Captações" reflete o período selecionado', async () => {
@@ -76,34 +79,69 @@ describe('DashboardPage', () => {
     apiFetchMock.mockResolvedValueOnce([cap({ id: 1 }), cap({ id: 2 })]); // ambas fora do mês corrente
     render(<DashboardPage />);
 
-    await screen.findByText(/Captações · /);
-    expect(screen.getByText(/Captações · /).previousSibling?.textContent).toBe('0');
+    await screen.findByRole('group', { name: 'Captações' });
+    await screen.findByText('Ritmo diário');
+    expect(valorKpi('Captações')).toBe('0');
 
-    await user.click(screen.getByRole('button', { name: 'Total' }));
-    expect(screen.getByText(/Captações · /).previousSibling?.textContent).toBe('2');
+    await user.click(screen.getByRole('tab', { name: 'Total' }));
+    expect(valorKpi('Captações')).toBe('2');
+  });
+
+  it('destaque compara com o mês anterior e mostra a projeção (redesign 21/10/2026)', async () => {
+    const agora = new Date();
+    const mesPassado = new Date(agora.getFullYear(), agora.getMonth() - 1, 10, 12);
+    apiFetchMock.mockResolvedValueOnce([
+      cap({ id: 1, quantidade: 3, createdAt: agora.toISOString() }),
+      cap({ id: 2, quantidade: 1, createdAt: agora.toISOString() }),
+      cap({ id: 3, quantidade: 2, createdAt: mesPassado.toISOString() }),
+    ]);
+    render(<DashboardPage />);
+
+    const destaque = await screen.findByRole('region', { name: 'Destaque do período' });
+    await waitFor(() => expect(destaque.querySelector('.vt-dash-heronum')).toHaveTextContent('4'));
+    expect(destaque).toHaveTextContent('+100%'); // 4 contra 2
+    expect(destaque).toHaveTextContent('No ritmo atual');
+    expect(destaque).toHaveTextContent('Melhor dia');
+  });
+
+  it('rotas mostram atracação → parceiro do período', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce([
+      cap({ id: 1, quantidade: 2, terminalDescarga: 'BTP', terminalCaptado: 'ECOPORTO' }),
+    ]);
+    render(<DashboardPage />);
+    await screen.findByText('Ritmo diário');
+    await user.click(screen.getByRole('tab', { name: 'Total' }));
+
+    const rotas = screen.getByRole('region', { name: 'Rotas do período' });
+    expect(within(rotas).getByText('BTP')).toBeInTheDocument();
+    expect(within(rotas).getByText('ECOPORTO')).toBeInTheDocument();
+    expect(rotas.querySelector('title')?.textContent).toBe('BTP → ECOPORTO: 2 contêineres');
   });
 });
 
 describe('TrendChart — gráfico de contêineres por mês', () => {
+  const pontos = [
+    { label: 'jul', n: 12 },
+    { label: 'ago', n: 27 },
+  ];
+
   it('sem passar o mouse, só o último mês mostra o número', () => {
-    const { container } = render(
-      <TrendChart points={[{ label: 'jul', n: 12 }, { label: 'ago', n: 27 }]} />,
-    );
+    render(<TrendChart points={pontos} />);
     expect(screen.getByText('27')).toBeInTheDocument();
     expect(screen.queryByText('12')).not.toBeInTheDocument();
-    expect(container.querySelectorAll('circle[r="10"]')).toHaveLength(2);
   });
 
-  it('passar o mouse numa bolinha que não é a última mostra o total daquele mês (pedido 16/09/2026)', () => {
-    const { container } = render(
-      <TrendChart points={[{ label: 'jul', n: 12 }, { label: 'ago', n: 27 }]} />,
-    );
-    const grupoJul = container.querySelectorAll('g')[0];
+  it('passar o mouse num mês mostra o total e a variação contra o anterior (pedido 16/09/2026)', () => {
+    render(<TrendChart points={pontos} />);
+    const ago = screen.getByText('ago').closest('g')!;
 
-    fireEvent.mouseEnter(grupoJul);
-    expect(screen.getByText('12')).toBeInTheDocument();
+    fireEvent.mouseEnter(ago);
+    const tip = screen.getByRole('tooltip');
+    expect(tip).toHaveTextContent('27 contêineres');
+    expect(tip).toHaveTextContent('▲ 125% vs jul');
 
-    fireEvent.mouseLeave(grupoJul);
-    expect(screen.queryByText('12')).not.toBeInTheDocument();
+    fireEvent.mouseLeave(ago);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 });
