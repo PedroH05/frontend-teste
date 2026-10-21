@@ -14,7 +14,6 @@ import { FiltroPeriodo, estaNoPeriodo, type Periodo } from '@/components/filtro-
 import { ListaConteineres } from '@/components/lista-conteineres';
 import { HblCartao } from '@/components/hbl-cartao';
 import { TableSkeletonRows } from '@/components/table-skeleton';
-import { SegmentedControl } from '@/components/segmented-control';
 import {
   Table,
   TableBody,
@@ -29,15 +28,7 @@ import {
 // migration-plan/features/historico/CURRENT_BEHAVIOR.md e
 // migration-plan/prompts/05-historico.md. Sem rota de API própria — lê
 // GET /captacoes (03-captacoes) e filtra no client, igual ao original.
-type Dia = 'hoje' | 'ontem' | 'anteontem' | 'tudo';
 type StatusFiltro = 'todos' | 'conc' | 'efet' | 'and';
-
-function inicioDoDia(offsetDias: number): Date {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - offsetDias);
-  return d;
-}
 
 function categoriaDe(stage: string | null): Exclude<StatusFiltro, 'todos'> {
   if (stage === 'SAIU_TERMINAL') return 'conc';
@@ -63,7 +54,6 @@ export default function HistoricoPage() {
   const [captacoes, setCaptacoes] = useState<Captacao[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [dia, setDia] = useState<Dia>('tudo');
   // Dois critérios de ordenação: Registrado em (padrão) e ETA — pedido
   // 17/09/2026 (antes só dava pra ordenar por Registrado em, ETA não tinha
   // opção nenhuma). sortDir 1 = crescente (mais antigo/ETA mais distante
@@ -81,8 +71,9 @@ export default function HistoricoPage() {
     }
   }
   // Filtro de/até (pedido 13/10/2026) — substitui o antigo input de dia
-  // único. Aplicar um período muda "dia" pra 'tudo' (os dois filtros não
-  // fazem sentido somados: período já define o recorte de datas).
+  // único. Sem período aplicado, mostra tudo (era o antigo padrão "Tudo") —
+  // alternador Hoje/Tudo saiu de vez (pedido 15/10/2026): o preset "Hoje" já
+  // está dentro deste mesmo filtro e faz a mesma coisa.
   const [periodo, setPeriodo] = useState<Periodo>({ inicio: null, fim: null });
   const [statusFiltro, setStatusFiltro] = useState<StatusFiltro>('todos');
   const [busca, setBusca] = useState('');
@@ -114,13 +105,6 @@ export default function HistoricoPage() {
     load();
   }, []);
 
-  const alvo = useMemo((): Date | null => {
-    if (dia === 'hoje') return inicioDoDia(0);
-    if (dia === 'ontem') return inicioDoDia(1);
-    if (dia === 'anteontem') return inicioDoDia(2);
-    return null;
-  }, [dia]);
-
   const linhas = useMemo(() => {
     let rows = [...captacoes];
     if (periodo.inicio && periodo.fim) {
@@ -128,14 +112,9 @@ export default function HistoricoPage() {
         const d = c.createdAt ? new Date(c.createdAt) : null;
         return d && !Number.isNaN(d.getTime()) && estaNoPeriodo(d, periodo.inicio!, periodo.fim!);
       });
-    } else if (alvo) {
-      rows = rows.filter((c) => {
-        const d = c.createdAt ? new Date(c.createdAt) : null;
-        return d && !Number.isNaN(d.getTime()) && d.toDateString() === alvo.toDateString();
-      });
     }
-    // Por padrão, data de registro mais recente primeiro — inclusive em
-    // "Tudo". O original ordenava "Tudo" por ETA (index.html:1551), mas
+    // Por padrão, data de registro mais recente primeiro — inclusive sem
+    // período aplicado. O original ordenava por ETA (index.html:1551), mas
     // pedido do Pedro em 16/09/2026: captação sem ETA (ou ETA distante)
     // ficava perdida no fim de uma lista paginada, difícil de achar logo
     // depois de criar. Mudança deliberada de comportamento, ver
@@ -156,23 +135,22 @@ export default function HistoricoPage() {
       rows = rows.filter((c) => JSON.stringify(c).toLowerCase().includes(q));
     }
     return rows;
-  }, [captacoes, alvo, periodo, statusFiltro, busca, sortKey, sortDir]);
+  }, [captacoes, periodo, statusFiltro, busca, sortKey, sortDir]);
 
   // Volta pra página 1 sempre que o filtro muda o conjunto exibido — senão
   // dá pra ficar numa página que não existe mais (ex.: filtrou e sobrou só
   // 1 página, mas você tava na 4). Ajuste durante o render (não em efeito)
   // pra não gerar uma renderização em cascata — ver
   // https://react.dev/learn/you-might-not-need-an-effect.
-  const [filtroAnterior, setFiltroAnterior] = useState({ alvo, periodo, statusFiltro, busca, sortKey, sortDir });
+  const [filtroAnterior, setFiltroAnterior] = useState({ periodo, statusFiltro, busca, sortKey, sortDir });
   if (
-    filtroAnterior.alvo !== alvo ||
     filtroAnterior.periodo !== periodo ||
     filtroAnterior.statusFiltro !== statusFiltro ||
     filtroAnterior.busca !== busca ||
     filtroAnterior.sortKey !== sortKey ||
     filtroAnterior.sortDir !== sortDir
   ) {
-    setFiltroAnterior({ alvo, periodo, statusFiltro, busca, sortKey, sortDir });
+    setFiltroAnterior({ periodo, statusFiltro, busca, sortKey, sortDir });
     setPagina(1);
   }
 
@@ -214,21 +192,7 @@ export default function HistoricoPage() {
         <div className="vt-glass overflow-hidden">
           <div className="flex flex-wrap items-center gap-3 p-[14px_18px]" style={{ borderBottom: '1px solid var(--vt-line2)' }}>
             <h3 className="text-[14px] font-bold">Captações</h3>
-            <SegmentedControl
-              options={[
-                { value: 'hoje', label: 'Hoje' },
-                { value: 'tudo', label: 'Tudo' },
-              ]}
-              value={dia}
-              onChange={(v: Dia) => setDia(v)}
-            />
-            <FiltroPeriodo
-              value={periodo}
-              onChange={(v) => {
-                setPeriodo(v);
-                if (v.inicio && v.fim) setDia('tudo');
-              }}
-            />
+            <FiltroPeriodo value={periodo} onChange={setPeriodo} />
             <select
               className="vt-native-select"
               value={statusFiltro}

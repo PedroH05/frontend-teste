@@ -61,7 +61,7 @@ describe('HistoricoPage', () => {
     expect(await screen.findByText('150726009988-1')).toBeInTheDocument();
   });
 
-  it('filtro "Tudo" (padrão) mostra captações de qualquer dia', async () => {
+  it('sem período aplicado (padrão) mostra captações de qualquer dia', async () => {
     const ontem = new Date();
     ontem.setDate(ontem.getDate() - 1);
     apiFetchMock.mockResolvedValueOnce([
@@ -85,10 +85,10 @@ describe('HistoricoPage', () => {
     expect(container.querySelectorAll('[data-slot="skeleton-row"]')).toHaveLength(0);
   });
 
-  it('"Tudo" ordena por data de registro, não por ETA — captação sem ETA aparece primeiro se for a mais recente', async () => {
-    // Regressão: até 16/09/2026 "Tudo" ordenava por ETA (igual ao sistema
-    // antigo), então uma captação recém-criada sem ETA ia parar no fim de
-    // uma lista paginada, "sumida" pra quem acabou de criar.
+  it('ordena por data de registro, não por ETA — captação sem ETA aparece primeiro se for a mais recente', async () => {
+    // Regressão: até 16/09/2026 ordenava por ETA (igual ao sistema antigo),
+    // então uma captação recém-criada sem ETA ia parar no fim de uma lista
+    // paginada, "sumida" pra quem acabou de criar.
     const semana = new Date();
     semana.setDate(semana.getDate() - 7);
     apiFetchMock.mockResolvedValueOnce([
@@ -104,22 +104,6 @@ describe('HistoricoPage', () => {
     const idxAntiga = linhas.findIndex((t) => t.includes('ANTIGA COM ETA'));
     expect(idxNova).toBeGreaterThan(-1);
     expect(idxNova).toBeLessThan(idxAntiga);
-  });
-
-  it('filtro "Hoje" mostra só captações registradas hoje', async () => {
-    const user = userEvent.setup();
-    const ontem = new Date();
-    ontem.setDate(ontem.getDate() - 1);
-    apiFetchMock.mockResolvedValueOnce([
-      base({ id: 1, cli: 'DE HOJE' }),
-      base({ id: 2, cli: 'DE ONTEM', createdAt: ontem.toISOString() }),
-    ]);
-
-    render(<HistoricoPage />);
-    await screen.findByText('DE HOJE');
-    await user.click(screen.getByRole('button', { name: 'Hoje' }));
-
-    expect(screen.queryByText('DE ONTEM')).not.toBeInTheDocument();
   });
 
   it('filtro de status separa concluído/efetivado/em andamento', async () => {
