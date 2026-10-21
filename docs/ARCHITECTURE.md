@@ -354,6 +354,12 @@ do `(authed)/layout.tsx`.
   testado dessa forma). A cobertura em
   `captacoes/__tests__/page.test.tsx` usa o prefill por query string pra
   exercitar o valor inicial em vez de abrir o popup.
+- **Clientes redesenhado** (21/10/2026, redesign passo 5): lista + card
+  "Adicionar cliente" lado a lado. Busca segue no topo (decisão de
+  28/09/2026 vale mais que o mock). `mascaraCnpj` (local da página) formata
+  enquanto digita — só dígitos, até 14, idempotente em texto já formatado.
+  Exclusão via `AlertDialog` controlado (`excluindo`); `handleDelete` não
+  chama mais `confirm()`. `RowActions` aceita `nome` pro `aria-label`.
 - **Dashboard redesenhado** (21/10/2026, redesign passo 5, pedido "use
   criatividade, dê mais vida", aprovado no artefato "Dashboard
   Valetrade"). Destaque escuro (mesma cor da sidebar) com contêineres do

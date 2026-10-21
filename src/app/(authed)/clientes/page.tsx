@@ -1,14 +1,32 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { Check, ChevronLeft, ChevronRight, Plus, Search, UserPlus, X } from 'lucide-react';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Cliente } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Field, FieldContent, FieldLabel } from '@/components/ui/field';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import { EmptyState } from '@/components/ship-scene';
 import { TableSkeletonRows } from '@/components/table-skeleton';
-import { Search, Check, X } from 'lucide-react';
 import { RowActions } from '@/components/row-actions';
 import {
   Table,
@@ -27,7 +45,23 @@ import {
 // Apelidos como chips removíveis, não texto solto separado por vírgula —
 // um espaço a mais no texto livre virava um alias fantasma sem dar match
 // no import do Logcomex.
-function AliasChips({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+// CNPJ com máscara (HANDOFF seção 3): só dígitos, no máximo 14, formatado
+// enquanto digita. Texto já formatado passa igual.
+function mascaraCnpj(v: string): string {
+  const d = v.replace(/\D/g, '').slice(0, 14);
+  return d
+    .replace(/^(\d{2})(\d)/, '$1.$2')
+    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2')
+    .replace(/(\d{4})(\d)/, '$1-$2');
+}
+
+function iniciais(nome: string): string {
+  const palavras = nome.replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(Boolean);
+  return ((palavras[0]?.[0] ?? '') + (palavras[1]?.[0] ?? palavras[0]?.[1] ?? '')).toUpperCase();
+}
+
+function AliasChips({ id, value, onChange }: { id?: string; value: string[]; onChange: (v: string[]) => void }) {
   const [draft, setDraft] = useState('');
 
   function commit() {
@@ -37,21 +71,22 @@ function AliasChips({ value, onChange }: { value: string[]; onChange: (v: string
   }
 
   return (
-    <div className="vt-glass-strong flex min-h-[38px] flex-wrap items-center gap-1.5 rounded-[11px] border border-[var(--vt-line)] p-[7px_8px]">
+    <div className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-lg border border-input bg-transparent px-2 py-1.5 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
       {value.map((a, i) => (
-        <span key={a} className="vt-glass inline-flex items-center gap-1.5 rounded-[20px] px-2.5 py-1 text-[11.5px] font-semibold">
+        <span key={a} className="inline-flex items-center gap-1 rounded-md border bg-muted py-0.5 pr-1 pl-2 text-xs font-medium">
           {a}
           <button
             type="button"
+            aria-label={`Remover ${a}`}
             onClick={() => onChange(value.filter((_, idx) => idx !== i))}
-            className="flex h-[15px] w-[15px] items-center justify-center rounded-full text-[9px]"
-            style={{ background: 'var(--vt-line)', color: 'var(--vt-muted)' }}
+            className="rounded p-0.5 text-muted-foreground hover:bg-background hover:text-foreground"
           >
-            ✕
+            <X className="size-3" />
           </button>
         </span>
       ))}
       <input
+        id={id}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => {
@@ -64,7 +99,7 @@ function AliasChips({ value, onChange }: { value: string[]; onChange: (v: string
         }}
         onBlur={commit}
         placeholder={value.length ? '' : 'digite e tecle Enter…'}
-        className="min-w-[90px] flex-1 border-0 bg-transparent p-1 text-[12.5px] outline-none"
+        className="min-w-[90px] flex-1 border-0 bg-transparent p-1 text-sm outline-none placeholder:text-muted-foreground"
       />
     </div>
   );
@@ -88,6 +123,7 @@ export default function ClientesPage() {
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState('');
   const [pagina, setPagina] = useState(1);
+  const [excluindo, setExcluindo] = useState<Cliente | null>(null);
 
   async function load() {
     setLoading(true);
@@ -161,8 +197,8 @@ export default function ClientesPage() {
     }
   }
 
+  // Confirmação no AlertDialog (redesign 21/10/2026), não mais confirm().
   async function handleDelete(id: number) {
-    if (!confirm('Excluir este cliente do cadastro?')) return;
     try {
       await apiFetch(`/clientes/${id}`, { method: 'DELETE' });
       // Tira da tela na hora — ver comentário equivalente em historico/page.tsx.
@@ -208,75 +244,52 @@ export default function ClientesPage() {
     }
   }
 
-  const glassInput = 'vt-glass-strong rounded-[11px] border-[var(--vt-line)] text-[13px]';
-  const primaryBtn = 'vt-btn-primary rounded-[11px] px-3.5 py-2 text-[12.5px] font-semibold transition hover:-translate-y-px';
+  async function confirmarExclusao() {
+    if (!excluindo) return;
+    const { id } = excluindo;
+    setExcluindo(null);
+    await handleDelete(id);
+  }
 
   return (
-    <div className="space-y-5 p-6 sm:p-8" style={{ color: 'var(--vt-ink)' }}>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[21px] font-bold tracking-tight">Clientes</h1>
-          <div className="relative ml-auto w-[200px]">
-            <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" style={{ color: 'var(--vt-muted)' }} />
-            <Input
-              placeholder="buscar cliente…"
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              className={`pl-8 text-[12.5px] ${glassInput}`}
-            />
-          </div>
+    <div className="mx-auto w-full max-w-[1240px] space-y-6 p-6 sm:p-8 lg:px-10">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="space-y-1.5">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>Gestão</BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Clientes</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <h1 className="text-[28px] font-semibold tracking-[-0.02em]">Clientes</h1>
         </div>
+        {/* Busca no topo, junto do título (pedido 28/09/2026). */}
+        <label className="flex h-10 w-[300px] max-w-full items-center gap-2 rounded-lg border bg-card px-3 shadow-sm focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30">
+          <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <span className="sr-only">Buscar cliente</span>
+          <input
+            placeholder="buscar cliente…"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          />
+        </label>
+      </header>
 
-        <form onSubmit={handleAdd} className="vt-glass grid gap-4 p-[18px_20px] sm:grid-cols-3">
-          <Field>
-            <FieldLabel htmlFor="cl-nome">Razão social / Nome</FieldLabel>
-            <FieldContent>
-              <Input id="cl-nome" className={glassInput} value={nome} onChange={(e) => setNome(e.target.value)} required />
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="cl-cnpj">CNPJ</FieldLabel>
-            <FieldContent>
-              <Input
-                id="cl-cnpj"
-                className={glassInput}
-                placeholder="00.000.000/0000-00"
-                value={cnpj}
-                onChange={(e) => setCnpj(e.target.value)}
-              />
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="cl-aliases">Apelidos</FieldLabel>
-            <FieldContent>
-              <AliasChips value={aliases} onChange={setAliases} />
-            </FieldContent>
-          </Field>
-          <div className="sm:col-span-3">
-            {error && (
-              <p className="mb-2 text-[13px] font-semibold" style={{ color: 'var(--vt-c-prej)' }}>
-                {error}
-              </p>
-            )}
-            <Button type="submit" variant="ghost" className={primaryBtn} disabled={saving}>
-              {saving ? 'Adicionando…' : '+ Adicionar cliente'}
-            </Button>
-          </div>
-        </form>
-
-        <div className="vt-glass overflow-hidden">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <section aria-label="Lista de clientes" className="min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow style={{ borderColor: 'var(--vt-line)' }}>
-                <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
-                  Cliente
+              <TableRow className="bg-muted/40 hover:bg-muted/40">
+                <TableHead className="h-11 text-xs font-medium text-muted-foreground">Cliente</TableHead>
+                <TableHead className="h-11 text-xs font-medium text-muted-foreground">CNPJ</TableHead>
+                <TableHead className="h-11 text-xs font-medium text-muted-foreground">Apelidos</TableHead>
+                <TableHead className="h-11 w-[96px]">
+                  <span className="sr-only">Ações</span>
                 </TableHead>
-                <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
-                  CNPJ
-                </TableHead>
-                <TableHead className="text-[11px] font-semibold tracking-[.05em] uppercase" style={{ color: 'var(--vt-muted)' }}>
-                  Apelidos
-                </TableHead>
-                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -287,44 +300,42 @@ export default function ClientesPage() {
                   <TableCell colSpan={4}>
                     <EmptyState
                       title={busca ? 'Nenhum cliente com este filtro' : 'Nenhum cliente'}
-                      subtitle={busca ? 'Tente limpar a busca.' : 'Cadastre o primeiro cliente no formulário acima.'}
+                      subtitle={busca ? 'Tente limpar a busca.' : 'Cadastre o primeiro cliente no formulário ao lado.'}
                     />
                   </TableCell>
                 </TableRow>
               ) : (
                 clientesPagina.map((c) =>
                   editingId === c.id ? (
-                    <TableRow key={c.id} style={{ borderColor: 'var(--vt-line2)', background: 'var(--vt-bg-jan)' }}>
+                    <TableRow key={c.id} className="bg-warning-soft/50 hover:bg-warning-soft/50">
                       <TableCell>
                         <Input
-                          className={glassInput}
+                          className="h-10"
+                          aria-label="Nome do cliente"
                           value={editForm.name}
                           onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
                         />
                       </TableCell>
                       <TableCell>
                         <Input
-                          className={glassInput}
+                          className="h-10 font-mono"
+                          aria-label="CNPJ do cliente"
                           placeholder="00.000.000/0000-00"
                           value={editForm.cnpj}
-                          onChange={(e) => setEditForm((f) => ({ ...f, cnpj: e.target.value }))}
+                          onChange={(e) => setEditForm((f) => ({ ...f, cnpj: mascaraCnpj(e.target.value) }))}
                         />
                       </TableCell>
                       <TableCell>
                         <AliasChips value={editForm.aliases} onChange={(v) => setEditForm((f) => ({ ...f, aliases: v }))} />
-                        {editError && (
-                          <p className="mt-1.5 text-[11px] font-semibold" style={{ color: 'var(--vt-c-prej)' }}>
-                            {editError}
-                          </p>
-                        )}
+                        {editError && <p className="mt-1.5 text-xs font-medium text-destructive">{editError}</p>}
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-0.5">
                           <Button
                             variant="ghost"
-                            size="icon-sm"
+                            size="icon"
+                            className="size-9 text-success hover:bg-success-soft hover:text-success"
                             title="Salvar"
-                            style={{ color: 'var(--vt-c-efet)' }}
                             onClick={() => saveEdit(c.id)}
                             disabled={editSaving}
                           >
@@ -332,9 +343,9 @@ export default function ClientesPage() {
                           </Button>
                           <Button
                             variant="ghost"
-                            size="icon-sm"
+                            size="icon"
+                            className="size-9 text-muted-foreground"
                             title="Cancelar"
-                            style={{ color: 'var(--vt-muted)' }}
                             onClick={cancelEdit}
                             disabled={editSaving}
                           >
@@ -344,12 +355,36 @@ export default function ClientesPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    <TableRow key={c.id} style={{ borderColor: 'var(--vt-line2)' }}>
-                      <TableCell className="font-bold" style={{ color: 'var(--vt-red)' }}>{c.name}</TableCell>
-                      <TableCell className="font-mono text-xs">{c.cnpj || '—'}</TableCell>
-                      <TableCell>{c.aliases.join(', ') || '—'}</TableCell>
+                    <TableRow key={c.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <span
+                            aria-hidden="true"
+                            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-xs font-semibold text-accent-foreground"
+                          >
+                            {iniciais(c.name)}
+                          </span>
+                          <span className="font-semibold">{c.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono text-[13px] whitespace-nowrap text-foreground/80">
+                        {c.cnpj || '—'}
+                      </TableCell>
+                      <TableCell>
+                        {c.aliases.length ? (
+                          <div className="flex flex-wrap gap-1">
+                            {c.aliases.map((a) => (
+                              <Badge key={a} variant="outline" className="font-medium">
+                                {a}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
                       <TableCell className="whitespace-nowrap">
-                        <RowActions onEdit={() => startEdit(c)} onDelete={() => handleDelete(c.id)} />
+                        <RowActions nome={c.aliases[0] || c.name} onEdit={() => startEdit(c)} onDelete={() => setExcluindo(c)} />
                       </TableCell>
                     </TableRow>
                   ),
@@ -358,34 +393,94 @@ export default function ClientesPage() {
             </TableBody>
           </Table>
           {!loading && clientesFiltrados.length > 0 && (
-            <div
-              className="flex items-center justify-between px-[18px] py-3 text-[12px]"
-              style={{ borderTop: '1px solid var(--vt-line2)', color: 'var(--vt-muted)' }}
-            >
-              <span>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3.5 text-[13px] text-muted-foreground">
+              <span className="tabular-nums">
                 Página {pagina} de {totalPaginas} · {clientesFiltrados.length} clientes
               </span>
               <div className="flex items-center gap-1.5">
                 <Button
-                  variant="ghost"
-                  className="vt-glass-strong rounded-[9px] border border-[var(--vt-line)] px-2.5 py-1 text-[12px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px disabled:opacity-40"
+                  variant="outline"
+                  className="h-9 px-3"
                   disabled={pagina <= 1}
                   onClick={() => setPagina((p) => Math.max(1, p - 1))}
                 >
-                  ‹ Anterior
+                  <ChevronLeft />
+                  Anterior
                 </Button>
                 <Button
-                  variant="ghost"
-                  className="vt-glass-strong rounded-[9px] border border-[var(--vt-line)] px-2.5 py-1 text-[12px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px disabled:opacity-40"
+                  variant="outline"
+                  className="h-9 px-3"
                   disabled={pagina >= totalPaginas}
                   onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
                 >
-                  Próxima ›
+                  Próxima
+                  <ChevronRight />
                 </Button>
               </div>
             </div>
           )}
-        </div>
+        </section>
+
+        <section aria-labelledby="novo-cliente" className="rounded-xl border bg-card p-5 shadow-sm lg:sticky lg:top-6">
+          <div className="mb-4 flex items-center gap-2.5">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-accent text-primary">
+              <UserPlus className="size-4" aria-hidden="true" />
+            </span>
+            <h2 id="novo-cliente" className="text-[15px] font-semibold">
+              Adicionar cliente
+            </h2>
+          </div>
+          <form onSubmit={handleAdd} className="space-y-4">
+            <Field>
+              <FieldLabel htmlFor="cl-nome">Razão social / Nome</FieldLabel>
+              <FieldContent>
+                <Input id="cl-nome" className="h-10" value={nome} onChange={(e) => setNome(e.target.value)} required />
+              </FieldContent>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="cl-cnpj">CNPJ</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="cl-cnpj"
+                  className="h-10 font-mono"
+                  inputMode="numeric"
+                  placeholder="00.000.000/0000-00"
+                  value={cnpj}
+                  onChange={(e) => setCnpj(mascaraCnpj(e.target.value))}
+                />
+              </FieldContent>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="cl-aliases">Apelidos</FieldLabel>
+              <FieldContent>
+                <AliasChips id="cl-aliases" value={aliases} onChange={setAliases} />
+              </FieldContent>
+            </Field>
+            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+            <Button type="submit" className="h-10 w-full" disabled={saving}>
+              <Plus />
+              {saving ? 'Adicionando…' : 'Adicionar cliente'}
+            </Button>
+          </form>
+        </section>
       </div>
+
+      <AlertDialog open={!!excluindo} onOpenChange={(o) => !o && setExcluindo(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir este cliente do cadastro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {excluindo?.name} — esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={confirmarExclusao}>
+              Excluir cliente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }

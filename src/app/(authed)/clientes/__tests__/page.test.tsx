@@ -48,7 +48,7 @@ describe('ClientesPage', () => {
     await waitFor(() => expect(apiFetchMock).toHaveBeenCalledWith('/clientes'));
 
     await user.type(screen.getByLabelText('Razão social / Nome'), 'Duplicado');
-    await user.click(screen.getByRole('button', { name: '+ Adicionar cliente' }));
+    await user.click(screen.getByRole('button', { name: 'Adicionar cliente' }));
 
     expect(
       await screen.findByText('Já existe cliente cadastrado com essa raiz de CNPJ.'),
@@ -96,7 +96,7 @@ describe('ClientesPage', () => {
 
     expect(screen.getByText('TECNO')).toBeInTheDocument();
 
-    await user.click(screen.getByText('✕'));
+    await user.click(screen.getByRole('button', { name: 'Remover TECNO' }));
     expect(screen.queryByText('TECNO')).not.toBeInTheDocument();
   });
 
@@ -129,6 +129,33 @@ describe('ClientesPage', () => {
     expect(await screen.findByText('TECNO AMERICA')).toBeInTheDocument();
   });
 
+  it('CNPJ ganha máscara enquanto digita (redesign 21/10/2026)', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce([]);
+    render(<ClientesPage />);
+    await waitFor(() => expect(apiFetchMock).toHaveBeenCalledWith('/clientes'));
+
+    await user.type(screen.getByLabelText('CNPJ'), '12345678000199999');
+    expect(screen.getByLabelText('CNPJ')).toHaveValue('12.345.678/0001-99');
+  });
+
+  it('excluir pede confirmação no AlertDialog antes de apagar', async () => {
+    const user = userEvent.setup();
+    apiFetchMock
+      .mockResolvedValueOnce([{ id: 7, name: 'TECNO', cnpj: null, cnpjRaiz: null, aliases: ['TEC'], ativo: true }])
+      .mockResolvedValueOnce(undefined);
+    render(<ClientesPage />);
+    await screen.findByText('TECNO');
+
+    await user.click(screen.getByRole('button', { name: 'Excluir TEC' }));
+    expect(await screen.findByText('Excluir este cliente do cadastro?')).toBeInTheDocument();
+    expect(apiFetchMock).not.toHaveBeenCalledWith('/clientes/7', expect.anything());
+
+    await user.click(screen.getByRole('button', { name: 'Excluir cliente' }));
+    await waitFor(() => expect(apiFetchMock).toHaveBeenCalledWith('/clientes/7', { method: 'DELETE' }));
+    await waitFor(() => expect(screen.queryByText('TECNO')).not.toBeInTheDocument());
+  });
+
   it('pagina de 5 em 5, igual à Carteira e ao Histórico (pedido 17/09/2026)', async () => {
     const user = userEvent.setup();
     const clientes = Array.from({ length: 6 }, (_, i) => ({
@@ -147,7 +174,7 @@ describe('ClientesPage', () => {
     expect(screen.queryByText('CLIENTE6')).not.toBeInTheDocument();
     expect(screen.getByText(/Página 1 de 2/)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Próxima ›' }));
+    await user.click(screen.getByRole('button', { name: 'Próxima' }));
 
     expect(screen.getByText('CLIENTE6')).toBeInTheDocument();
     expect(screen.queryByText('CLIENTE1')).not.toBeInTheDocument();

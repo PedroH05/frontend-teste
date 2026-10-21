@@ -3,6 +3,16 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-21 — Redesign passo 5b: Clientes (branch `redesign/shadcn-v2`)
+
+- Lista num card à esquerda (avatar com iniciais, CNPJ em mono, apelidos
+  como badge) e card fixo "Adicionar cliente" à direita. Busca continua no
+  topo, junto do título (pedido 28/09/2026 — o mock punha na tabela), e
+  continua sem contador junto do título.
+- CNPJ com máscara enquanto digita (cadastro e edição).
+- Excluir pede confirmação num `AlertDialog` (antes `confirm()`).
+  `RowActions` ganhou os tokens do redesign e `aria-label` com o nome.
+
 ## 2026-10-21 — Redesign passo 5a: Dashboard com mais vida (branch `redesign/shadcn-v2`)
 
 - Dashboard refeito a partir do artefato aprovado: destaque escuro com o
