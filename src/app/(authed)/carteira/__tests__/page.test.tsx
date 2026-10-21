@@ -208,18 +208,27 @@ describe('CarteiraPage', () => {
     expect(destino).toContain('cli=TECNO');
   });
 
-  it('alerta minimizável esconde e mostra o texto (pedido 01/10/2026: só mostra com crítico de verdade)', async () => {
+  it('crítico vira selo no cabeçalho com a lista completa ao clicar (pedido 21/10/2026)', async () => {
     const user = userEvent.setup();
     filaApi('/carteira', {
-      rows: [row({ stage: 'MANIFESTADA_DOCS' })],
+      rows: [
+        row({ capId: 1, cli: 'GV', ref: 'GV 0258-26', stage: 'MANIFESTADA_DOCS' }),
+        row({ capId: 2, cli: 'GV', ref: 'GV 0374-26', stage: 'MANIFESTADA_DOCS' }),
+        row({ capId: 3, cli: 'TECNO', ref: 'TECNO 0347-26', stage: 'MANIFESTADA_DOCS' }),
+      ],
     });
     render(<CarteiraPage />);
-
     await screen.findByText('Processos');
-    expect(screen.getByText(/viram tabela pública hoje/)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Minimizar alerta' }));
-    expect(screen.queryByText(/viram tabela pública hoje/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/viram tabela pública hoje se não/)).not.toBeInTheDocument(); // faixa saiu
+    await user.click(screen.getByRole('button', { name: /3 críticos hoje/ }));
+    const lista = screen.getByRole('dialog', { name: 'Processos críticos' });
+    expect(within(lista).getByText('0258-26')).toBeInTheDocument();
+    expect(within(lista).getByText('0374-26')).toBeInTheDocument();
+    expect(within(lista).getByText('0347-26')).toBeInTheDocument(); // nenhum nome cortado
+
+    await user.click(within(lista).getByText('0347-26'));
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=3&step=6');
   });
 
   it('sem crítico, o alerta não aparece mais (pedido 01/10/2026: tirada a frase "janela de 7 dias / regime pendente")', async () => {

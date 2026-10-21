@@ -3,6 +3,16 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-21 — Carteira: aviso de crítico vira selo (branch `redesign/shadcn-v2`)
+
+- A faixa vermelha "N processo(s) viram tabela pública hoje…" saiu (pedido:
+  "me estressa"). No lugar, um selo "N críticos hoje" ao lado dos botões do
+  cabeçalho; clicando abre a lista com **todos** os críticos (a frase antiga
+  só mostrava os 2 primeiros), cada um abrindo o processo, e um atalho pra
+  filtrar a tabela. Singular/plural certo. Escolha A do artefato "Aviso de
+  Críticos".
+- Saiu junto o "minimizar alerta" (`alertMin` no localStorage).
+
 ## 2026-10-21 — Redesign passo 6: o que ainda estava no visual antigo (branch `redesign/shadcn-v2`)
 
 - **Login** novo: painel escuro da marca à esquerda (some no celular) e

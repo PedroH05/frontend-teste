@@ -15,7 +15,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   Download,
   Plus,
   Search,
@@ -60,7 +59,6 @@ import {
 // buscam dado no client": o JWT vive em localStorage, nunca chega ao
 // servidor do Next.
 
-const ALERT_MIN_KEY = 'alertMin';
 
 function despValido(desp: string): string | undefined {
   return desp && Number.isNaN(Number(desp)) ? desp : undefined;
@@ -99,7 +97,6 @@ export default function CarteiraPage() {
   const [importing, setImporting] = useState(false);
   const [importSummary, setImportSummary] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [alertMin, setAlertMin] = useState(false);
 
   // Filtro de mês (pedido 01/10/2026: "ver o que foi feito no mês") — olha
   // `createdAt` (quando a captação foi registrada), não quando mudou de
@@ -118,26 +115,24 @@ export default function CarteiraPage() {
     return () => document.removeEventListener('mousedown', onClickFora);
   }, [mesAberto]);
 
-  useEffect(() => {
-    try {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza com localStorage (sistema externo), só existe no cliente
-      setAlertMin(localStorage.getItem(ALERT_MIN_KEY) === '1');
-    } catch {
-      // ignora — só é conveniência de UI, não dado crítico.
-    }
-  }, []);
+  const [criticosAberto, setCriticosAberto] = useState(false);
+  const criticosRef = useRef<HTMLDivElement>(null);
 
-  function toggleAlertMin() {
-    setAlertMin((v) => {
-      const next = !v;
-      try {
-        localStorage.setItem(ALERT_MIN_KEY, next ? '1' : '0');
-      } catch {
-        // ignora — só é conveniência de UI, não dado crítico.
-      }
-      return next;
-    });
-  }
+  useEffect(() => {
+    if (!criticosAberto) return;
+    function onClickFora(e: MouseEvent) {
+      if (criticosRef.current && !criticosRef.current.contains(e.target as Node)) setCriticosAberto(false);
+    }
+    function onEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') setCriticosAberto(false);
+    }
+    document.addEventListener('mousedown', onClickFora);
+    document.addEventListener('keydown', onEsc);
+    return () => {
+      document.removeEventListener('mousedown', onClickFora);
+      document.removeEventListener('keydown', onEsc);
+    };
+  }, [criticosAberto]);
 
   async function load() {
     setLoading(true);
@@ -459,7 +454,70 @@ export default function CarteiraPage() {
             {linhas.length} processos · {totalContainers} contêineres
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Aviso de crítico como selo, no lugar da faixa vermelha com frase
+              (pedido 21/10/2026, "me estressa" — artefato "Aviso de
+              Críticos", opção A). Lista completa ao clicar, sem cortar nomes. */}
+          {alerta.prej.length > 0 && (
+            <div className="relative" ref={criticosRef}>
+              <button
+                type="button"
+                aria-expanded={criticosAberto}
+                onClick={() => setCriticosAberto((v) => !v)}
+                className="inline-flex h-10 items-center gap-2 rounded-full border border-primary/25 bg-accent px-3.5 text-[13px] font-semibold text-accent-foreground transition hover:bg-primary/10"
+              >
+                <span className="vt-pulse size-2 rounded-full bg-primary" aria-hidden="true" />
+                {alerta.prej.length} {alerta.prej.length === 1 ? 'crítico' : 'críticos'} hoje
+                <ChevronDown className={cn('size-3.5 transition-transform', criticosAberto && 'rotate-180')} />
+              </button>
+              {criticosAberto && (
+                <div
+                  role="dialog"
+                  aria-label="Processos críticos"
+                  className="absolute top-[calc(100%+8px)] right-0 z-30 w-[340px] max-w-[calc(100vw-2rem)] rounded-xl border bg-popover p-1.5 text-left shadow-lg"
+                >
+                  <p className="px-2.5 pt-2 pb-1.5 text-xs text-muted-foreground">
+                    Viram tabela pública se não forem efetivados hoje
+                  </p>
+                  <ul className="max-h-[320px] overflow-y-auto">
+                    {alerta.prej.map(({ r, d }) => (
+                      <li key={r.capId ?? `${r.bl}-${r.ref}`}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCriticosAberto(false);
+                            handleRowClick(r);
+                          }}
+                          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted"
+                        >
+                          <span className="min-w-0 flex-1 truncate">
+                            <b className="font-semibold">{apelidoCliente(r.cli, r.cnpj, clientes)}</b>{' '}
+                            <span className="font-mono text-xs text-muted-foreground">
+                              {r.ref.replace(r.cli, '').trim() || r.ref}
+                            </span>
+                          </span>
+                          <span className={cn('shrink-0 text-xs', d < 0 ? 'font-medium text-primary' : 'text-muted-foreground')}>
+                            {dLabel(d)}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCriticosAberto(false);
+                      setFilterBand('prej');
+                    }}
+                    className="mt-1 flex w-full items-center justify-between rounded-lg border-t px-2.5 py-2 text-sm font-medium text-primary hover:bg-accent"
+                  >
+                    Filtrar a tabela pelos críticos
+                    <ArrowRight className="size-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           <Button variant="outline" className="h-10 px-3.5" onClick={handleExport}>
             <Download />
             Exportar Captação Oficial
@@ -500,39 +558,6 @@ export default function CarteiraPage() {
             </span>
           </AlertDescription>
         </Alert>
-      )}
-
-      {alerta.prej.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/20 bg-accent px-4 py-3 text-accent-foreground shadow-sm">
-          <span className="vt-pulse size-2.5 shrink-0 rounded-full bg-primary" />
-          {!alertMin && (
-            <p className="min-w-0 flex-1 text-sm leading-relaxed">
-              <b>{alerta.prej.length} processo(s)</b> viram tabela pública hoje se não forem efetivados —{' '}
-              {alerta.prej.slice(0, 2).map(({ r, d }, i) => (
-                <span key={r.capId ?? r.bl} className="font-semibold text-primary">
-                  {i > 0 && ' e '}
-                  {r.cli} {r.ref.replace(r.cli, '').trim()} ({dLabel(d)})
-                </span>
-              ))}
-              .
-            </p>
-          )}
-          <div className="ml-auto flex shrink-0 items-center gap-2">
-            <Button size="sm" className="h-8" onClick={() => setFilterBand('prej')}>
-              Ver os {alerta.prej.length} críticos
-              <ArrowRight />
-            </Button>
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              className="text-accent-foreground hover:bg-primary/10"
-              aria-label={alertMin ? 'Expandir alerta' : 'Minimizar alerta'}
-              onClick={toggleAlertMin}
-            >
-              {alertMin ? <ChevronDown /> : <ChevronUp />}
-            </Button>
-          </div>
-        </div>
       )}
 
       <section aria-label="Resumo por status" className="grid grid-cols-2 gap-4 lg:grid-cols-4">

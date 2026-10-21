@@ -359,6 +359,11 @@ do `(authed)/layout.tsx`.
   testado dessa forma). A cobertura em
   `captacoes/__tests__/page.test.tsx` usa o prefill por query string pra
   exercitar o valor inicial em vez de abrir o popup.
+- **Aviso de crítico da Carteira é um selo** (21/10/2026): "N críticos
+  hoje" no cabeçalho, com popover próprio (não base-ui, por causa do jsdom)
+  listando todos os `alerta.prej`; item abre o processo via
+  `handleRowClick`, rodapé filtra por `prej`. A faixa com frase e o
+  `alertMin` (chave `alertMin` no localStorage) foram removidos.
 - **Restante redesenhado** (21/10/2026, passo 6): login (`LoginShell` em
   `login/page.tsx`, painel `.vt-dash-hero` + formulário; CSS
   `.vt-login-overlay`/`.vt-login-sail` apagado), `NotasPainel` (overlay
