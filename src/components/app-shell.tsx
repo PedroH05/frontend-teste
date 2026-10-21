@@ -236,8 +236,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <SidebarInset className="min-w-0 overflow-y-auto bg-transparent">
           {mock && (
             <div
-              className="sticky top-0 z-10 px-4 py-1.5 text-center text-[11px] font-bold tracking-wide text-white uppercase"
-              style={{ background: 'var(--vt-c-jan)' }}
+              className="sticky top-0 z-10 border-b border-warning-border bg-warning-soft px-4 py-1.5 text-center text-xs font-semibold text-warning-text"
             >
               Modo demonstração — dados fixos, nada aqui é gravado de verdade
             </div>

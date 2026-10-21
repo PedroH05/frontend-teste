@@ -423,7 +423,7 @@ describe('CaptacoesPage', () => {
       createdAt: '2026-10-08T10:00:00.000Z',
       updatedAt: '2026-10-08T10:00:00.000Z',
     });
-    await user.click(screen.getByRole('button', { name: '+ Nova nota' }));
+    await user.click(screen.getByRole('button', { name: 'Nova nota' }));
 
     const campoTitulo = await screen.findByPlaceholderText('Nome da nota');
     expect(campoTitulo).toHaveValue('Nova nota');

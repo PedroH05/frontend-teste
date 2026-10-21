@@ -359,6 +359,14 @@ do `(authed)/layout.tsx`.
   testado dessa forma). A cobertura em
   `captacoes/__tests__/page.test.tsx` usa o prefill por query string pra
   exercitar o valor inicial em vez de abrir o popup.
+- **Restante redesenhado** (21/10/2026, passo 6): login (`LoginShell` em
+  `login/page.tsx`, painel `.vt-dash-hero` + formulário; CSS
+  `.vt-login-overlay`/`.vt-login-sail` apagado), `NotasPainel` (overlay
+  próprio com Esc, exclusão em `AlertDialog`), `DesenhoDialog`,
+  `EmptyState`, `Skeleton` (`bg-muted`), bolinha "+N" de
+  `HblCartao`/`ListaConteineres` e faixa do modo demo. Nenhum `.tsx` usa
+  mais cor `--vt-*`; o que sobra de `--vt-*` está só no `globals.css`
+  (fundo ambiente, tema Clássico, animação do Salvar).
 - **Config redesenhada** (21/10/2026, redesign passo 5): `Switch` do
   shadcn (`components/ui/switch.tsx`) + prévia com `StatusBadge`; tema
   visual como `radiogroup` de inputs nativos dentro de cards. Testes do

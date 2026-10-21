@@ -21,7 +21,7 @@ export function TableSkeletonRows({
   return (
     <>
       {Array.from({ length: rows }, (_, r) => (
-        <TableRow key={r} data-slot="skeleton-row" style={{ borderColor: 'var(--vt-line)' }}>
+        <TableRow key={r} data-slot="skeleton-row">
           {columns.map((tipo, c) => {
             const w = LARGURAS[(r * 3 + c * 2) % LARGURAS.length];
             return (

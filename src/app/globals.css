@@ -259,17 +259,6 @@
 :root:not([data-skin='classic']) .vt-ambient-bg {
   background: var(--vt-page-bg);
 }
-/* Véu do login (index.html original: .login-wrap tinha um overlay claro   */
-/* por cima do ambient-bg pra suavizar contraste do formulário). Precisa    */
-/* de versão escura própria — não é só var(--vt-glass), é mais sutil.       */
-.vt-login-overlay {
-  background: rgba(243, 239, 232, .6);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-[data-theme='dark'] .vt-login-overlay {
-  background: rgba(15, 14, 12, .55);
-}
 
 /* Animação do botão Salvar (Captações) — portada literalmente do */
 /* .form-actions/.save-wrap/.save-truck do index.html original.    */
@@ -342,25 +331,8 @@
 }
 .vt-ship-scene .vt-wave { animation: vt-shipFlow 3s linear infinite; }
 @keyframes vt-shipFlow { from { transform: translateX(0); } to { transform: translateX(-80px); } }
-.vt-login-sail {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 56px;
-  pointer-events: none;
-  opacity: .14;
-  overflow: hidden;
-  z-index: 0;
-}
-.vt-login-sail .vt-ship-scene {
-  width: 90px;
-  position: absolute;
-  bottom: -4px;
-  left: -30%;
-  animation: vt-sail 13s linear infinite;
-}
-@keyframes vt-sail { 0% { left: -30%; } 100% { left: 112%; } }
 @media (prefers-reduced-motion: reduce) {
-  .vt-ship-scene .vt-ship, .vt-ship-scene .vt-wave, .vt-login-sail .vt-ship-scene { animation: none; }
+  .vt-ship-scene .vt-ship, .vt-ship-scene .vt-wave { animation: none; }
 }
 
 /* Componentes shadcn (Input/Select/Checkbox) — aplicado GLOBALMENTE via     */

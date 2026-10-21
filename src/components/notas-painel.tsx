@@ -1,9 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { PencilRuler, StickyNote, X } from 'lucide-react';
+import { PencilRuler, Plus, StickyNote, Trash2, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Nota } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { DesenhoDialog } from '@/components/desenho-dialog';
 
 // Bloco de anotações da captação (pedido 08/10/2026): várias notas, cada
@@ -24,6 +37,7 @@ export function NotasPainel({ captacaoId }: { captacaoId: number }) {
   const [textoDraft, setTextoDraft] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [desenhando, setDesenhando] = useState(false);
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
 
   const selecionada = notas.find((n) => n.id === selecionadaId) ?? null;
 
@@ -104,9 +118,11 @@ export function NotasPainel({ captacaoId }: { captacaoId: number }) {
     }
   }
 
+
+  // Confirmação no AlertDialog (redesign 21/10/2026), não mais confirm().
   async function excluir() {
     if (!selecionada) return;
-    if (!confirm(`Excluir a nota "${selecionada.titulo}"?`)) return;
+    setConfirmandoExclusao(false);
     try {
       await apiFetch(`/notas/${selecionada.id}`, { method: 'DELETE' });
       setNotas((ns) => {
@@ -119,134 +135,166 @@ export function NotasPainel({ captacaoId }: { captacaoId: number }) {
     }
   }
 
+  useEffect(() => {
+    if (!aberto) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape' && !desenhando && !confirmandoExclusao) setAberto(false);
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [aberto, desenhando, confirmandoExclusao]);
+
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setAberto(true)}
-        className="vt-glass-strong inline-flex items-center gap-1.5 rounded-[11px] border border-[var(--vt-line)] px-3.5 py-2 text-[12.5px] font-semibold text-[var(--vt-ink)] shadow-[var(--vt-sh)] transition hover:-translate-y-px"
-      >
-        <StickyNote size={15} />
+      <Button variant="outline" className="h-10 px-3.5" onClick={() => setAberto(true)}>
+        <StickyNote />
         Notas{notas.length > 0 ? ` (${notas.length})` : ''}
-      </button>
+      </Button>
 
       {aberto && (
-        <div className="fixed inset-0 z-40 flex justify-end bg-black/30" onClick={() => setAberto(false)}>
+        <div
+          className="fixed inset-0 z-40 flex justify-end bg-black/30 backdrop-blur-[2px]"
+          onClick={() => setAberto(false)}
+        >
           <div
-            className="flex h-full w-full max-w-[760px] bg-[var(--vt-surface)]"
-            style={{ color: 'var(--vt-ink)' }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Notas da captação"
+            className="vt-dash-up flex h-full w-full max-w-[780px] bg-background text-foreground shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* lista de notas */}
-            <aside className="flex w-[240px] shrink-0 flex-col gap-1 border-r p-3" style={{ borderColor: 'var(--vt-line)' }}>
-              <button
-                type="button"
-                onClick={novaNota}
-                disabled={salvando}
-                className="mb-2 flex h-9 items-center justify-center gap-1.5 rounded-[10px] border border-dashed text-[12.5px] font-bold disabled:opacity-50"
-                style={{ borderColor: 'var(--vt-line)', color: 'var(--vt-red)' }}
-              >
-                + Nova nota
-              </button>
-              <div className="flex-1 space-y-1 overflow-y-auto">
-                {notas.map((n) => (
-                  <button
-                    key={n.id}
-                    type="button"
-                    onClick={() => setSelecionadaId(n.id)}
-                    className="block w-full rounded-[10px] px-2.5 py-2 text-left"
-                    style={{ background: n.id === selecionadaId ? 'var(--vt-bg-prej)' : 'transparent' }}
-                  >
-                    <p
-                      className="truncate text-[13px] font-bold"
-                      style={{ color: n.id === selecionadaId ? 'var(--vt-red)' : 'var(--vt-ink)' }}
-                    >
-                      {n.titulo || 'Nova nota'}
-                    </p>
-                    <p className="truncate text-[11px]" style={{ color: 'var(--vt-muted)' }}>
-                      {n.texto || 'sem texto'}
-                    </p>
-                  </button>
-                ))}
+            <aside className="flex w-[250px] shrink-0 flex-col gap-3 border-r bg-card p-3">
+              <div className="flex items-center gap-2 px-1 pt-1">
+                <span className="flex size-8 items-center justify-center rounded-lg bg-accent text-primary">
+                  <StickyNote className="size-4" aria-hidden="true" />
+                </span>
+                <span className="text-[15px] font-semibold">Notas</span>
+                <span className="ml-auto text-xs text-muted-foreground tabular-nums">{notas.length}</span>
+              </div>
+              <Button onClick={novaNota} disabled={salvando} className="h-9">
+                <Plus />
+                Nova nota
+              </Button>
+              <div className="-mx-1 flex-1 space-y-1 overflow-y-auto px-1">
+                {carregando &&
+                  Array.from({ length: 3 }, (_, i) => <Skeleton key={i} className="h-[52px] w-full rounded-lg" />)}
+                {!carregando &&
+                  notas.map((n) => {
+                    const ativa = n.id === selecionadaId;
+                    return (
+                      <button
+                        key={n.id}
+                        type="button"
+                        aria-current={ativa || undefined}
+                        onClick={() => setSelecionadaId(n.id)}
+                        className={cn(
+                          'block w-full rounded-lg px-3 py-2.5 text-left transition-colors',
+                          ativa ? 'bg-accent' : 'hover:bg-muted',
+                        )}
+                      >
+                        <span className={cn('block truncate text-sm font-semibold', ativa && 'text-accent-foreground')}>
+                          {n.titulo || 'Nova nota'}
+                        </span>
+                        <span className="block truncate text-xs text-muted-foreground">{n.texto || 'sem texto'}</span>
+                      </button>
+                    );
+                  })}
                 {!carregando && notas.length === 0 && (
-                  <p className="px-2.5 py-2 text-[12px]" style={{ color: 'var(--vt-muted)' }}>
-                    Nenhuma nota ainda.
-                  </p>
+                  <p className="px-2 py-2 text-sm text-muted-foreground">Nenhuma nota ainda.</p>
                 )}
               </div>
             </aside>
 
-            {/* nota aberta */}
-            <section className="flex flex-1 flex-col gap-4 p-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-[16px] font-bold">Notas</h2>
-                <button type="button" onClick={() => setAberto(false)} aria-label="Fechar" className="rounded-[8px] p-1.5 hover:bg-black/5">
-                  <X size={18} />
-                </button>
+            <section className="flex min-w-0 flex-1 flex-col gap-4 p-6">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold tracking-wider text-primary uppercase">Nota da captação</span>
+                <Button variant="ghost" size="icon" className="size-9" onClick={() => setAberto(false)} aria-label="Fechar">
+                  <X />
+                </Button>
               </div>
 
-              {erro && (
-                <p className="text-[12.5px] font-semibold" style={{ color: 'var(--vt-c-prej)' }}>
-                  {erro}
-                </p>
-              )}
+              {erro && <p className="text-sm font-medium text-destructive">{erro}</p>}
 
               {selecionada ? (
-                <div className="flex flex-1 flex-col gap-3">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-1 flex-col gap-4">
+                  <div className="flex flex-wrap items-center gap-3 border-b pb-4">
                     <input
                       value={tituloDraft}
                       onChange={(e) => setTituloDraft(e.target.value)}
                       onBlur={salvar}
                       placeholder="Nome da nota"
-                      className="flex-1 border-b bg-transparent pb-1 text-[18px] font-extrabold outline-none"
-                      style={{ borderColor: 'transparent' }}
+                      aria-label="Título da nota"
+                      className="min-w-0 flex-1 bg-transparent text-[22px] font-semibold tracking-[-0.01em] outline-none placeholder:text-muted-foreground"
                     />
-                    <button type="button" onClick={excluir} className="text-[11.5px] font-bold" style={{ color: 'var(--vt-red)' }}>
-                      Excluir nota
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <Button variant="outline" className="h-9" onClick={() => setDesenhando(true)}>
+                        <PencilRuler />
+                        {selecionada.desenho ? 'Editar desenho' : 'Abrir quadro'}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="h-9 text-destructive hover:bg-accent hover:text-destructive"
+                        onClick={() => setConfirmandoExclusao(true)}
+                      >
+                        <Trash2 />
+                        Excluir nota
+                      </Button>
+                    </div>
                   </div>
+                  {selecionada.desenho && (
+                    <button
+                      type="button"
+                      onClick={() => setDesenhando(true)}
+                      className="self-start overflow-hidden rounded-lg border hover:ring-3 hover:ring-ring/30"
+                      title="Abrir desenho"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element -- data URL (base64), next/image não serve pra isso */}
+                      <img src={selecionada.desenho} alt="Desenho da nota" className="h-[64px]" />
+                    </button>
+                  )}
                   <textarea
                     value={textoDraft}
                     onChange={(e) => setTextoDraft(e.target.value)}
                     onBlur={salvar}
                     placeholder="Escreva aqui..."
-                    className="min-h-[160px] flex-1 resize-none rounded-[10px] border p-3.5 text-[14px] outline-none"
-                    style={{ borderColor: 'var(--vt-line)' }}
+                    aria-label="Conteúdo da nota"
+                    className="min-h-[200px] flex-1 resize-none rounded-lg border border-input bg-transparent p-4 text-[15px] leading-relaxed outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                   />
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setDesenhando(true)}
-                      className="vt-glass-strong inline-flex items-center gap-1.5 rounded-[9px] border border-[var(--vt-line)] px-3 py-1.5 text-[12px] font-semibold"
-                    >
-                      <PencilRuler size={14} />
-                      {selecionada.desenho ? 'Editar desenho' : 'Abrir quadro'}
-                    </button>
-                    {selecionada.desenho && (
-                      // eslint-disable-next-line @next/next/no-img-element -- data URL (base64), next/image não serve pra isso
-                      <img
-                        src={selecionada.desenho}
-                        alt="Desenho da nota"
-                        className="h-[52px] cursor-pointer rounded-[8px] border"
-                        style={{ borderColor: 'var(--vt-line)' }}
-                        onClick={() => setDesenhando(true)}
-                      />
-                    )}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className={cn('size-1.5 rounded-full', salvando ? 'bg-warning' : 'bg-success')} aria-hidden="true" />
+                      {salvando ? 'Salvando…' : 'Salva ao sair do campo.'}
+                    </span>
+                    <span className="tabular-nums">{textoDraft.length} caracteres</span>
                   </div>
-                  <p className="text-[11px]" style={{ color: 'var(--vt-muted)' }}>
-                    {salvando ? 'Salvando…' : 'Salva ao sair do campo.'}
-                  </p>
                 </div>
               ) : (
-                <p className="text-[13px]" style={{ color: 'var(--vt-muted)' }}>
-                  {carregando ? 'Carregando…' : 'Crie uma nota pra começar.'}
-                </p>
+                <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+                  <span className="flex size-12 items-center justify-center rounded-xl bg-accent text-primary">
+                    <StickyNote className="size-5" aria-hidden="true" />
+                  </span>
+                  <p className="text-sm text-muted-foreground">{carregando ? 'Carregando…' : 'Crie uma nota pra começar.'}</p>
+                </div>
               )}
             </section>
           </div>
         </div>
       )}
+
+      <AlertDialog open={confirmandoExclusao} onOpenChange={setConfirmandoExclusao}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir a nota &quot;{selecionada?.titulo || 'Nova nota'}&quot;?</AlertDialogTitle>
+            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={excluir}>
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {desenhando && selecionada && (
         <DesenhoDialog valorInicial={selecionada.desenho} onSalvar={salvarDesenho} onFechar={() => setDesenhando(false)} />

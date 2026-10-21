@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase';
 import { getLastView } from '@/lib/last-view';
+import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Field, FieldContent, FieldLabel } from '@/components/ui/field';
-import { ShipScene } from '@/components/ship-scene';
 import { enableMockMode } from '@/lib/mock-mode';
 import { applyTheme, getTheme } from '@/lib/theme';
 
@@ -86,78 +86,126 @@ export default function LoginPage() {
 
   if (recovery) return <NewPasswordForm />;
 
-  const glassInput = 'vt-glass-strong rounded-[10px] border-[var(--vt-line)] text-[13px]';
-
   return (
-    <>
-      <div className="vt-ambient-bg" />
-      <div className="vt-login-overlay flex min-h-svh items-center justify-center px-4">
-      <div className="vt-glass-strong relative w-full max-w-[360px] overflow-hidden rounded-[18px] p-[30px_28px] text-center shadow-[var(--vt-sh-lg)]">
-        <div className="relative z-10">
-          {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática pequena, next/image não compensa aqui */}
-          <img src="/valetrade-logo.png" alt="Valetrade" className="mx-auto mb-3.5 block h-14 w-14 object-contain" />
-          <h1 className="mb-1 text-[18px] font-bold" style={{ color: 'var(--vt-ink)' }}>Captação Valetrade</h1>
-          <p className="mb-[18px] text-[12.5px]" style={{ color: 'var(--vt-muted)' }}>Entre para ver a carteira em tempo real</p>
+    <LoginShell>
+      <div className="space-y-1.5">
+        <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Entrar</h1>
+        <p className="text-sm text-muted-foreground">Acesse a carteira de captação em tempo real.</p>
+      </div>
 
-          <form onSubmit={handleLogin} className="space-y-2.5 text-left">
-            <Field>
-              <FieldLabel htmlFor="email">E-mail</FieldLabel>
-              <FieldContent>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="username"
-                  className={glassInput}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </FieldContent>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="password">Senha</FieldLabel>
-              <FieldContent>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  className={glassInput}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </FieldContent>
-            </Field>
-
-            {error && <p className="text-[12px]" style={{ color: 'var(--vt-c-prej)' }}>{error}</p>}
-            {info && <p className="text-[12px] text-emerald-600">{info}</p>}
-
-            <Button
-              type="submit"
-              className="mt-1 w-full rounded-[10px] py-3 font-bold"
-              style={{ background: 'linear-gradient(150deg, #CC0000, #A50016)' }}
-              disabled={loading}
+      <form onSubmit={handleLogin} className="mt-7 space-y-4">
+        <Field>
+          <FieldLabel htmlFor="email">E-mail</FieldLabel>
+          <FieldContent>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="username"
+              className="h-10"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </FieldContent>
+        </Field>
+        <Field>
+          <div className="flex items-center justify-between">
+            <FieldLabel htmlFor="password">Senha</FieldLabel>
+            <button
+              type="button"
+              onClick={handleForgot}
+              className="text-xs font-medium text-primary hover:underline"
             >
-              {loading ? 'Entrando…' : 'Entrar'}
-            </Button>
-          </form>
-
-          <div className="flex flex-col items-center gap-2 text-[12px]" style={{ color: 'var(--vt-muted)' }}>
-            <button type="button" onClick={handleForgot} className="mt-3 underline">
               Esqueci minha senha
             </button>
-            <button type="button" onClick={handleDemo} className="underline">
-              Ver demonstração
-            </button>
+          </div>
+          <FieldContent>
+            <Input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              className="h-10"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </FieldContent>
+        </Field>
+
+        {error && (
+          <p role="alert" className="text-sm font-medium text-destructive">
+            {error}
+          </p>
+        )}
+        {info && <p className="text-sm font-medium text-success-text">{info}</p>}
+
+        <Button type="submit" className="h-10 w-full" disabled={loading}>
+          {loading ? 'Entrando…' : 'Entrar'}
+        </Button>
+      </form>
+
+      <div className="mt-6 flex items-center gap-3 text-xs text-muted-foreground">
+        <span className="h-px flex-1 bg-border" />
+        ou
+        <span className="h-px flex-1 bg-border" />
+      </div>
+      <Button variant="outline" className="mt-4 h-10 w-full" onClick={handleDemo}>
+        Ver demonstração
+      </Button>
+      <p className="mt-2 text-center text-xs text-muted-foreground">Dados fixos de exemplo, nada é gravado.</p>
+    </LoginShell>
+  );
+}
+
+// Moldura do login (redesign 21/10/2026): painel escuro da marca à
+// esquerda (mesmo fundo do destaque do Dashboard) e formulário à direita.
+// No celular só aparece o formulário, com a marca em cima.
+function LoginShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="grid min-h-svh bg-background lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+      <aside className="vt-dash-hero relative hidden overflow-hidden p-12 text-white lg:flex lg:flex-col">
+        <div className="relative z-10 flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática pequena, next/image não compensa aqui */}
+          <img src="/valetrade-logo.png" alt="" className="size-10 object-contain" />
+          <div>
+            <b className="block text-[15px] font-bold tracking-wide">VALETRADE</b>
+            <small className="block text-xs text-zinc-400">Captação Inteligente</small>
           </div>
         </div>
-
-        <div className="vt-login-sail">
-          <ShipScene waves={false} />
+        <div className="relative z-10 mt-auto max-w-[440px]">
+          <h2 className="text-[36px] leading-[1.1] font-semibold tracking-[-0.03em]">
+            Cada contêiner no radar, do navio ao terminal.
+          </h2>
+          <ul className="mt-8 space-y-3 text-sm text-zinc-300">
+            {[
+              'Carteira com prazo e risco de cada processo',
+              'Captação em etapas, com revisão antes de salvar',
+              'Dashboard com o ritmo do mês',
+            ].map((t) => (
+              <li key={t} className="flex items-center gap-2.5">
+                <span className="flex size-5 items-center justify-center rounded-full bg-white/10">
+                  <Check className="size-3" aria-hidden="true" />
+                </span>
+                {t}
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
-      </div>
-    </>
+      </aside>
+      <main className="flex items-center justify-center px-4 py-10 sm:px-8">
+        <div className="w-full max-w-[380px]">
+          <div className="mb-8 flex items-center gap-3 lg:hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática pequena, next/image não compensa aqui */}
+            <img src="/valetrade-logo.png" alt="Valetrade" className="size-10 object-contain" />
+            <div>
+              <b className="block text-[15px] font-bold tracking-wide">VALETRADE</b>
+              <small className="block text-xs text-muted-foreground">Captação Inteligente</small>
+            </div>
+          </div>
+          {children}
+        </div>
+      </main>
+    </div>
   );
 }
 
@@ -182,36 +230,33 @@ function NewPasswordForm() {
     setDone(true);
   }
 
-  const shell = (children: React.ReactNode) => (
-    <>
-      <div className="vt-ambient-bg" />
-      <div className="vt-login-overlay flex min-h-svh items-center justify-center px-4">
-        <div className="vt-glass-strong w-full max-w-[360px] rounded-[18px] p-[30px_28px] text-center shadow-[var(--vt-sh-lg)]" style={{ color: 'var(--vt-ink)' }}>
-          {children}
-        </div>
-      </div>
-    </>
-  );
 
   if (done) {
-    return shell(
-      <div className="space-y-4">
-        <p className="text-[13px]">Senha atualizada! Já pode entrar com a nova senha.</p>
-        <Button
-          className="w-full rounded-[10px] py-3 font-bold"
-          style={{ background: 'linear-gradient(150deg, #CC0000, #A50016)' }}
-          onClick={() => router.replace('/login')}
-        >
-          Ir para o login
-        </Button>
-      </div>,
+    return (
+      <LoginShell>
+        <div className="space-y-5">
+          <span className="flex size-11 items-center justify-center rounded-xl bg-success-soft text-success">
+            <Check className="size-5" aria-hidden="true" />
+          </span>
+          <div className="space-y-1.5">
+            <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Senha atualizada</h1>
+            <p className="text-sm text-muted-foreground">Já pode entrar com a nova senha.</p>
+          </div>
+          <Button className="h-10 w-full" onClick={() => router.replace('/login')}>
+            Ir para o login
+          </Button>
+        </div>
+      </LoginShell>
     );
   }
 
-  return shell(
-    <>
-      <h1 className="mb-4 text-[18px] font-bold">Defina uma nova senha</h1>
-      <form onSubmit={handleSubmit} className="space-y-2.5 text-left">
+  return (
+    <LoginShell>
+      <div className="space-y-1.5">
+        <h1 className="text-[24px] font-semibold tracking-[-0.02em]">Defina uma nova senha</h1>
+        <p className="text-sm text-muted-foreground">No mínimo 6 caracteres.</p>
+      </div>
+      <form onSubmit={handleSubmit} className="mt-7 space-y-4">
         <Field>
           <FieldLabel htmlFor="new-password">Nova senha</FieldLabel>
           <FieldContent>
@@ -219,21 +264,22 @@ function NewPasswordForm() {
               id="new-password"
               type="password"
               minLength={6}
+              className="h-10"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </FieldContent>
         </Field>
-        {error && <p className="text-[12px]" style={{ color: 'var(--vt-c-prej)' }}>{error}</p>}
-        <Button
-          type="submit"
-          className="w-full rounded-[10px] py-3 font-bold"
-          style={{ background: 'linear-gradient(150deg, #CC0000, #A50016)' }}
-        >
+        {error && (
+          <p role="alert" className="text-sm font-medium text-destructive">
+            {error}
+          </p>
+        )}
+        <Button type="submit" className="h-10 w-full">
           Salvar nova senha
         </Button>
       </form>
-    </>,
+    </LoginShell>
   );
 }

@@ -39,12 +39,12 @@ export function ShipScene({ waves = true }: { waves?: boolean }) {
 
 export function EmptyState({ title, subtitle }: { title: string; subtitle: React.ReactNode }) {
   return (
-    <div className="p-[46px_20px] text-center" style={{ color: 'var(--vt-muted)' }}>
+    <div className="p-[46px_20px] text-center text-muted-foreground">
       <div className="mx-auto mb-1.5 max-w-[180px]">
         <ShipScene />
       </div>
-      <div className="mb-1 text-[14px] font-bold" style={{ color: 'var(--vt-ink)' }}>{title}</div>
-      <div className="text-[12.5px] leading-relaxed">{subtitle}</div>
+      <div className="mb-1 text-[15px] font-semibold text-foreground">{title}</div>
+      <div className="text-sm leading-relaxed">{subtitle}</div>
     </div>
   );
 }

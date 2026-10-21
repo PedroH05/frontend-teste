@@ -15,8 +15,7 @@ export function ListaConteineres({ valor }: { valor: string | null | undefined }
       <HoverCardTrigger className="inline-flex cursor-default items-center whitespace-nowrap font-mono">
         {lista[0]}
         <span
-          className="ml-1.5 rounded-full px-1.5 text-[10px] font-bold"
-          style={{ background: 'var(--vt-bg-jan)', color: 'var(--vt-c-jan)' }}
+          className="ml-1.5 rounded-full bg-warning-soft px-1.5 text-[10px] font-bold text-warning-text"
         >
           +{lista.length - 1}
         </span>

@@ -3,6 +3,20 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-10-21 — Redesign passo 6: o que ainda estava no visual antigo (branch `redesign/shadcn-v2`)
+
+- **Login** novo: painel escuro da marca à esquerda (some no celular) e
+  formulário à direita; "Esqueci minha senha" junto do campo de senha,
+  "Ver demonstração" como botão secundário. Tela de nova senha no mesmo
+  molde. Navio decorativo e o véu `.vt-login-*` saíram.
+- **Painel de Notas** da captação: mesma cara da tela Anotações (lista com
+  "Nova nota", editor com título grande, contador de caracteres), fecha
+  com Esc, excluir nota com `AlertDialog`.
+- **Quadro de desenho** (Excalidraw): cabeçalho e botões do redesign.
+- Estado vazio das tabelas, esqueleto de carregamento, bolinha "+N" de
+  HBL/contêiner e a faixa do modo demonstração nos tokens novos.
+- Nenhum componente `.tsx` usa mais variável `--vt-*` de cor.
+
 ## 2026-10-21 — Redesign passo 5d: Config (branch `redesign/shadcn-v2`)
 
 - Card "Exibição" com o `Switch` do shadcn pra "Mostrar o nome do status"
