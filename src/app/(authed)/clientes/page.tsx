@@ -282,21 +282,16 @@ export default function ClientesPage() {
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <section aria-label="Lista de clientes" className="min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm">
-          {/* table-fixed + larguras fixas: a tabela cabe no card sem rolar pro
-              lado (pedido 21/10/2026); nome e apelidos quebram linha. */}
-          <Table className="table-fixed">
-            <colgroup>
-              <col />
-              <col className="w-[150px]" />
-              <col className="w-[170px]" />
-              <col className="w-[48px]" />
-            </colgroup>
+          {/* CNPJ, Apelidos e ações encolhem pro tamanho do conteúdo (w-[1%] +
+              nowrap) e o Cliente fica com o resto — sem rolar pro lado
+              (21/10/2026) e sem sobra na coluna Apelidos (04/11/2026). */}
+          <Table>
             <TableHeader>
               <TableRow className="bg-muted/40 hover:bg-muted/40">
                 <TableHead className="h-9 px-2.5! text-xs font-medium text-muted-foreground">Cliente</TableHead>
-                <TableHead className="h-9 px-2.5! text-xs font-medium text-muted-foreground">CNPJ</TableHead>
-                <TableHead className="h-9 px-2.5! text-xs font-medium text-muted-foreground">Apelidos</TableHead>
-                <TableHead className="h-9 px-1!">
+                <TableHead className="h-9 w-[1%] px-2.5! text-xs font-medium whitespace-nowrap text-muted-foreground">CNPJ</TableHead>
+                <TableHead className="h-9 w-[1%] px-2.5! text-center text-xs font-medium whitespace-nowrap text-muted-foreground">Apelidos</TableHead>
+                <TableHead className="h-9 w-[1%] px-1!">
                   <span className="sr-only">Ações</span>
                 </TableHead>
               </TableRow>
@@ -325,7 +320,7 @@ export default function ClientesPage() {
                           onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
                         />
                       </TableCell>
-                      <TableCell className="px-2.5! py-1.5! whitespace-normal">
+                      <TableCell className="min-w-[190px] px-2.5! py-1.5! whitespace-normal">
                         <Input
                           className="h-10 font-mono"
                           aria-label="CNPJ do cliente"
@@ -334,7 +329,7 @@ export default function ClientesPage() {
                           onChange={(e) => setEditForm((f) => ({ ...f, cnpj: mascaraCnpj(e.target.value) }))}
                         />
                       </TableCell>
-                      <TableCell className="px-2.5! py-1.5! whitespace-normal">
+                      <TableCell className="min-w-[200px] px-2.5! py-1.5! whitespace-normal">
                         <AliasChips value={editForm.aliases} onChange={(v) => setEditForm((f) => ({ ...f, aliases: v }))} />
                         {editError && <p className="mt-1.5 text-xs font-medium text-destructive">{editError}</p>}
                       </TableCell>
@@ -376,12 +371,12 @@ export default function ClientesPage() {
                           <span className="min-w-0 text-[13px] leading-snug font-semibold break-words">{c.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="px-2.5! py-1.5! font-mono text-xs whitespace-nowrap text-foreground/80">
+                      <TableCell className="w-[1%] px-2.5! py-1.5! font-mono text-xs whitespace-nowrap text-foreground/80">
                         {c.cnpj || '—'}
                       </TableCell>
-                      <TableCell className="px-2.5! py-1.5! whitespace-normal">
+                      <TableCell className="w-[1%] px-2.5! py-1.5! whitespace-normal">
                         {c.aliases.length ? (
-                          <div className="flex flex-wrap gap-1">
+                          <div className="mx-auto flex max-w-[190px] flex-wrap justify-center gap-1">
                             {c.aliases.map((a) => (
                               <Badge key={a} variant="outline" className="h-5 px-1.5 text-[11px] font-medium">
                                 {a}
@@ -389,10 +384,10 @@ export default function ClientesPage() {
                             ))}
                           </div>
                         ) : (
-                          <span className="text-muted-foreground">—</span>
+                          <span className="block text-center text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="px-1! py-1.5!">
+                      <TableCell className="w-[1%] px-1! py-1.5!">
                         <RowActions nome={c.aliases[0] || c.name} onEdit={() => startEdit(c)} onDelete={() => setExcluindo(c)} />
                       </TableCell>
                     </TableRow>

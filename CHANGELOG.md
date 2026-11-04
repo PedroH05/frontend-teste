@@ -9,7 +9,9 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
   (pedido, com print). A tabela volta a ser uma lista só; data e hora
   continuam na coluna "Registrado em". Removidos o agrupamento e os 2
   testes dele; entrou um teste de que não há separador.
-- Clientes: tabela mais justa — colunas CNPJ 150px / Apelidos 170px /
+- Clientes: tabela mais justa — CNPJ, Apelidos e ações agora encolhem pro
+  tamanho do conteúdo (sem larguras fixas) e as etiquetas de apelido ficam
+  centralizadas; o nome do cliente fica com o resto. Antes: CNPJ 150px / Apelidos 170px /
   ações 48px, linhas com menos altura, avatar e etiquetas menores.
 
 ## 2026-11-04 — Nova captação: Situação fica verde quando efetivada

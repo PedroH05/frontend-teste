@@ -387,10 +387,11 @@ do `(authed)/layout.tsx`.
 - **Anotações redesenhada** (21/10/2026, redesign passo 5): busca da
   lista é só no cliente (filtra título + texto das notas já carregadas, sem
   rota nova). Exclusão via `AlertDialog` (`confirmandoExclusao`).
-- **Clientes redesenhado** (21/10/2026, redesign passo 5): tabela `table-fixed`
-  com `<colgroup>` (CNPJ 168px, Apelidos 190px, ações 60px) e nome/apelidos
-  quebrando linha, pra caber no card sem rolar pro lado (pedido do mesmo
-  dia). Padding da célula com `!` (`px-3!`) porque a regra global de
+- **Clientes redesenhado** (21/10/2026, redesign passo 5): tabela em layout automático: CNPJ, Apelidos e ações encolhem pro
+  conteúdo (`w-[1%]` + `whitespace-nowrap`), apelidos centralizados, e o nome
+  do cliente quebra linha e fica com o resto — cabe no card sem rolar pro
+  lado e sem sobra na coluna Apelidos (04/11/2026). Antes era `table-fixed`
+  com larguras em px. Padding da célula com `!` (`px-3!`) porque a regra global de
   `[data-slot=table-cell]` em `globals.css` não está em layer e ganharia da
   utility. Lista + card
   "Adicionar cliente" lado a lado. Busca segue no topo (decisão de
