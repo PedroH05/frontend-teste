@@ -288,7 +288,7 @@ export default function ClientesPage() {
             <colgroup>
               <col />
               <col className="w-[168px]" />
-              <col className="w-[30%]" />
+              <col className="w-[190px]" />
               <col className="w-[60px]" />
             </colgroup>
             <TableHeader>

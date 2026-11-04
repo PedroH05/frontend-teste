@@ -388,7 +388,7 @@ do `(authed)/layout.tsx`.
   lista é só no cliente (filtra título + texto das notas já carregadas, sem
   rota nova). Exclusão via `AlertDialog` (`confirmandoExclusao`).
 - **Clientes redesenhado** (21/10/2026, redesign passo 5): tabela `table-fixed`
-  com `<colgroup>` (CNPJ 168px, Apelidos 30%, ações 84px) e nome/apelidos
+  com `<colgroup>` (CNPJ 168px, Apelidos 190px, ações 60px) e nome/apelidos
   quebrando linha, pra caber no card sem rolar pro lado (pedido do mesmo
   dia). Padding da célula com `!` (`px-3!`) porque a regra global de
   `[data-slot=table-cell]` em `globals.css` não está em layer e ganharia da
