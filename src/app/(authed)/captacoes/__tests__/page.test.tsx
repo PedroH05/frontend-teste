@@ -237,6 +237,28 @@ describe('CaptacoesPage', () => {
     expect(screen.getByText('1 de 6 etapas completas')).toBeInTheDocument();
   });
 
+  it('Situação fica verde quando efetivada no terminal, sem depender de observação nem tabela pública (pedido 04/11/2026)', async () => {
+    const efetivada = { ...mockCaptacoes[0], stage: 'EFETIVA', observacao: null, prejuizoPublico: false };
+    useSearchParamsMock.mockReturnValue(new URLSearchParams({ edit: String(efetivada.id) }));
+    filaApi('/captacoes', [efetivada]);
+    render(<CaptacoesPage />);
+    await screen.findByRole('navigation', { name: 'Etapas' });
+
+    await waitFor(() => expect(estadoDa('Situação')).toBe('completa'));
+    expect(etapa('Situação')).toHaveTextContent('Captação efetivada no terminal');
+    expect(etapa('Situação')).not.toHaveTextContent('vazio');
+  });
+
+  it('Situação pendente continua pedindo os campos (só efetivada dispensa)', async () => {
+    const pendente = { ...mockCaptacoes[0], stage: 'MANIFESTADA', observacao: null, prejuizoPublico: false };
+    useSearchParamsMock.mockReturnValue(new URLSearchParams({ edit: String(pendente.id) }));
+    filaApi('/captacoes', [pendente]);
+    render(<CaptacoesPage />);
+    await screen.findByRole('navigation', { name: 'Etapas' });
+
+    await waitFor(() => expect(estadoDa('Situação')).toBe('vazios'));
+  });
+
   it('contêineres viram etiquetas e a linha embaixo confere com a quantidade', async () => {
     const user = userEvent.setup();
     filaApi('/captacoes', {});

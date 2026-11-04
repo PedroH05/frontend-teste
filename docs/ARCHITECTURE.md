@@ -466,6 +466,11 @@ do `(authed)/layout.tsx`.
     obrigatório"). A lista de campos por etapa (`camposEtapa`) é a mesma
     que já decidia a cor antes — inclusive `boolean` só conta quando
     `true`, então "Tabela pública" desmarcada aparece como vazio.
+    **Exceção (04/11/2026):** com status **EFETIVA** a Situação fica
+    completa (verde) de qualquer jeito — Observação e Tabela pública
+    viram `opcional` em `camposEtapa` (não entram em `vaziosEtapa` nem no
+    total da Ficha; na Revisão aparecem como "—", não "Vazio"). Pendente
+    segue como acima, com os documentos recebidos entrando na conta.
   - **Revisão em três blocos**, tudo derivado de `camposEtapa`: Resumo do
     processo, alerta "O que ficou vazio" (só aparece se houver vazio, com
     "Preencher" levando pra etapa) e Ficha completa ("X de Y campos

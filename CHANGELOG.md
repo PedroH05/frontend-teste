@@ -3,6 +3,15 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-11-04 — Nova captação: Situação fica verde quando efetivada
+
+- Pedido: ao marcar "Captação efetivada no terminal", a bolinha da etapa
+  Situação deve ficar verde sem depender de observação, documentos nem
+  "tabela pública". Antes ficava âmbar ("2 campos vazios") por causa desses
+  campos opcionais. Agora, efetivada, a etapa conta como completa e esses
+  campos aparecem como "—" na Revisão (não como "Vazio"). Pendente não
+  mudou. Dois testes novos (efetivada = verde, pendente = âmbar).
+
 ## 2026-10-21 — Carteira e Histórico: tabela mais larga
 
 - Bug relatado com print: HBL, Container, CE e Atracação → Parceiro passavam

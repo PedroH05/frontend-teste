@@ -132,7 +132,7 @@ const ATRACACOES = ['Santos Brasil', 'BTP', 'DPW', 'ECOPORTO'];
 const PARCEIROS = ['ECOPORTO', 'MOVECTA', 'DPW'];
 
 type FormState = CaptacaoInput & { publicaConfirmado?: boolean };
-type Campo = { label: string; value: unknown; tipo?: 'data' | 'bool' | 'mono' };
+type Campo = { label: string; value: unknown; tipo?: 'data' | 'bool' | 'mono'; opcional?: boolean };
 type EstadoEtapa = 'atual' | 'completa' | 'vazios' | 'pendente';
 
 const initialForm: FormState = {};
@@ -654,9 +654,13 @@ function CaptacoesForm() {
           { label: 'Atracação', value: form.terminalDescarga },
           { label: 'Parceiro (captado)', value: form.terminalCaptado },
         ];
-      case 4:
+      case 4: {
+        // Efetivada no terminal: a etapa fica completa (verde) sem depender de
+        // observação nem de "tabela pública" — pedido de 04/11/2026. Pendente
+        // continua como antes (documentos recebidos entram na conta).
+        const efetivada = status === 'EFETIVA';
         return [
-          { label: 'Observação', value: form.observacao },
+          { label: 'Observação', value: form.observacao, opcional: efetivada },
           ...(showDocs
             ? [
                 { label: 'BL recebido', value: form.docBl, tipo: 'bool' as const },
@@ -664,8 +668,9 @@ function CaptacoesForm() {
                 { label: 'PL recebido', value: form.docPl, tipo: 'bool' as const },
               ]
             : []),
-          { label: 'Tabela pública', value: form.prejuizoPublico, tipo: 'bool' },
+          { label: 'Tabela pública', value: form.prejuizoPublico, tipo: 'bool', opcional: efetivada },
         ];
+      }
       case 5:
         return [
           { label: 'Data de carregamento', value: form.dataCarregamento, tipo: 'data' },
@@ -679,7 +684,7 @@ function CaptacoesForm() {
 
   function vaziosEtapa(i: number): string[] {
     return camposEtapa(i)
-      .filter((c) => !estaPreenchido(c.value))
+      .filter((c) => !c.opcional && !estaPreenchido(c.value))
       .map((c) => c.label);
   }
 
@@ -714,7 +719,10 @@ function CaptacoesForm() {
 
   const etapasCompletas = ETAPAS_COM_CAMPOS.filter((i) => vaziosEtapa(i).length === 0).length;
   const etapasComVazios = ETAPAS_COM_CAMPOS.filter((i) => vaziosEtapa(i).length > 0);
-  const totalCampos = ETAPAS_COM_CAMPOS.reduce((n, i) => n + camposEtapa(i).length, 0);
+  const totalCampos = ETAPAS_COM_CAMPOS.reduce(
+    (n, i) => n + camposEtapa(i).filter((c) => !c.opcional || estaPreenchido(c.value)).length,
+    0,
+  );
   const totalPreenchidos = ETAPAS_COM_CAMPOS.reduce(
     (n, i) => n + camposEtapa(i).filter((c) => estaPreenchido(c.value)).length,
     0,
@@ -1360,6 +1368,8 @@ function CaptacoesForm() {
                               <dd className={cn('mt-0.5 text-[13px] font-medium break-words', c.tipo === 'mono' && 'font-mono')}>
                                 {valorFicha(c)}
                               </dd>
+                            ) : c.opcional ? (
+                              <dd className="mt-0.5 text-[13px] text-muted-foreground">—</dd>
                             ) : (
                               <dd className="mt-0.5 flex items-center gap-1.5 text-[13px] font-medium text-warning-text">
                                 <span aria-hidden="true" className="size-1.5 rounded-full bg-warning" />
