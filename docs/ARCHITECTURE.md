@@ -379,6 +379,19 @@ do `(authed)/layout.tsx`.
   `HblCartao`/`ListaConteineres` e faixa do modo demo. Nenhum `.tsx` usa
   mais cor `--vt-*`; o que sobra de `--vt-*` está só no `globals.css`
   (fundo ambiente, tema Clássico, animação do Salvar).
+- **Data de efetivação** (04/11/2026): `dataDoProcesso()` (`lib/format.ts`) =
+  `efetivadaEm ?? createdAt`. Histórico e Carteira usam ela no "Registrado
+  em" e também pra ordenar e filtrar (período, mês) — a data mostrada é a
+  que manda. `Captacao.efetivadaEm`/`CockpitRow.efetivadaEm` vêm da API.
+  **Dashboard não usa** (segue `createdAt`/`capDate`), de propósito, até
+  decisão. `formatDataLocal` mostra só a data no fuso local.
+- **Autor da captação** (04/11/2026): `Captacao.autor` e `CockpitRow.autor`
+  (opcionais) vêm da API, que os tira do login — o front **nunca envia**
+  autor (não existe no `CaptacaoInput`). Mostrado em Histórico/Carteira
+  ("por X" sob a data) e na Revisão ("Registrado por X", só em edição, de
+  `autorCaptacao`, que não entra no formulário nem no `isDirty`). Captação
+  antiga = sem autor = nada na tela. Ver captacao-api, `docs/ARCHITECTURE.md`
+  (SQL pendente em produção).
 - **Config redesenhada** (21/10/2026, redesign passo 5): `Switch` do
   shadcn (`components/ui/switch.tsx`) + prévia com `StatusBadge`; tema
   visual como `radiogroup` de inputs nativos dentro de cards. Testes do

@@ -29,14 +29,14 @@ export const mockCaptacoes: Captacao[] = [
     bl: 'HBCN066406', ce: '150726001234-5', container: 'TCNU4455210', quantidade: 2, navio: 'MSC AMALFI',
     despachante: 'LOGMAIS', terminalDescarga: 'Santos Brasil', terminalCaptado: 'ECOPORTO',
     observacao: null, cnpj: '23.456.789/0001-01', stage: 'MANIFESTADA', docBl: true, docCe: true, docPl: false,
-    docRecebidaEm: isoDaysFromNow(-1), prejuizoPublico: false, dateLabel: null, createdAt: isoDaysFromNow(-2), dataCarregamento: null, transportadora: null, dataChegada: null, dataChegadaDestino: null,
+    docRecebidaEm: isoDaysFromNow(-1), prejuizoPublico: false, dateLabel: null, createdAt: isoDaysFromNow(-2), autor: 'Pedro', dataCarregamento: null, transportadora: null, dataChegada: null, dataChegadaDestino: null,
   },
   {
     id: 2, cli: 'ALUZEN', referencia: 'ALUZEN NA140966-26', eta: isoDaysFromNow(-3), regime: 'DUIMP',
     bl: 'ALZ2200147', ce: '150726009988-1', container: 'MSCU7183340', quantidade: 3, navio: 'MSC NAOMI',
     despachante: 'NIRRON', terminalDescarga: 'Santos Brasil', terminalCaptado: 'ECOPORTO',
     observacao: null, cnpj: '12.345.678/0001-90', stage: 'EFETIVA', docBl: true, docCe: true, docPl: true,
-    docRecebidaEm: isoDaysFromNow(-4), prejuizoPublico: false, dateLabel: null, createdAt: isoDaysFromNow(-6), dataCarregamento: null, transportadora: null, dataChegada: null, dataChegadaDestino: null,
+    docRecebidaEm: isoDaysFromNow(-4), prejuizoPublico: false, dateLabel: null, createdAt: isoDaysFromNow(-6), autor: 'Raquel', efetivadaEm: isoDaysFromNow(-1), dataCarregamento: null, transportadora: null, dataChegada: null, dataChegadaDestino: null,
   },
   {
     id: 3, cli: 'HB', referencia: 'HB TINTAS 0308-26', eta: isoDaysFromNow(-88), regime: 'DI',
@@ -70,13 +70,13 @@ export const mockCarteira: CockpitRow[] = [
     cnpj: '23.456.789/0001-01', cli: 'TECNO', ref: 'TECNO AMERICA 0347-26', eta: isoDaysFromNow(1),
     regime: 'DTA', ce: '150726001234-5', bl: 'HBCN066406', navio: 'MSC AMALFI', cont: 'TCNU4455210',
     qtd: '2', desp: 'LOGMAIS', atrac: 'Santos Brasil', parc: 'ECOPORTO', stage: 'MANIFESTADA_PARC', capId: 1,
-    createdAt: isoDaysFromNow(-2), // igual ao createdAt de mockCaptacoes[0] (mesmo id)
+    createdAt: isoDaysFromNow(-2), autor: 'Pedro', // igual a mockCaptacoes[0] (mesmo id)
   },
   {
     cnpj: '12.345.678/0001-90', cli: 'ALUZEN', ref: 'ALUZEN NA140966-26', eta: isoDaysFromNow(-3),
     regime: 'DUIMP', ce: '150726009988-1', bl: 'ALZ2200147', navio: 'MSC NAOMI', cont: 'MSCU7183340',
     qtd: '3', desp: 'NIRRON', atrac: 'Santos Brasil', parc: 'ECOPORTO', stage: 'EFETIVA', capId: 2,
-    createdAt: isoDaysFromNow(-6), // igual ao createdAt de mockCaptacoes[1]
+    createdAt: isoDaysFromNow(-6), autor: 'Raquel', efetivadaEm: isoDaysFromNow(-1), // igual a mockCaptacoes[1]
   },
   {
     cnpj: '34.567.890/0001-12', cli: 'HB', ref: 'HB TINTAS 0308-26', eta: isoDaysFromNow(-88),

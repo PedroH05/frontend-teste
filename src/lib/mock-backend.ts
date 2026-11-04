@@ -52,6 +52,11 @@ function buildCaptacao(id: number, payload: CaptacaoInput, base?: Captacao): Cap
     dataChegada: payload.dataChegada ?? base?.dataChegada ?? null,
     dataChegadaDestino: payload.dataChegadaDestino ?? base?.dataChegadaDestino ?? null,
     createdAt: base?.createdAt ?? nowIso(),
+    autor: base?.autor ?? 'Pedro',
+    // Espelha a API: data de efetivação = momento em que virou EFETIVA
+    // (preservada se já era); volta a null se deixar de ser efetivada.
+    efetivadaEm:
+      stageFromInput(payload) === 'EFETIVA' ? (base?.efetivadaEm ?? nowIso()) : null,
   };
 }
 
@@ -79,6 +84,8 @@ function syncCockpitRow(cap: Captacao) {
           : 'MANIFESTADA_PARC',
     capId: cap.id,
     createdAt: cap.createdAt,
+    autor: cap.autor,
+    efetivadaEm: cap.efetivadaEm,
   };
   if (existing) {
     Object.assign(existing, row);
@@ -188,7 +195,14 @@ export async function mockRequest<T>(path: string, init?: RequestInit): Promise<
     const id = Number(efetivarMatch[1]);
     const base = captacoes.find((c) => c.id === id);
     if (!base) throw new ApiError(404, 'Captação não encontrada.');
-    const updated: Captacao = { ...base, stage: 'EFETIVA', docBl: true, docCe: true, docPl: true };
+    const updated: Captacao = {
+      ...base,
+      stage: 'EFETIVA',
+      docBl: true,
+      docCe: true,
+      docPl: true,
+      efetivadaEm: base.efetivadaEm ?? nowIso(),
+    };
     captacoes = captacoes.map((c) => (c.id === id ? updated : c));
     syncCockpitRow(updated);
     return updated as T;

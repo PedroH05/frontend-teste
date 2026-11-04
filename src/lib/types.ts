@@ -79,6 +79,12 @@ export interface Captacao {
   prejuizoPublico: boolean | null;
   dateLabel: string | null;
   createdAt: string;
+  // Quem lançou (nome tirado do login, preenchido pela API). Captações
+  // anteriores a 04/11/2026 não têm.
+  autor?: string | null;
+  // Quando virou EFETIVA — null/ausente = pendente ou efetivada antes de
+  // 04/11/2026. Ver lib/format.ts dataDoProcesso().
+  efetivadaEm?: string | null;
 }
 
 // Devolvido por GET /carteira — já casado e classificado pelo backend
@@ -103,6 +109,8 @@ export interface CockpitRow {
   createdAt: string | null;
   blCap?: string;
   ceCap?: string;
+  autor?: string | null;
+  efetivadaEm?: string | null;
 }
 
 // Corpo aceito por POST/PATCH /captacoes — ver

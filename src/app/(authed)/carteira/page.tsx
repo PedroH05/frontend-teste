@@ -20,7 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatData, formatDataHora } from '@/lib/format';
+import { dataDoProcesso, formatDataHora, formatDataLocal } from '@/lib/format';
 import { apelidoCliente } from '@/lib/apelido';
 import { ListaConteineres } from '@/components/lista-conteineres';
 import { HblCartao } from '@/components/hbl-cartao';
@@ -187,7 +187,7 @@ export default function CarteiraPage() {
   const mesesDisponiveis = useMemo(() => {
     const porMes = new Map<string, number>();
     for (const { r } of enriquecidas) {
-      const chave = (r.createdAt ?? '').slice(0, 7);
+      const chave = (dataDoProcesso(r) ?? '').slice(0, 7);
       if (!chave) continue;
       porMes.set(chave, (porMes.get(chave) ?? 0) + 1);
     }
@@ -197,7 +197,7 @@ export default function CarteiraPage() {
   const linhas = useMemo(() => {
     let list = enriquecidas;
     if (filterBand) list = list.filter(({ b }) => b.k === filterBand);
-    if (mesFiltro) list = list.filter(({ r }) => (r.createdAt ?? '').slice(0, 7) === mesFiltro);
+    if (mesFiltro) list = list.filter(({ r }) => (dataDoProcesso(r) ?? '').slice(0, 7) === mesFiltro);
     if (busca) {
       const q = busca.trim().toLowerCase();
       list = list.filter(({ r }) => JSON.stringify(r).toLowerCase().includes(q));
@@ -209,7 +209,7 @@ export default function CarteiraPage() {
         case 'cli':
           return item.r.cli.toLowerCase();
         case 'registrado':
-          return item.r.createdAt ?? ''; // ISO ordena certo como texto
+          return dataDoProcesso(item.r) ?? ''; // ISO ordena certo como texto
         case 'regime':
           return item.r.regime || 'zzz';
         case 'desp':
@@ -790,8 +790,9 @@ export default function CarteiraPage() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm whitespace-nowrap tabular-nums" title={formatDataHora(r.createdAt)}>
-                    {formatData(r.createdAt)}
+                  <TableCell className="text-sm whitespace-nowrap tabular-nums" title={formatDataHora(dataDoProcesso(r))}>
+                    {formatDataLocal(dataDoProcesso(r))}
+                    {r.autor && <div className="text-xs font-normal text-muted-foreground">por {r.autor}</div>}
                   </TableCell>
                   <TableCell className="text-sm">
                     <span className="inline-flex items-center gap-2 whitespace-nowrap tabular-nums">

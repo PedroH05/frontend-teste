@@ -308,6 +308,16 @@ describe('CaptacoesPage', () => {
     expect(screen.getByLabelText('Navio')).toBeInTheDocument();
   });
 
+  it('Revisão mostra "Registrado por" de quem lançou, sem campo no formulário (autor vem do login)', async () => {
+    const comAutor = { ...mockCaptacoes[0], autor: 'Pedro' };
+    useSearchParamsMock.mockReturnValue(new URLSearchParams({ edit: String(comAutor.id), step: '6' }));
+    filaApi('/captacoes', [comAutor]);
+    render(<CaptacoesPage />);
+
+    expect(await screen.findByText('Registrado por Pedro')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/autor/i)).not.toBeInTheDocument();
+  });
+
   it('Excluir pede confirmação no AlertDialog antes de apagar', async () => {
     const user = userEvent.setup();
     const captacaoId = mockCaptacoes[0].id;

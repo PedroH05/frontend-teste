@@ -275,6 +275,31 @@ describe('CarteiraPage', () => {
     expect(await screen.findByText(/Página 1 de/)).toBeInTheDocument();
   });
 
+  it('mostra quem lançou ("por Raquel") embaixo da data de registro (autor do login)', async () => {
+    filaApi('/carteira', { rows: [row({ cli: 'TECNO', capId: 1, autor: 'Raquel' }), row({ cli: 'SEM', capId: 2 })] });
+    render(<CarteiraPage />);
+    const com = (await screen.findByText('TECNO')).closest('tr')!;
+    const sem = screen.getByText('SEM').closest('tr')!;
+
+    expect(within(com).getByText('por Raquel')).toBeInTheDocument();
+    expect(within(sem).queryByText(/^por /)).not.toBeInTheDocument();
+  });
+
+  it('efetivada mostra a data de efetivação na coluna Registrado em; pendente a de quando foi salva', async () => {
+    filaApi('/carteira', {
+      rows: [
+        row({ capId: 1, cli: 'EFET', stage: 'EFETIVA', createdAt: '2026-10-01T15:00:00.000Z', efetivadaEm: '2026-10-20T15:00:00.000Z' }),
+        row({ capId: 2, cli: 'PEND', createdAt: '2026-10-05T15:00:00.000Z' }),
+      ],
+    });
+    render(<CarteiraPage />);
+    const efet = (await screen.findByText('EFET')).closest('tr')!;
+    const pend = screen.getByText('PEND').closest('tr')!;
+
+    expect(within(efet).getByText('20/10/2026')).toBeInTheDocument();
+    expect(within(pend).getByText('05/10/2026')).toBeInTheDocument();
+  });
+
   it('busca ignora espaço no final (pedido 17/09/2026)', async () => {
     const user = userEvent.setup();
     filaApi('/carteira', { rows: [row({ bl: 'HBCN066406' })] });

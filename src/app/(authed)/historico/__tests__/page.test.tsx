@@ -210,6 +210,35 @@ describe('HistoricoPage', () => {
     expect(linhasDeDados()).toHaveLength(2);
   });
 
+  it('mostra quem lançou ("por Pedro") embaixo da data; captação antiga, sem autor, não mostra nada', async () => {
+    apiFetchMock.mockResolvedValueOnce([
+      base({ id: 1, cli: 'NOVA', autor: 'Pedro' }),
+      base({ id: 2, cli: 'ANTIGA', autor: null }),
+    ]);
+    render(<HistoricoPage />);
+    const nova = (await screen.findByText('NOVA')).closest('tr')!;
+    const antiga = screen.getByText('ANTIGA').closest('tr')!;
+
+    expect(within(nova).getByText('por Pedro')).toBeInTheDocument();
+    expect(within(antiga).queryByText(/^por /)).not.toBeInTheDocument();
+  });
+
+  it('efetivada mostra a data de efetivação; pendente mostra a de quando foi salva (pedido 04/11/2026)', async () => {
+    apiFetchMock.mockResolvedValueOnce([
+      base({ id: 1, cli: 'EFET', stage: 'EFETIVA', createdAt: '2026-10-01T15:00:00.000Z', efetivadaEm: '2026-10-20T15:00:00.000Z' }),
+      base({ id: 2, cli: 'PEND', stage: 'MANIFESTADA', createdAt: '2026-10-05T15:00:00.000Z', efetivadaEm: null }),
+    ]);
+    render(<HistoricoPage />);
+    const efet = (await screen.findByText('EFET')).closest('tr')!;
+    const pend = screen.getByText('PEND').closest('tr')!;
+
+    expect(within(efet).getByText('20/10/2026')).toBeInTheDocument();
+    expect(within(efet).queryByText('01/10/2026')).not.toBeInTheDocument();
+    expect(within(pend).getByText('05/10/2026')).toBeInTheDocument();
+    // ordena pela data mostrada: a efetivada (20/10) vem antes da pendente (05/10)
+    expect(linhasDeDados()[0]).toContain('EFET');
+  });
+
   it('dá pra ordenar por ETA também, não só por Registrado em (pedido 17/09/2026)', async () => {
     const user = userEvent.setup();
     apiFetchMock.mockResolvedValueOnce([

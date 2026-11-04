@@ -3,6 +3,37 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-11-04 — Data de efetivação na Carteira e no Histórico
+
+- Pedido: pendente mostra a data/hora em que foi salva (como já era); ao
+  mudar pra efetivado, a data da coluna "Registrado em" passa a ser o dia em
+  que foi efetivada. Vale pra exibir, ordenar e filtrar (mês da Carteira e
+  período do Histórico) — tudo pela data que aparece na linha. Voltar a
+  pendente volta a data de quando foi salva.
+- Vem de um campo novo da API, `efetivadaEm` (coluna `efetivada_em`).
+  Captações efetivadas antes disso não têm o campo e continuam com a data
+  de criação — nenhuma data antiga muda. Depende do SQL em produção (ver
+  captacao-api).
+- **Não mexi no Dashboard**: ele ainda conta por data de registro. Se uma
+  captação foi salva na segunda e efetivada na quarta, a lista mostra quarta
+  e o Dashboard ainda conta segunda.
+- Carteira passou a mostrar a data no fuso local (antes cortava o texto UTC,
+  o que depois das 21h caía no dia seguinte).
+
+## 2026-11-04 — Autor da captação (quem lançou)
+
+- Pedido: Pedro e Raquel dividem o mesmo login e não dá pra saber quem
+  lançou. A API agora grava o autor a partir do **login** (e-mail `pedro@…`
+  → "Pedro") — a tela não tem campo pra preencher, então não dá pra
+  esquecer nem lançar no nome do outro. O autor aparece pequeno e cinza:
+  "por Pedro" embaixo da data em Histórico e Carteira, e "Registrado por
+  Pedro" na Revisão. Captações antigas ficam sem nome.
+- Depende de duas coisas fora do código (ver captacao-api): coluna
+  `captacoes.autor` criada à mão em produção e uma conta de login por
+  pessoa. Até lá, a tela só mostra o que a API devolver (nada, sem a
+  coluna) e nada quebra: o campo é opcional.
+- Modo demonstração mostra "por Pedro" e "por Raquel" de exemplo.
+
 ## 2026-11-04 — Clientes: coluna Apelidos justa, sem encolher o resto; Histórico sem linha por dia
 
 - Histórico: saiu a linha separadora "Hoje · 04/11/2026 — 1 captação"

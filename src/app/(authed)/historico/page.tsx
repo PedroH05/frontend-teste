@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Captacao } from '@/lib/types';
 import { shortTerm } from '@/lib/risco';
-import { formatData } from '@/lib/format';
+import { dataDoProcesso, formatData } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Paginacao } from '@/components/paginacao';
 import {
@@ -143,7 +143,8 @@ export default function HistoricoPage() {
     let rows = [...captacoes];
     if (periodo.inicio && periodo.fim) {
       rows = rows.filter((c) => {
-        const d = c.createdAt ? new Date(c.createdAt) : null;
+        const quando = dataDoProcesso(c);
+        const d = quando ? new Date(quando) : null;
         return d && !Number.isNaN(d.getTime()) && estaNoPeriodo(d, periodo.inicio!, periodo.fim!);
       });
     }
@@ -155,7 +156,7 @@ export default function HistoricoPage() {
     // docs/DECISIONS.md. Ordenar por ETA continua disponível clicando na
     // coluna (pedido 17/09/2026) — sem ETA conta como o valor mais antigo,
     // então continua indo pro fim independente da direção.
-    const valorDeOrdenacao = (c: Captacao) => (sortKey === 'eta' ? (c.eta ?? '') : c.createdAt);
+    const valorDeOrdenacao = (c: Captacao) => (sortKey === 'eta' ? (c.eta ?? '') : (dataDoProcesso(c) ?? ''));
     rows.sort((a, b) => {
       const va = valorDeOrdenacao(a);
       const vb = valorDeOrdenacao(b);
@@ -339,8 +340,9 @@ export default function HistoricoPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-sm whitespace-nowrap tabular-nums">
-                        {dataLocal(c.createdAt)}
-                        <span className="text-muted-foreground"> · {horaDe(c.createdAt)}</span>
+                        {dataLocal(dataDoProcesso(c))}
+                        <span className="text-muted-foreground"> · {horaDe(dataDoProcesso(c))}</span>
+                        {c.autor && <div className="text-xs text-muted-foreground">por {c.autor}</div>}
                       </TableCell>
                       <TableCell className="text-sm whitespace-nowrap tabular-nums">{formatData(c.eta)}</TableCell>
                       <TableCell className="vt-extra-col text-sm">

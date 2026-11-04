@@ -362,6 +362,9 @@ function CaptacoesForm() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(!!editId);
+  // Quem lançou, só pra mostrar na Revisão — vem da captação carregada e é
+  // definido pela API (do login); não faz parte do formulário nem do payload.
+  const [autorCaptacao, setAutorCaptacao] = useState<string | null>(null);
   const wrapRef = useRef<HTMLSpanElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const truckRef = useRef<SVGSVGElement>(null);
@@ -452,6 +455,7 @@ function CaptacoesForm() {
         const loadedStatus = c.stage === 'EFETIVA' ? 'EFETIVA' : 'PENDENTE';
         setForm(loadedForm);
         setStatus(loadedStatus);
+        setAutorCaptacao(c.autor ?? null);
         setBaseline(JSON.stringify({ form: loadedForm, status: loadedStatus }));
       } catch (err) {
         setError(err instanceof ApiError ? err.message : 'Erro ao carregar captação');
@@ -1262,6 +1266,9 @@ function CaptacoesForm() {
                       {form.cli || 'Cliente não informado'}
                     </div>
                     {form.cnpj && <div className="font-mono text-xs text-muted-foreground">{form.cnpj}</div>}
+                    {autorCaptacao && (
+                      <div className="mt-0.5 text-xs text-muted-foreground">Registrado por {autorCaptacao}</div>
+                    )}
                   </div>
                   {form.referencia && (
                     <span className="rounded-md border bg-card px-2 py-1 font-mono text-xs">{form.referencia}</span>
