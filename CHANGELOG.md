@@ -3,7 +3,7 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
-## 2026-11-04 — Histórico sem linha por dia; Clientes mais justo
+## 2026-11-04 — Clientes: coluna Apelidos justa, sem encolher o resto; Histórico sem linha por dia
 
 - Histórico: saiu a linha separadora "Hoje · 04/11/2026 — 1 captação"
   (pedido, com print). A tabela volta a ser uma lista só; data e hora
@@ -13,6 +13,9 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
   tamanho do conteúdo (sem larguras fixas) e as etiquetas de apelido ficam
   centralizadas; o nome do cliente fica com o resto. Antes: CNPJ 150px / Apelidos 170px /
   ações 48px, linhas com menos altura, avatar e etiquetas menores.
+  **Revertido no mesmo dia** ("muito pequena, miudinha"): fonte, altura da
+  linha, avatar, etiquetas e botão "⋯" voltaram ao tamanho normal. Ficou só
+  o ajuste de largura: Apelidos encolhe pro conteúdo e centraliza.
 
 ## 2026-11-04 — Nova captação: Situação fica verde quando efetivada
 

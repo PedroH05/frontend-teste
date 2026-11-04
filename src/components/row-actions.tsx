@@ -34,7 +34,7 @@ export function RowActions({
             <Button
               variant="ghost"
               size="icon"
-              className="size-8 text-muted-foreground hover:text-foreground"
+              className="size-9 text-muted-foreground hover:text-foreground"
               aria-label={nome ? `Ações de ${nome}` : 'Ações'}
               title="Ações"
             />

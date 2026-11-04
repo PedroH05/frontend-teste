@@ -288,10 +288,10 @@ export default function ClientesPage() {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/40 hover:bg-muted/40">
-                <TableHead className="h-9 px-2.5! text-xs font-medium text-muted-foreground">Cliente</TableHead>
+                <TableHead className="h-11 px-3! text-xs font-medium text-muted-foreground">Cliente</TableHead>
                 <TableHead className="h-9 w-[1%] px-2.5! text-xs font-medium whitespace-nowrap text-muted-foreground">CNPJ</TableHead>
                 <TableHead className="h-9 w-[1%] px-2.5! text-center text-xs font-medium whitespace-nowrap text-muted-foreground">Apelidos</TableHead>
-                <TableHead className="h-9 w-[1%] px-1!">
+                <TableHead className="h-11 w-[1%] px-1.5!">
                   <span className="sr-only">Ações</span>
                 </TableHead>
               </TableRow>
@@ -312,7 +312,7 @@ export default function ClientesPage() {
                 clientesPagina.map((c) =>
                   editingId === c.id ? (
                     <TableRow key={c.id} className="bg-warning-soft/50 hover:bg-warning-soft/50">
-                      <TableCell className="px-2.5! py-1.5! whitespace-normal">
+                      <TableCell className="px-3! py-3! whitespace-normal">
                         <Input
                           className="h-10"
                           aria-label="Nome do cliente"
@@ -320,7 +320,7 @@ export default function ClientesPage() {
                           onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
                         />
                       </TableCell>
-                      <TableCell className="min-w-[190px] px-2.5! py-1.5! whitespace-normal">
+                      <TableCell className="min-w-[190px] px-3! py-3! whitespace-normal">
                         <Input
                           className="h-10 font-mono"
                           aria-label="CNPJ do cliente"
@@ -329,11 +329,11 @@ export default function ClientesPage() {
                           onChange={(e) => setEditForm((f) => ({ ...f, cnpj: mascaraCnpj(e.target.value) }))}
                         />
                       </TableCell>
-                      <TableCell className="min-w-[200px] px-2.5! py-1.5! whitespace-normal">
+                      <TableCell className="min-w-[200px] px-3! py-3! whitespace-normal">
                         <AliasChips value={editForm.aliases} onChange={(v) => setEditForm((f) => ({ ...f, aliases: v }))} />
                         {editError && <p className="mt-1.5 text-xs font-medium text-destructive">{editError}</p>}
                       </TableCell>
-                      <TableCell className="px-1! py-1.5!">
+                      <TableCell className="px-1.5! py-3!">
                         <div className="flex items-center justify-end gap-0.5">
                           <Button
                             variant="ghost"
@@ -360,25 +360,25 @@ export default function ClientesPage() {
                     </TableRow>
                   ) : (
                     <TableRow key={c.id}>
-                      <TableCell className="px-2.5! py-1.5! whitespace-normal">
-                        <div className="flex items-center gap-2.5">
+                      <TableCell className="px-3! py-3! whitespace-normal">
+                        <div className="flex items-center gap-3">
                           <span
                             aria-hidden="true"
-                            className="flex size-7 shrink-0 items-center justify-center rounded-md bg-accent text-[10px] font-semibold text-accent-foreground"
+                            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-xs font-semibold text-accent-foreground"
                           >
                             {iniciais(c.name)}
                           </span>
-                          <span className="min-w-0 text-[13px] leading-snug font-semibold break-words">{c.name}</span>
+                          <span className="min-w-0 text-sm leading-snug font-semibold break-words">{c.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="w-[1%] px-2.5! py-1.5! font-mono text-xs whitespace-nowrap text-foreground/80">
+                      <TableCell className="w-[1%] px-3! py-3! font-mono text-[13.5px] whitespace-nowrap text-foreground/80">
                         {c.cnpj || '—'}
                       </TableCell>
-                      <TableCell className="w-[1%] px-2.5! py-1.5! whitespace-normal">
+                      <TableCell className="w-[1%] px-3! py-3! whitespace-normal">
                         {c.aliases.length ? (
-                          <div className="mx-auto flex max-w-[190px] flex-wrap justify-center gap-1">
+                          <div className="mx-auto flex max-w-[190px] flex-wrap justify-center gap-1.5">
                             {c.aliases.map((a) => (
-                              <Badge key={a} variant="outline" className="h-5 px-1.5 text-[11px] font-medium">
+                              <Badge key={a} variant="outline" className="h-6 px-2.5 text-xs font-medium">
                                 {a}
                               </Badge>
                             ))}
@@ -387,7 +387,7 @@ export default function ClientesPage() {
                           <span className="block text-center text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="w-[1%] px-1! py-1.5!">
+                      <TableCell className="w-[1%] px-1.5! py-3!">
                         <RowActions nome={c.aliases[0] || c.name} onEdit={() => startEdit(c)} onDelete={() => setExcluindo(c)} />
                       </TableCell>
                     </TableRow>
