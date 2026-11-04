@@ -53,7 +53,6 @@ function linhasDeDados() {
   return screen
     .getAllByRole('row')
     .slice(1)
-    .filter((r) => r.getAttribute('data-slot') !== 'grupo-dia')
     .map((r) => r.textContent);
 }
 
@@ -202,33 +201,13 @@ describe('HistoricoPage', () => {
     expect(linhasInvertidas[0]).toContain('ANTIGA'); // depois de clicar: mais antigo primeiro
   });
 
-  it('agrupa por dia de registro com a contagem do dia (redesign 21/10/2026)', async () => {
-    const ontem = new Date();
-    ontem.setDate(ontem.getDate() - 1);
-    apiFetchMock.mockResolvedValueOnce([
-      base({ id: 1, cli: 'HOJE A' }),
-      base({ id: 2, cli: 'HOJE B' }),
-      base({ id: 3, cli: 'DE ONTEM', createdAt: ontem.toISOString() }),
-    ]);
+  it('não tem mais linha separadora por dia (removida a pedido, 04/11/2026)', async () => {
+    apiFetchMock.mockResolvedValueOnce([base({ id: 1, cli: 'A' }), base({ id: 2, cli: 'B' })]);
     render(<HistoricoPage />);
-    await screen.findByText('HOJE A');
+    await screen.findByText('A');
 
-    const grupos = screen.getAllByRole('row').filter((r) => r.getAttribute('data-slot') === 'grupo-dia');
-    expect(grupos).toHaveLength(2);
-    expect(grupos[0]).toHaveTextContent(`Hoje · ${new Date().toLocaleDateString('pt-BR')}`);
-    expect(grupos[0]).toHaveTextContent('2 captações');
-    expect(grupos[1]).toHaveTextContent('Ontem');
-    expect(grupos[1]).toHaveTextContent('1 captação');
-  });
-
-  it('ordenado por ETA, não agrupa por dia de registro', async () => {
-    const user = userEvent.setup();
-    apiFetchMock.mockResolvedValueOnce([base({ id: 1, cli: 'X', eta: '2026-12-01' })]);
-    render(<HistoricoPage />);
-    await screen.findByText('X');
-
-    await user.click(screen.getByRole('columnheader', { name: /^ETA/ }));
-    expect(screen.getAllByRole('row').filter((r) => r.getAttribute('data-slot') === 'grupo-dia')).toHaveLength(0);
+    expect(screen.queryByText(/Hoje ·/)).not.toBeInTheDocument();
+    expect(linhasDeDados()).toHaveLength(2);
   });
 
   it('dá pra ordenar por ETA também, não só por Registrado em (pedido 17/09/2026)', async () => {

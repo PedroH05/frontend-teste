@@ -445,10 +445,9 @@ do `(authed)/layout.tsx`.
   - Filtro de mês da Carteira continua o dropdown próprio (não `Popover`
     do base-ui) — os testes abrem ele e o `Popover` trava no jsdom (ver
     nota do wizard).
-  - **Histórico agrupa por dia de registro** só quando ordenado por
-    "Registrado em" (linha `data-slot="grupo-dia"`, contagem do dia
-    inteiro no filtro atual, não só da página). Dia calculado no fuso
-    local, não pelo `createdAt` em UTC. Sem abas Hoje/Tudo (o mock tem;
+  - **Histórico sem linha separadora por dia** (chegou a ter, no passo 4,
+    como no mock; removida a pedido em 04/11/2026 — data e hora seguem na
+    coluna "Registrado em"). Sem abas Hoje/Tudo (o mock tem;
     foram tiradas em 15/10/2026). Filtro de status continua `<select>`
     nativo estilizado — o `Select` do base-ui não abre em jsdom.
   - `FiltroPeriodo` trocou as variáveis `--vt-*` pelos tokens shadcn.

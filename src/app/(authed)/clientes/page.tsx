@@ -287,16 +287,16 @@ export default function ClientesPage() {
           <Table className="table-fixed">
             <colgroup>
               <col />
-              <col className="w-[168px]" />
-              <col className="w-[190px]" />
-              <col className="w-[60px]" />
+              <col className="w-[150px]" />
+              <col className="w-[170px]" />
+              <col className="w-[48px]" />
             </colgroup>
             <TableHeader>
               <TableRow className="bg-muted/40 hover:bg-muted/40">
-                <TableHead className="h-11 px-3! text-xs font-medium text-muted-foreground">Cliente</TableHead>
-                <TableHead className="h-11 px-3! text-xs font-medium text-muted-foreground">CNPJ</TableHead>
-                <TableHead className="h-11 px-3! text-xs font-medium text-muted-foreground">Apelidos</TableHead>
-                <TableHead className="h-11 px-1.5!">
+                <TableHead className="h-9 px-2.5! text-xs font-medium text-muted-foreground">Cliente</TableHead>
+                <TableHead className="h-9 px-2.5! text-xs font-medium text-muted-foreground">CNPJ</TableHead>
+                <TableHead className="h-9 px-2.5! text-xs font-medium text-muted-foreground">Apelidos</TableHead>
+                <TableHead className="h-9 px-1!">
                   <span className="sr-only">Ações</span>
                 </TableHead>
               </TableRow>
@@ -317,7 +317,7 @@ export default function ClientesPage() {
                 clientesPagina.map((c) =>
                   editingId === c.id ? (
                     <TableRow key={c.id} className="bg-warning-soft/50 hover:bg-warning-soft/50">
-                      <TableCell className="px-3! whitespace-normal">
+                      <TableCell className="px-2.5! py-1.5! whitespace-normal">
                         <Input
                           className="h-10"
                           aria-label="Nome do cliente"
@@ -325,7 +325,7 @@ export default function ClientesPage() {
                           onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
                         />
                       </TableCell>
-                      <TableCell className="px-3! whitespace-normal">
+                      <TableCell className="px-2.5! py-1.5! whitespace-normal">
                         <Input
                           className="h-10 font-mono"
                           aria-label="CNPJ do cliente"
@@ -334,11 +334,11 @@ export default function ClientesPage() {
                           onChange={(e) => setEditForm((f) => ({ ...f, cnpj: mascaraCnpj(e.target.value) }))}
                         />
                       </TableCell>
-                      <TableCell className="px-3! whitespace-normal">
+                      <TableCell className="px-2.5! py-1.5! whitespace-normal">
                         <AliasChips value={editForm.aliases} onChange={(v) => setEditForm((f) => ({ ...f, aliases: v }))} />
                         {editError && <p className="mt-1.5 text-xs font-medium text-destructive">{editError}</p>}
                       </TableCell>
-                      <TableCell className="px-1.5!">
+                      <TableCell className="px-1! py-1.5!">
                         <div className="flex items-center justify-end gap-0.5">
                           <Button
                             variant="ghost"
@@ -365,25 +365,25 @@ export default function ClientesPage() {
                     </TableRow>
                   ) : (
                     <TableRow key={c.id}>
-                      <TableCell className="px-3! whitespace-normal">
-                        <div className="flex items-center gap-3">
+                      <TableCell className="px-2.5! py-1.5! whitespace-normal">
+                        <div className="flex items-center gap-2.5">
                           <span
                             aria-hidden="true"
-                            className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-[11px] font-semibold text-accent-foreground"
+                            className="flex size-7 shrink-0 items-center justify-center rounded-md bg-accent text-[10px] font-semibold text-accent-foreground"
                           >
                             {iniciais(c.name)}
                           </span>
-                          <span className="min-w-0 font-semibold break-words">{c.name}</span>
+                          <span className="min-w-0 text-[13px] leading-snug font-semibold break-words">{c.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="px-3! font-mono text-[12.5px] whitespace-nowrap text-foreground/80">
+                      <TableCell className="px-2.5! py-1.5! font-mono text-xs whitespace-nowrap text-foreground/80">
                         {c.cnpj || '—'}
                       </TableCell>
-                      <TableCell className="px-3! whitespace-normal">
+                      <TableCell className="px-2.5! py-1.5! whitespace-normal">
                         {c.aliases.length ? (
                           <div className="flex flex-wrap gap-1">
                             {c.aliases.map((a) => (
-                              <Badge key={a} variant="outline" className="font-medium">
+                              <Badge key={a} variant="outline" className="h-5 px-1.5 text-[11px] font-medium">
                                 {a}
                               </Badge>
                             ))}
@@ -392,7 +392,7 @@ export default function ClientesPage() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="px-1.5!">
+                      <TableCell className="px-1! py-1.5!">
                         <RowActions nome={c.aliases[0] || c.name} onEdit={() => startEdit(c)} onDelete={() => setExcluindo(c)} />
                       </TableCell>
                     </TableRow>

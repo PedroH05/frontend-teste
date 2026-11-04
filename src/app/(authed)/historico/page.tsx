@@ -66,18 +66,11 @@ function despValido(desp: string | null): string | undefined {
   return desp && Number.isNaN(Number(desp)) ? desp : undefined;
 }
 
-// Dia/hora sempre no fuso local — `createdAt` vem em UTC, e uma captação
-// das 22h no Brasil não pode cair no grupo do dia seguinte.
+// Data/hora sempre no fuso local — `createdAt` vem em UTC.
 function dataValida(iso: string | null): Date | null {
   if (!iso) return null;
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? null : d;
-}
-
-function chaveDia(iso: string | null): string {
-  const d = dataValida(iso);
-  if (!d) return '';
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function dataLocal(iso: string | null): string {
@@ -88,20 +81,6 @@ function dataLocal(iso: string | null): string {
 function horaDe(iso: string | null): string {
   const d = dataValida(iso);
   return d ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
-}
-
-const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-
-function rotuloDia(iso: string | null): string {
-  const d = dataValida(iso);
-  if (!d) return 'Sem data';
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  const dia = new Date(d);
-  dia.setHours(0, 0, 0, 0);
-  const diff = Math.round((hoje.getTime() - dia.getTime()) / 86_400_000);
-  const nome = diff === 0 ? 'Hoje' : diff === 1 ? 'Ontem' : DIAS_SEMANA[d.getDay()];
-  return `${nome} · ${d.toLocaleDateString('pt-BR')}`;
 }
 
 export default function HistoricoPage() {
@@ -215,20 +194,6 @@ export default function HistoricoPage() {
     [linhas, pagina],
   );
 
-
-  // Tabela agrupada por dia de registro (HANDOFF seção 3) — só quando a
-  // ordem é por "Registrado em"; ordenado por ETA, dias de registro
-  // misturados não fariam sentido como grupo. A contagem do grupo é do
-  // dia inteiro (no filtro atual), não só do pedaço que cabe na página.
-  const agruparPorDia = sortKey === 'registrado';
-  const porDia = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const c of linhas) {
-      const k = chaveDia(c.createdAt);
-      m.set(k, (m.get(k) ?? 0) + 1);
-    }
-    return m;
-  }, [linhas]);
 
   const primeiraLinha = linhas.length ? (pagina - 1) * PAGE_SIZE + 1 : 0;
   const ultimaLinha = Math.min(pagina * PAGE_SIZE, linhas.length);
@@ -345,25 +310,10 @@ export default function HistoricoPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              linhasPagina.map((c, i) => {
-                const dia = chaveDia(c.createdAt);
-                const novoGrupo = agruparPorDia && (i === 0 || chaveDia(linhasPagina[i - 1].createdAt) !== dia);
+              linhasPagina.map((c) => {
                 const status = STAGE_LABEL[c.stage ?? ''] ?? 'Em andamento';
-                const n = porDia.get(dia) ?? 0;
                 return (
                   <Fragment key={c.id}>
-                    {novoGrupo && (
-                      <TableRow data-slot="grupo-dia" className="bg-muted/60 hover:bg-muted/60">
-                        <TableHead scope="colgroup" colSpan={9} className="h-9 text-left text-xs">
-                          <span className="inline-flex items-center gap-2 font-semibold text-foreground">
-                            {rotuloDia(c.createdAt)}
-                            <span className="font-normal text-muted-foreground">
-                              — {n} {n === 1 ? 'captação' : 'captações'}
-                            </span>
-                          </span>
-                        </TableHead>
-                      </TableRow>
-                    )}
                     <TableRow>
                       <TableCell
                         tabIndex={0}

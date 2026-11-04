@@ -3,6 +3,15 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-11-04 — Histórico sem linha por dia; Clientes mais justo
+
+- Histórico: saiu a linha separadora "Hoje · 04/11/2026 — 1 captação"
+  (pedido, com print). A tabela volta a ser uma lista só; data e hora
+  continuam na coluna "Registrado em". Removidos o agrupamento e os 2
+  testes dele; entrou um teste de que não há separador.
+- Clientes: tabela mais justa — colunas CNPJ 150px / Apelidos 170px /
+  ações 48px, linhas com menos altura, avatar e etiquetas menores.
+
 ## 2026-11-04 — Nova captação: Situação fica verde quando efetivada
 
 - Pedido: ao marcar "Captação efetivada no terminal", a bolinha da etapa
