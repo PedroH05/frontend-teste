@@ -3,6 +3,17 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-11-12 — Busca do Histórico/Carteira aceita texto colado
+
+- Bug: colar a referência vinda de e-mail, Excel, PDF ou pasta não retornava
+  nada. O texto colado traz espaço não separável (NBSP), caractere invisível,
+  quebra de linha ou separador diferente, e a busca era um `includes` puro.
+- Agora a busca (`src/lib/busca.ts`) normaliza consulta e dados: ignora
+  maiúsculas, acento, NBSP/zero-width/quebra de linha e espaço duplo, e também
+  compara só letras+números ("ABC-123" acha "ABC 123" e "ABC/123"). Compara
+  campo a campo, então não junta o fim de um campo com o começo de outro.
+  Vale no Histórico e na Carteira.
+
 ## 2026-11-04 — Data de efetivação na Carteira e no Histórico
 
 - Pedido: pendente mostra a data/hora em que foi salva (como já era); ao

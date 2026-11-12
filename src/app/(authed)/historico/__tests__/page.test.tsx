@@ -150,6 +150,23 @@ describe('HistoricoPage', () => {
     expect(screen.getByText('TECNO')).toBeInTheDocument();
   });
 
+  it('busca acha referência colada com NBSP/caractere invisível (bug 12/11/2026)', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce([
+      base({ id: 1, referencia: 'ABC 2024/123' }),
+      base({ id: 2, cli: 'OUTRA', referencia: 'ZZZ 999' }),
+    ]);
+    render(<HistoricoPage />);
+    await screen.findByText('TECNO');
+
+    const campo = screen.getByPlaceholderText('Buscar cliente, BL, navio…');
+    await user.click(campo);
+    await user.paste('ABC 2024/123​\n');
+
+    expect(screen.getByText('TECNO')).toBeInTheDocument();
+    expect(screen.queryByText('OUTRA')).not.toBeInTheDocument();
+  });
+
   it('clicar no Status de um processo leva direto pro passo 7 (Revisão) da edição (pedido 29/09/2026)', async () => {
     const user = userEvent.setup();
     apiFetchMock.mockResolvedValueOnce([base({ id: 7, cli: 'TECNO' })]);

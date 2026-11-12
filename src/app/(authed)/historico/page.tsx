@@ -16,6 +16,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 import type { Captacao } from '@/lib/types';
 import { shortTerm } from '@/lib/risco';
 import { dataDoProcesso, formatData } from '@/lib/format';
+import { criarFiltroBusca } from '@/lib/busca';
 import { Button } from '@/components/ui/button';
 import { Paginacao } from '@/components/paginacao';
 import {
@@ -165,10 +166,8 @@ export default function HistoricoPage() {
     if (statusFiltro !== 'todos') {
       rows = rows.filter((c) => categoriaDe(c.stage) === statusFiltro);
     }
-    if (busca) {
-      const q = busca.trim().toLowerCase();
-      rows = rows.filter((c) => JSON.stringify(c).toLowerCase().includes(q));
-    }
+    const casa = criarFiltroBusca(busca);
+    if (casa) rows = rows.filter(casa);
     return rows;
   }, [captacoes, periodo, statusFiltro, busca, sortKey, sortDir]);
 

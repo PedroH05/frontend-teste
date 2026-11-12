@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { dataDoProcesso, formatDataHora, formatDataLocal } from '@/lib/format';
+import { criarFiltroBusca } from '@/lib/busca';
 import { apelidoCliente } from '@/lib/apelido';
 import { ListaConteineres } from '@/components/lista-conteineres';
 import { HblCartao } from '@/components/hbl-cartao';
@@ -198,10 +199,8 @@ export default function CarteiraPage() {
     let list = enriquecidas;
     if (filterBand) list = list.filter(({ b }) => b.k === filterBand);
     if (mesFiltro) list = list.filter(({ r }) => (dataDoProcesso(r) ?? '').slice(0, 7) === mesFiltro);
-    if (busca) {
-      const q = busca.trim().toLowerCase();
-      list = list.filter(({ r }) => JSON.stringify(r).toLowerCase().includes(q));
-    }
+    const casa = criarFiltroBusca(busca);
+    if (casa) list = list.filter(({ r }) => casa(r));
     const val = (item: (typeof list)[number]): string | number => {
       switch (sortKey) {
         case 'pr':
