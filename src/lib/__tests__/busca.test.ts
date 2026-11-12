@@ -34,4 +34,13 @@ describe('criarFiltroBusca', () => {
   it('não junta campos diferentes no modo compacto', () => {
     expect(criarFiltroBusca('123aluzen')!(reg)).toBe(false);
   });
+  it('não casa referência numérica com data (bug 12/11/2026)', () => {
+    const outra = { referencia: 'XYZ 777', cli: 'OUTRA', createdAt: '2026-11-12T10:00:00.000Z', docRecebidaEm: '2026-11-12' };
+    expect(criarFiltroBusca('2611')!(outra)).toBe(false);
+    expect(criarFiltroBusca('20261112')!(outra)).toBe(false);
+  });
+  it('modo compacto só vale em campos de identificação, não em texto livre', () => {
+    expect(criarFiltroBusca('aluzencomercio')!(reg)).toBe(false);
+    expect(criarFiltroBusca('abc2024123')!(reg)).toBe(true);
+  });
 });

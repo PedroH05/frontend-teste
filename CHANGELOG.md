@@ -3,6 +3,12 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-11-12 — Carregamento: chegada antes do carregamento
+
+- No passo 6 (Carregamento) e na Ficha da Revisão, "Data de chegada
+  (destino)" agora vem antes de "Data de carregamento". Só a ordem muda; os
+  campos e o que é salvo são os mesmos.
+
 ## 2026-11-12 — Busca do Histórico/Carteira aceita texto colado
 
 - Bug: colar a referência vinda de e-mail, Excel, PDF ou pasta não retornava
@@ -13,6 +19,10 @@ importa pra quem quer entender a evolução do sistema sem ler `git log`.
   compara só letras+números ("ABC-123" acha "ABC 123" e "ABC/123"). Compara
   campo a campo, então não junta o fim de um campo com o começo de outro.
   Vale no Histórico e na Carteira.
+- Correção no mesmo dia: a comparação compacta pegava também campos de data
+  (referência "2611" casava com "2026-11-12") e trazia captação sem relação.
+  Agora datas e ids internos ficam fora da busca, e o modo compacto só vale em
+  campos de identificação (referência, BL, CE, contêiner, CNPJ).
 
 ## 2026-11-04 — Data de efetivação na Carteira e no Histórico
 

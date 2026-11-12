@@ -677,9 +677,9 @@ function CaptacoesForm() {
       }
       case 5:
         return [
+          { label: 'Data de chegada (destino)', value: form.dataChegadaDestino, tipo: 'data' },
           { label: 'Data de carregamento', value: form.dataCarregamento, tipo: 'data' },
           { label: 'Transportadora', value: form.transportadora },
-          { label: 'Data de chegada (destino)', value: form.dataChegadaDestino, tipo: 'data' },
         ];
       default:
         return [];
@@ -1221,16 +1221,16 @@ function CaptacoesForm() {
                     )}
                     <div className="grid gap-5 sm:grid-cols-2">
                       <DateField
-                        id="dataCarregamento"
-                        label="Data de carregamento"
-                        value={form.dataCarregamento}
-                        onChange={(v) => set('dataCarregamento', v)}
-                      />
-                      <DateField
                         id="dataChegadaDestino"
                         label="Data de chegada (destino)"
                         value={form.dataChegadaDestino}
                         onChange={(v) => set('dataChegadaDestino', v)}
+                      />
+                      <DateField
+                        id="dataCarregamento"
+                        label="Data de carregamento"
+                        value={form.dataCarregamento}
+                        onChange={(v) => set('dataCarregamento', v)}
                       />
                       <Field>
                         <FieldLabel htmlFor="transportadora">Transportadora</FieldLabel>

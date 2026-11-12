@@ -187,6 +187,18 @@ describe('CaptacoesPage', () => {
     expect(body.dataChegadaDestino).toBe(iso);
   });
 
+  it('passo Carregamento mostra Data de chegada ANTES da Data de carregamento (pedido 12/11/2026)', async () => {
+    const user = userEvent.setup();
+    render(<CaptacoesPage />);
+
+    await user.type(screen.getByLabelText('Cliente'), 'tecno');
+    await user.click(etapa('Carregamento'));
+
+    const chegada = screen.getByText('Data de chegada (destino)');
+    const carregamento = screen.getByText('Data de carregamento');
+    expect(chegada.compareDocumentPosition(carregamento) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('passo Terminal (4º) não tem mais Data de chegada — só existe no Carregamento (pedido 08/10/2026)', async () => {
     const user = userEvent.setup();
     render(<CaptacoesPage />);

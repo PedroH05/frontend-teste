@@ -238,7 +238,8 @@ do `(authed)/layout.tsx`.
 
 Histórico e Carteira filtram com `criarFiltroBusca(consulta)`: normaliza
 (NFD sem acento, remove zero-width/NBSP, colapsa espaços, minúsculas) e casa
-por valor de campo, com fallback "compacto" (só [a-z0-9], consulta >= 3
+por valor de campo (ignora datas e ids — lista IGNORADOS), com fallback
+"compacto" só nos campos de IDENTIFICADORES (só [a-z0-9], consulta >= 3
 caracteres). Motivo: referência colada de e-mail/Excel/PDF vinha com
 caracteres invisíveis e não achava nada (12/11/2026). Tela nova com busca
 deve usar o mesmo helper.
