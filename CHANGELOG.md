@@ -3,6 +3,14 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-11-12 — Busca por palavras e aviso de "nenhum resultado"
+
+- Busca do Histórico/Carteira agora também acha por palavras: todas as
+  palavras coladas precisam aparecer, em qualquer ordem, ignorando prefixos
+  como "Ref.:" e "Nossa ref." ("Ref.: ABC123" acha "ABC-123").
+- Sem resultado, a tela mostra «o que foi buscado» e uma dica, pra perceber
+  na hora se veio algo estranho colado.
+
 ## 2026-11-12 — Carregamento: chegada antes do carregamento
 
 - No passo 6 (Carregamento) e na Ficha da Revisão, "Data de chegada

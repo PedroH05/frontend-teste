@@ -167,6 +167,22 @@ describe('HistoricoPage', () => {
     expect(screen.queryByText('OUTRA')).not.toBeInTheDocument();
   });
 
+  it('sem resultado mostra o texto buscado e acha com prefixo "Ref.:" colado (12/11/2026)', async () => {
+    const user = userEvent.setup();
+    apiFetchMock.mockResolvedValueOnce([base({ id: 1, referencia: 'ABC-123' })]);
+    render(<HistoricoPage />);
+    await screen.findByText('TECNO');
+
+    const campo = screen.getByPlaceholderText('Buscar cliente, BL, navio…');
+    await user.click(campo);
+    await user.paste('XYZ​ 999');
+    expect(screen.getByText('Nenhum resultado para «XYZ 999»')).toBeInTheDocument();
+
+    await user.clear(campo);
+    await user.paste('Ref.: ABC123');
+    expect(screen.getByText('TECNO')).toBeInTheDocument();
+  });
+
   it('clicar no Status de um processo leva direto pro passo 7 (Revisão) da edição (pedido 29/09/2026)', async () => {
     const user = userEvent.setup();
     apiFetchMock.mockResolvedValueOnce([base({ id: 7, cli: 'TECNO' })]);

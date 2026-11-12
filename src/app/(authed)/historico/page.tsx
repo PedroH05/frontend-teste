@@ -16,7 +16,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 import type { Captacao } from '@/lib/types';
 import { shortTerm } from '@/lib/risco';
 import { dataDoProcesso, formatData } from '@/lib/format';
-import { criarFiltroBusca } from '@/lib/busca';
+import { criarFiltroBusca, DICA_SEM_RESULTADO, textoBuscado } from '@/lib/busca';
 import { Button } from '@/components/ui/button';
 import { Paginacao } from '@/components/paginacao';
 import {
@@ -306,7 +306,11 @@ export default function HistoricoPage() {
             ) : linhas.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9}>
-                  <EmptyState title="Histórico vazio" subtitle="As captações aparecem aqui conforme forem feitas." />
+                  {textoBuscado(busca) ? (
+                    <EmptyState title={`Nenhum resultado para «${textoBuscado(busca)}»`} subtitle={DICA_SEM_RESULTADO} />
+                  ) : (
+                    <EmptyState title="Histórico vazio" subtitle="As captações aparecem aqui conforme forem feitas." />
+                  )}
                 </TableCell>
               </TableRow>
             ) : (

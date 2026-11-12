@@ -238,11 +238,16 @@ do `(authed)/layout.tsx`.
 
 Histórico e Carteira filtram com `criarFiltroBusca(consulta)`: normaliza
 (NFD sem acento, remove zero-width/NBSP, colapsa espaços, minúsculas) e casa
-por valor de campo (ignora datas e ids — lista IGNORADOS), com fallback
-"compacto" só nos campos de IDENTIFICADORES (só [a-z0-9], consulta >= 3
-caracteres). Motivo: referência colada de e-mail/Excel/PDF vinha com
-caracteres invisíveis e não achava nada (12/11/2026). Tela nova com busca
-deve usar o mesmo helper.
+por valor de campo, ignorando datas e ids (lista IGNORADOS). Um registro casa
+se: (1) a consulta inteira aparece num campo; (2) em campos de IDENTIFICADORES,
+a consulta sem separadores aparece no campo sem separadores (>= 3 caracteres);
+ou (3) todas as palavras da consulta aparecem, cada uma em algum campo, depois
+de tirar prefixos colados (PALAVRAS_IGNORADAS: "ref", "nossa", "processo"…)
+e palavras de 1 letra. Sem resultado, a tela mostra «texto buscado»
+(`textoBuscado`) e `DICA_SEM_RESULTADO`. Motivo: referência colada de
+e-mail/Excel/PDF não achava nada (12/11/2026). Tela nova com busca deve usar
+o mesmo helper. A API também limpa o texto na gravação (ver CHANGELOG da
+captacao-api), então registros novos já chegam sem sujeira.
 
 ## Decisões relevantes
 

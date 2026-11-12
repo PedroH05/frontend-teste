@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { dataDoProcesso, formatDataHora, formatDataLocal } from '@/lib/format';
-import { criarFiltroBusca } from '@/lib/busca';
+import { criarFiltroBusca, DICA_SEM_RESULTADO, textoBuscado } from '@/lib/busca';
 import { apelidoCliente } from '@/lib/apelido';
 import { ListaConteineres } from '@/components/lista-conteineres';
 import { HblCartao } from '@/components/hbl-cartao';
@@ -745,9 +745,17 @@ export default function CarteiraPage() {
               <TableRow>
                 <TableCell colSpan={9}>
                   <EmptyState
-                    title={busca || filterBand || mesFiltro ? 'Nenhum processo com este filtro' : 'Radar vazio'}
+                    title={
+                      textoBuscado(busca)
+                        ? `Nenhum resultado para «${textoBuscado(busca)}»`
+                        : busca || filterBand || mesFiltro
+                          ? 'Nenhum processo com este filtro'
+                          : 'Radar vazio'
+                    }
                     subtitle={
-                      busca || filterBand || mesFiltro ? (
+                      textoBuscado(busca) ? (
+                        DICA_SEM_RESULTADO
+                      ) : busca || filterBand || mesFiltro ? (
                         'Tente limpar a busca ou o filtro de risco.'
                       ) : (
                         <>

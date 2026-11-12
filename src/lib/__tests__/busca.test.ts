@@ -39,6 +39,19 @@ describe('criarFiltroBusca', () => {
     expect(criarFiltroBusca('2611')!(outra)).toBe(false);
     expect(criarFiltroBusca('20261112')!(outra)).toBe(false);
   });
+  it('ignora prefixo colado do e-mail ("Ref.:", "Nossa ref.")', () => {
+    expect(criarFiltroBusca('Ref.: ABC 2024/123')!(reg)).toBe(true);
+    expect(criarFiltroBusca('Nossa ref. ABC2024123')!(reg)).toBe(true);
+  });
+  it('busca por palavras: todas precisam aparecer, em qualquer ordem e campo', () => {
+    expect(criarFiltroBusca('aluzen 2024')!(reg)).toBe(true);
+    expect(criarFiltroBusca('123 ABC')!(reg)).toBe(true);
+    expect(criarFiltroBusca('aluzen 999')!(reg)).toBe(false);
+  });
+  it('só prefixo/palavra curta não vira "acha tudo"', () => {
+    expect(criarFiltroBusca('ref')!({ cli: 'OUTRA' })).toBe(false);
+    expect(criarFiltroBusca('a b')!({ cli: 'OUTRA' })).toBe(false);
+  });
   it('modo compacto só vale em campos de identificação, não em texto livre', () => {
     expect(criarFiltroBusca('aluzencomercio')!(reg)).toBe(false);
     expect(criarFiltroBusca('abc2024123')!(reg)).toBe(true);
