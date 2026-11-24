@@ -103,6 +103,15 @@ registro, não reflete mais o código atual.
 
 ## Componentes importantes
 
+- `components/input-data.tsx` — campo de data digitável (24/11/2026),
+  usado no `DateField` da Captação e no "De/Até" do `FiltroPeriodo`.
+  Máscara dd/mm/aaaa (barras entram sozinhas; colar "28-11-2026" ou ISO
+  funciona), lógica pura em `lib/data-digitada.ts` (`mascaraData`,
+  `lerDataBR`). Controlado pela **data**, não pelo texto: só chama
+  `onChange` com data válida (ou `null` ao apagar tudo). Texto pela metade
+  ou impossível (31/02) não troca a data e sobe a mensagem por `onErro`
+  (incompleta só ao sair do campo; impossível na hora). Ano com 2 dígitos
+  vira 20aa ao sair.
 - `components/row-actions.tsx` — par de ícones editar/excluir
   (`lucide-react`, `Pencil`/`Trash2`), único padrão visual desse par em
   toda a aplicação (Carteira, Histórico, Clientes). Não recriar esse par
@@ -505,7 +514,9 @@ captacao-api), então registros novos já chegam sem sujeira.
     preenchidos", vazio = ponto âmbar + "Vazio").
   - **Campos:** datas (ETA, carregamento, chegada no destino) viram
     `DateField` local (`Popover` + `Calendar` do shadcn, `react-day-picker`
-    com `ptBR`; ETA mostra "em Nd"/"há Nd"). A data é montada/serializada
+    com `ptBR`; ETA mostra "em Nd"/"há Nd"). Desde 24/11/2026 o campo é
+    um `InputData` digitável e o calendário abre pelo ícone à direita
+    (botão "Abrir calendário de <rótulo>"). A data é montada/serializada
     no fuso local (`parseISODateLocal`/`toISODateLocal`) — `new Date(iso)`
     leria como meia-noite UTC e voltaria um dia. Contêineres viram
     etiquetas (`ConteineresInput`), mas continuam salvos numa string só,
@@ -545,6 +556,10 @@ captacao-api), então registros novos já chegam sem sujeira.
   de teste do item acima** (popup não abre via clique em jsdom): a
   matemática do intervalo foi extraída em `estaNoPeriodo()`, exportada de
   `filtro-periodo.tsx` e testada direto, sem passar pela UI.
+  Desde 24/11/2026 o topo do popover tem "De" e "Até" digitáveis
+  (`InputData`), sincronizados com o clique nos dias e com os atalhos;
+  digitar leva o calendário pro mês digitado, data inválida desabilita
+  "Aplicar", e "Até" antes do "De" é aplicado na ordem certa.
 - **Histórico: alternador Hoje/Tudo removido (15/10/2026)**: o
   `SegmentedControl` Hoje/Tudo (`dia`/`alvo` em `historico/page.tsx`) saiu
   — ficou redundante depois do `<FiltroPeriodo>` acima existir, já que o

@@ -28,6 +28,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
+import { InputData } from '@/components/input-data';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress, ProgressLabel } from '@/components/ui/progress';
@@ -188,49 +189,86 @@ function DateField({
   relativo?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
   const selected = parseISODateLocal(value);
   const rel = relativo ? relativoDias(value) : null;
+  const erroId = `${id}-erro`;
+
+  function escolher(d: Date | undefined) {
+    setErro(null);
+    onChange(d ? toISODateLocal(d) : undefined);
+  }
+
+  // Digitável (pedido 24/11/2026): o campo é texto com máscara dd/mm/aaaa
+  // e o ícone à direita abre o mesmo calendário de antes.
   return (
     <Field>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <FieldContent>
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger
+        <div
+          className={cn(
+            'flex h-10 w-full items-center rounded-lg border border-input bg-transparent transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 dark:bg-input/30',
+            erro && 'border-destructive ring-3 ring-destructive/20',
+          )}
+        >
+          <InputData
             id={id}
-            render={<Button variant="outline" className="h-10 w-full justify-start px-3 font-normal" />}
-          >
-            <CalendarIcon className="text-muted-foreground" />
-            {selected ? fmtDateBR(value) : <span className="text-muted-foreground">Selecionar data</span>}
-            {rel && <span className="ml-auto text-xs text-muted-foreground">{rel}</span>}
-          </PopoverTrigger>
-          <PopoverContent className="w-auto rounded-xl border bg-popover p-0 shadow-md">
-            <Calendar
-              mode="single"
-              locale={ptBR}
-              selected={selected}
-              defaultMonth={selected}
-              onSelect={(d) => {
-                onChange(d ? toISODateLocal(d) : undefined);
-                setOpen(false);
-              }}
-            />
-            {selected && (
-              <div className="border-t p-1">
+            value={selected ?? null}
+            onChange={(d) => escolher(d ?? undefined)}
+            onErro={setErro}
+            aria-describedby={erro ? erroId : undefined}
+            aria-invalid={!!erro || undefined}
+            className="h-full min-w-0 flex-1 bg-transparent px-3 text-base outline-none placeholder:text-muted-foreground md:text-sm"
+          />
+          {rel && <span className="shrink-0 pr-1 text-xs text-muted-foreground">{rel}</span>}
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger
+              aria-label={`Abrir calendário de ${label}`}
+              render={
                 <Button
+                  type="button"
                   variant="ghost"
-                  size="sm"
-                  className="w-full text-muted-foreground"
-                  onClick={() => {
-                    onChange(undefined);
-                    setOpen(false);
-                  }}
-                >
-                  Limpar data
-                </Button>
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
+                  size="icon-sm"
+                  className="mr-1 shrink-0 text-muted-foreground"
+                />
+              }
+            >
+              <CalendarIcon />
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-auto rounded-xl border bg-popover p-0 shadow-md">
+              <Calendar
+                mode="single"
+                locale={ptBR}
+                selected={selected}
+                defaultMonth={selected}
+                onSelect={(d) => {
+                  escolher(d);
+                  setOpen(false);
+                }}
+              />
+              {selected && (
+                <div className="border-t p-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-muted-foreground"
+                    onClick={() => {
+                      escolher(undefined);
+                      setOpen(false);
+                    }}
+                  >
+                    Limpar data
+                  </Button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+        </div>
+        {erro && (
+          <p id={erroId} className="text-xs font-medium text-destructive">
+            {erro}
+          </p>
+        )}
       </FieldContent>
     </Field>
   );

@@ -92,14 +92,14 @@ function dia15DoMesAtual() {
 }
 
 async function escolherDia15(user: ReturnType<typeof userEvent.setup>, label: string) {
-  await user.click(screen.getByLabelText(label));
-  const { iso } = dia15DoMesAtual();
+  await user.click(screen.getByRole('button', { name: `Abrir calendário de ${label}` }));
+  const { iso, br } = dia15DoMesAtual();
   const botaoDia = document.querySelector(`td[data-day="${iso}"] button`);
   if (!botaoDia) throw new Error('calendário não abriu');
   // fireEvent, não user.click: o foco do userEvent faz o react-day-picker
   // re-renderizar o dia antes do clique chegar, e o clique se perde.
   fireEvent.click(botaoDia as HTMLElement);
-  await waitFor(() => expect(screen.getByLabelText(label)).not.toHaveTextContent('Selecionar data'));
+  await waitFor(() => expect(screen.getByLabelText(label)).toHaveValue(br));
 }
 
 describe('CaptacoesPage', () => {
@@ -185,6 +185,51 @@ describe('CaptacoesPage', () => {
     expect(body.dataCarregamento).toBe(iso);
     expect(body.transportadora).toBe('RODOMAX');
     expect(body.dataChegadaDestino).toBe(iso);
+  });
+
+  it('data pode ser digitada: barras entram sozinhas, ano curto vira 20aa e salva ISO (pedido 24/11/2026)', async () => {
+    const user = userEvent.setup();
+    filaApi('/captacoes', {});
+    render(<CaptacoesPage />);
+
+    await user.type(screen.getByLabelText('Cliente'), 'tecno');
+    await user.click(etapa('Carregamento'));
+
+    const chegada = screen.getByLabelText('Data de chegada (destino)');
+    await user.type(chegada, '28112026');
+    expect(chegada).toHaveValue('28/11/2026');
+
+    const carregamento = screen.getByLabelText('Data de carregamento');
+    await user.type(carregamento, '051226');
+    await user.click(screen.getByLabelText('Transportadora')); // sai do campo
+    expect(carregamento).toHaveValue('05/12/2026');
+
+    await user.click(etapa('Revisão'));
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+    const chamadaSalvar = apiFetchMock.mock.calls.find((c) => c[0] === '/captacoes' && c[1]);
+    const body = JSON.parse((chamadaSalvar as [string, { body: string }])[1].body);
+    expect(body.dataChegadaDestino).toBe('2026-11-28');
+    expect(body.dataCarregamento).toBe('2026-12-05');
+  });
+
+  it('data impossível digitada (31/02) mostra erro e não é salva', async () => {
+    const user = userEvent.setup();
+    filaApi('/captacoes', {});
+    render(<CaptacoesPage />);
+
+    await user.type(screen.getByLabelText('Cliente'), 'tecno');
+    await user.click(etapa('Carregamento'));
+
+    const chegada = screen.getByLabelText('Data de chegada (destino)');
+    await user.type(chegada, '31022026');
+    expect(screen.getByText('Data inválida, confira dia e mês.')).toBeInTheDocument();
+    expect(chegada).toHaveAttribute('aria-invalid', 'true');
+
+    await user.click(etapa('Revisão'));
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+    const chamadaSalvar = apiFetchMock.mock.calls.find((c) => c[0] === '/captacoes' && c[1]);
+    const body = JSON.parse((chamadaSalvar as [string, { body: string }])[1].body);
+    expect(body.dataChegadaDestino ?? null).toBeNull();
   });
 
   it('passo Carregamento mostra Data de chegada ANTES da Data de carregamento (pedido 12/11/2026)', async () => {

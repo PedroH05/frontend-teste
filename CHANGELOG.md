@@ -3,6 +3,17 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-11-24 — Datas digitáveis
+
+- Pedido: além do calendário, dá pra digitar a data. Vale nos campos da
+  Captação (ETA, chegada no destino, carregamento) e no filtro de Período
+  do Histórico ("De" e "Até" no topo do popover).
+- Só números: as barras entram sozinhas (`28112026` → `28/11/2026`).
+  Colar "28/11/2026", "28-11-2026" ou "2026-11-28" também funciona. Ano
+  com 2 dígitos vira 20aa.
+- Data impossível (31/02) fica vermelha com aviso e não é salva; a data
+  anterior continua valendo até corrigir. Apagar tudo limpa o campo.
+
 ## 2026-11-12 — Busca por palavras e aviso de "nenhum resultado"
 
 - Busca do Histórico/Carteira agora também acha por palavras: todas as

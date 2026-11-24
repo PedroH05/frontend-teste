@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Calendar, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { InputData } from '@/components/input-data';
 
 // Filtro de/até do Histórico (pedido 13/10/2026) — troca o <input
 // type="date"> de dia único por um popover com atalhos + dois meses,
@@ -118,11 +119,13 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
   const [rascunho, setRascunho] = useState<Periodo>(value);
   const [mesBase, setMesBase] = useState(() => primeiroDiaDoMes(value.inicio ?? new Date()));
   const [presetAtivo, setPresetAtivo] = useState<string | null>(null);
+  const [erroDigitado, setErroDigitado] = useState<{ de: string | null; ate: string | null }>({ de: null, ate: null });
 
   function alternar(abrir: boolean) {
     setAberto(abrir);
     if (abrir) {
       setRascunho(value);
+      setErroDigitado({ de: null, ate: null });
       setPresetAtivo(null);
       setMesBase(primeiroDiaDoMes(value.inicio ?? new Date()));
     }
@@ -130,6 +133,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
 
   function clicarDia(d: Date) {
     setPresetAtivo(null);
+    setErroDigitado({ de: null, ate: null });
     setRascunho((r) => {
       if (!r.inicio || (r.inicio && r.fim)) return { inicio: d, fim: null };
       if (d < r.inicio) return { inicio: d, fim: r.inicio };
@@ -140,13 +144,26 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
   function aplicarPreset(p: Preset) {
     const [inicio, fim] = p.calc(meiaNoite(new Date()));
     setRascunho({ inicio, fim });
+    setErroDigitado({ de: null, ate: null });
     setPresetAtivo(p.nome);
     setMesBase(primeiroDiaDoMes(inicio));
   }
 
+  // "De"/"Até" digitados (pedido 24/11/2026): mudam o rascunho na hora e
+  // levam o calendário pro mês digitado; o clique nos dias segue igual.
+  function digitarPonta(ponta: 'inicio' | 'fim', d: Date | null) {
+    setPresetAtivo(null);
+    setRascunho((r) => ({ ...r, [ponta]: d }));
+    if (d) setMesBase(primeiroDiaDoMes(ponta === 'fim' ? new Date(d.getFullYear(), d.getMonth() - 1, 1) : d));
+  }
+
+  const erroAtual = erroDigitado.de ?? erroDigitado.ate;
+
   function aplicar() {
-    if (!rascunho.inicio || !rascunho.fim) return;
-    onChange(rascunho);
+    if (!rascunho.inicio || !rascunho.fim || erroAtual) return;
+    // digitou o "Até" antes do "De": aplica na ordem certa
+    const [inicio, fim] = rascunho.inicio <= rascunho.fim ? [rascunho.inicio, rascunho.fim] : [rascunho.fim, rascunho.inicio];
+    onChange({ inicio, fim });
     setAberto(false);
   }
 
@@ -185,6 +202,36 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
         className="w-[min(720px,calc(100vw-2.5rem))] rounded-[14px] p-0"
         style={{ background: 'var(--popover)', border: '1px solid var(--border)', boxShadow: '0 4px 12px rgba(0,0,0,.08)' }}
       >
+        <div className="flex flex-wrap items-end gap-2.5 border-b px-4 py-3" style={{ borderColor: 'var(--border)' }}>
+          {(
+            [
+              { ponta: 'inicio', chave: 'de', rotulo: 'De' },
+              { ponta: 'fim', chave: 'ate', rotulo: 'Até' },
+            ] as const
+          ).map(({ ponta, chave, rotulo }) => (
+            <label key={ponta} className="flex flex-col gap-1">
+              <span
+                className="text-[11.5px] font-semibold tracking-[.04em] uppercase"
+                style={{ color: 'var(--muted-foreground)' }}
+              >
+                {rotulo}
+              </span>
+              <InputData
+                aria-label={`Data ${rotulo === 'De' ? 'inicial' : 'final'} do período`}
+                value={rascunho[ponta]}
+                onChange={(d) => digitarPonta(ponta, d)}
+                onErro={(m) => setErroDigitado((e) => ({ ...e, [chave]: m }))}
+                className="h-9 w-[140px] rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20"
+              />
+            </label>
+          ))}
+          {erroAtual && (
+            <span role="alert" className="pb-2 text-[12px] font-medium" style={{ color: 'var(--destructive)' }}>
+              {erroAtual}
+            </span>
+          )}
+        </div>
+
         <div className="flex flex-col sm:flex-row">
           <div
             className="flex gap-1 overflow-x-auto border-b p-2 sm:w-[156px] sm:flex-none sm:flex-col sm:overflow-visible sm:border-r sm:border-b-0"
@@ -295,6 +342,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
               type="button"
               onClick={() => {
                 setRascunho({ inicio: null, fim: null });
+                setErroDigitado({ de: null, ate: null });
                 setPresetAtivo(null);
               }}
               className="rounded-[9px] border px-3 py-[6px] text-[12px] font-semibold"
@@ -305,7 +353,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
             <button
               type="button"
               onClick={aplicar}
-              disabled={!rascunho.inicio || !rascunho.fim}
+              disabled={!rascunho.inicio || !rascunho.fim || !!erroAtual}
               className="h-8 rounded-lg bg-primary px-3.5 text-[13px] font-semibold text-primary-foreground hover:bg-primary/85 disabled:opacity-40"
             >
               Aplicar
