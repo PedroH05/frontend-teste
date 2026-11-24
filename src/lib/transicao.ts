@@ -3,7 +3,7 @@
 // (`nav-forward`), subir entra pela esquerda (`nav-back`). A ordem é a da
 // barra lateral; "Nova captação" fica logo depois da Carteira, de onde
 // costuma ser aberta. Os tipos viram `transitionTypes` no <Link>/router e
-// são lidos pelo <ViewTransition> de `app/(authed)/template.tsx`.
+// são lidos pelo <ViewTransition> de `components/transicao-tela.tsx`.
 export const ORDEM_TELAS = [
   '/carteira',
   '/captacoes',

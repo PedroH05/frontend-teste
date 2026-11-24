@@ -103,19 +103,25 @@ registro, não reflete mais o código atual.
 
 ## Componentes importantes
 
-- `app/(authed)/template.tsx` + `lib/transicao.ts` — transição entre
-  telas (24/11/2026). O template é recriado a cada navegação (o layout
-  não), então o `<ViewTransition>` dele anima a saída e a entrada do
-  conteúdo; a barra lateral está no layout e fica parada (snapshot `root`
-  sem animação). Direção pelo `transitionTypes` da navegação:
+- `components/transicao-tela.tsx` + `lib/transicao.ts` — transição entre
+  telas (24/11/2026). O AppShell envolve o conteúdo num `<ViewTransition
+  key={pathname}>`: cada troca de tela sai e entra de novo, e anima; a
+  barra lateral fica fora e parada (snapshot `root` sem animação). Não usar
+  `template.tsx` pra isso (foi a 1ª versão): no voltar/avançar o Next
+  reaproveita a tela guardada num `<Activity>` escondido, sem recriar o
+  template, e a transição não disparava. Direção pelo `transitionTypes` da navegação:
   `tipoTransicao(de, para)` compara a posição em `ORDEM_TELAS` (ordem do
   menu, "Nova captação" logo depois da Carteira) e devolve `nav-forward`
   (entra pela direita) ou `nav-back` (pela esquerda). Usado nos links da
   sidebar, nos links internos (breadcrumb, "ver clientes" do Dashboard) e
   nos `router.push` entre telas. Navegação sem tipo (voltar/avançar do
-  navegador) usa `nav-auto`, que também desliza: o AppShell ouve o
-  `popstate` e grava `data-nav-dir` (`forward`/`back`) no `<html>`, e o
-  CSS inverte o lado por esse atributo. As tabelas da Carteira, Histórico e
+  navegador) o React **não anima** (atualização de `popstate` é aplicada
+  na hora, sem View Transition). Por isso o AppShell segura o `popstate`
+  (listener `capture`, registrado antes do do Next), grava `data-nav-dir`
+  e `data-nav-manual` no `<html>`, abre `document.startViewTransition` na
+  mão e reenvia o evento (marcado `__vtReenviado`) dentro dela; o CSS
+  `html[data-nav-manual]::view-transition-*(root)` desliza o conteúdo e a
+  sidebar (`view-transition-name: vt-sidebar`) fica parada. As tabelas da Carteira, Histórico e
   Clientes trocam a `key` do `<TableBody>` ao terminar de carregar, então
   as linhas chegam esmaecendo (`animate-in fade-in`) em vez de pular no
   lugar do esqueleto depois do deslize. CSS em `globals.css`

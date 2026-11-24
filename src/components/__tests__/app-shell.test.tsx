@@ -72,6 +72,39 @@ describe('AppShell — direção do deslize no voltar/avançar do navegador (24/
     expect(document.documentElement.dataset.navDir).toBe('forward');
   });
 
+  it('com View Transition no navegador, segura o popstate e reenvia dentro da transição', async () => {
+    nav.caminho = '/historico';
+    montar();
+    const recebidos: PopStateEvent[] = [];
+    const depois = (e: Event) => recebidos.push(e as PopStateEvent);
+    window.addEventListener('popstate', depois); // registrado depois, como o do Next
+    let atualizar: (() => unknown) | undefined;
+    const finished = Promise.resolve();
+    Object.defineProperty(document, 'startViewTransition', {
+      configurable: true,
+      value: (cb: () => unknown) => {
+        atualizar = cb;
+        return { finished, ready: finished, updateCallbackDone: finished };
+      },
+    });
+    try {
+      window.history.pushState({ x: 1 }, '', '/carteira');
+      window.dispatchEvent(new PopStateEvent('popstate', { state: { x: 1 } }));
+      // o original não chega no listener do "Next": foi segurado
+      expect(recebidos).toHaveLength(0);
+      expect(document.documentElement.dataset.navManual).toBe('');
+      expect(document.documentElement.dataset.navDir).toBe('back');
+      // dentro da transição, o evento é reenviado com o mesmo state
+      void atualizar?.();
+      expect(recebidos).toHaveLength(1);
+      expect(recebidos[0].state).toEqual({ x: 1 });
+    } finally {
+      window.removeEventListener('popstate', depois);
+      delete (document as { startViewTransition?: unknown }).startViewTransition;
+      delete document.documentElement.dataset.navManual;
+    }
+  });
+
   it('voltar pra uma tela acima no menu desliza pra trás', () => {
     nav.caminho = '/historico';
     montar();

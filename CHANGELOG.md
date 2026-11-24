@@ -3,6 +3,17 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-11-24 — Transição no voltar do navegador (de verdade)
+
+- Depois de ir e voltar entre telas a transição sumia: o voltar/avançar do
+  navegador (e o botão lateral do mouse) nunca animava. O Next reaproveita
+  a tela já visitada sem recriá-la, então a animação presa ao
+  `template.tsx` não disparava; e o React, por padrão, não anima
+  atualização vinda do voltar. A transição agora é ligada à troca de
+  endereço (`components/transicao-tela.tsx`) e, no voltar/avançar, o
+  AppShell abre a transição na mão. Testado: link, voltar e avançar
+  animam, em sequência, sem parar de funcionar.
+
 ## 2026-11-24 — Calendário do Período maior e com Manrope
 
 - Pedido: o calendário do filtro de Período (Histórico) estava pequeno pro

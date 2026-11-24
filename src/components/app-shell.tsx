@@ -13,6 +13,7 @@ import { applySkin, getSkin } from '@/lib/skin';
 import { applySidebarRecolhida, getSidebarRecolhida } from '@/lib/sidebar';
 import { applyStatusTexto, getStatusTexto } from '@/lib/status-texto';
 import { tipoTransicao } from '@/lib/transicao';
+import { TransicaoTela } from '@/components/transicao-tela';
 import type { CockpitRow } from '@/lib/types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -63,6 +64,9 @@ const NAV_ITEMS = [
   { section: 'Sistema', items: [{ href: '/config', label: 'Config', icon: Settings }] },
 ];
 
+// Marca o `popstate` que o AppShell reenvia, pra não segurar ele de novo.
+const REENVIADO = '__vtReenviado';
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
@@ -74,13 +78,50 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     ultimoCaminho.current = pathname;
   }, [pathname]);
+  // O React não anima o voltar/avançar do navegador (a atualização vinda de
+  // `popstate` é aplicada na hora, sem View Transition). Então aqui a gente
+  // segura o `popstate`, abre a transição na mão e reenvia o evento pro Next
+  // dentro dela: o navegador fotografa a tela velha, o Next troca, e o CSS
+  // `html[data-nav-manual]` desliza o conteúdo (a sidebar tem nome próprio e
+  // fica parada). Roda antes do listener do Next: efeito do filho registra
+  // antes do pai, e é `capture`.
   useEffect(() => {
-    function aoVoltar() {
-      const tipo = tipoTransicao(ultimoCaminho.current, window.location.pathname);
-      document.documentElement.dataset.navDir = tipo === 'nav-back' ? 'back' : 'forward';
+    const raiz = document.documentElement;
+    function aoVoltar(e: PopStateEvent) {
+      if (REENVIADO in e) return;
+      const destino = window.location.pathname;
+      const tipo = tipoTransicao(ultimoCaminho.current, destino);
+      raiz.dataset.navDir = tipo === 'nav-back' ? 'back' : 'forward';
+      if (
+        typeof document.startViewTransition !== 'function' ||
+        destino === ultimoCaminho.current ||
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      ) {
+        return;
+      }
+      e.stopImmediatePropagation();
+      const estado = e.state;
+      raiz.dataset.navManual = '';
+      const vt = document.startViewTransition(() => {
+        const reenvio = new PopStateEvent('popstate', { state: estado });
+        Object.defineProperty(reenvio, REENVIADO, { value: true });
+        window.dispatchEvent(reenvio);
+        // espera o React terminar de trocar a tela (ou desiste em 1,5 s)
+        return new Promise<void>((resolve) => {
+          const inicio = performance.now();
+          const checar = () => {
+            if (ultimoCaminho.current === destino || performance.now() - inicio > 1500) resolve();
+            else window.setTimeout(checar, 16);
+          };
+          checar();
+        });
+      });
+      vt.finished.finally(() => {
+        delete raiz.dataset.navManual;
+      });
     }
-    window.addEventListener('popstate', aoVoltar);
-    return () => window.removeEventListener('popstate', aoVoltar);
+    window.addEventListener('popstate', aoVoltar, { capture: true });
+    return () => window.removeEventListener('popstate', aoVoltar, { capture: true });
   }, []);
   const router = useRouter();
   const [mock, setMock] = useState(false);
@@ -267,7 +308,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               Modo demonstração — dados fixos, nada aqui é gravado de verdade
             </div>
           )}
-          {children}
+          <TransicaoTela>{children}</TransicaoTela>
         </SidebarInset>
       </SidebarProvider>
     </>
