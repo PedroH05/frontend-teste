@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { tipoTransicao } from '@/lib/transicao';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Cliente, CockpitRow, ImportResult } from '@/lib/types';
 import { BANDS, banda, diasAte, dLabel, fmtEta, shortTerm } from '@/lib/risco';
@@ -278,7 +279,7 @@ export default function CarteiraPage() {
     set('terminalDescarga', row.atrac || 'Santos Brasil');
     set('terminalCaptado', row.parc || 'ECOPORTO');
     set('cnpj', row.cnpj);
-    router.push(`/captacoes?${params.toString()}`);
+    router.push(`/captacoes?${params.toString()}`, { transitionTypes: [tipoTransicao('/carteira', '/captacoes')] });
   }
 
   // Sem uso pelo mesmo motivo do captar() acima (14/09/2026).
@@ -328,7 +329,7 @@ export default function CarteiraPage() {
   // editar-por-seção e excluir. Sem captação casada, vai pro fluxo de criar
   // uma nova a partir do embarque (captar(), acima).
   function handleRowClick(r: CockpitRow) {
-    if (r.capId) router.push(`/captacoes?edit=${r.capId}&step=6`);
+    if (r.capId) router.push(`/captacoes?edit=${r.capId}&step=6`, { transitionTypes: [tipoTransicao('/carteira', '/captacoes')] });
     else captar(r);
   }
 
@@ -538,7 +539,7 @@ export default function CarteiraPage() {
             <Upload />
             {importing ? 'Lendo a planilha…' : 'Importar Logcomex'}
           </Button>
-          <Button className="h-10 px-4" onClick={() => router.push('/captacoes')}>
+          <Button className="h-10 px-4" onClick={() => router.push('/captacoes', { transitionTypes: [tipoTransicao('/carteira', '/captacoes')] })}>
             <Plus />
             Nova captação
           </Button>

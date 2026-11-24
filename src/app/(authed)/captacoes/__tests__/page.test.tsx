@@ -155,7 +155,7 @@ describe('CaptacoesPage', () => {
     // (pedido 24/11/2026: opção A, sem caminhão nem guindaste)
     expect(await screen.findByRole('button', { name: 'Salvo' })).toBeInTheDocument();
     expect(pushMock).not.toHaveBeenCalled();
-    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/historico'), { timeout: 2000 });
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/historico', { transitionTypes: ['nav-forward'] }), { timeout: 2000 });
   });
 
   it('erro ao salvar não anima nem mostra "Salvo": botão volta a Salvar e não navega (12/11/2026)', async () => {
@@ -410,7 +410,7 @@ describe('CaptacoesPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Excluir processo' }));
     expect(apiFetchMock).toHaveBeenCalledWith(`/captacoes/${captacaoId}`, { method: 'DELETE' });
-    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/historico'));
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/historico', { transitionTypes: ['nav-forward'] }));
   });
 
   it('avisa antes de sair da tela clicando num link, se tiver dado digitado não salvo — pedido 17/09/2026', async () => {

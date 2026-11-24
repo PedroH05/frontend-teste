@@ -191,7 +191,7 @@ describe('HistoricoPage', () => {
 
     await user.click(within(linha).getByText('Em andamento'));
 
-    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=7&step=6');
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=7&step=6', { transitionTypes: ['nav-back'] });
   });
 
   it('clicar em outra célula da linha (não o Status) não navega', async () => {

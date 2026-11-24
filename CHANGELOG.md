@@ -3,6 +3,16 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-11-24 — Transição entre telas
+
+- Pedido: o corte entre telas estava seco. Opção C do artefato
+  "Transições entre telas": o conteúdo desliza pro lado conforme a ordem
+  do menu (descer entra pela direita, subir pela esquerda). A barra
+  lateral fica parada.
+- Feito com o `<ViewTransition>` do React que o Next 16 já traz, sem
+  biblioteca nova. Navegador sem suporte troca de tela como antes; quem usa
+  "reduzir movimento" não vê animação. Voltar do navegador só esmaece.
+
 ## 2026-11-24 — Salvar sem caminhão
 
 - Pedido: opção A do artefato "Botão Salvar, versão simples". O caminhão

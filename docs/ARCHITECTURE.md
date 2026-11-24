@@ -103,6 +103,19 @@ registro, não reflete mais o código atual.
 
 ## Componentes importantes
 
+- `app/(authed)/template.tsx` + `lib/transicao.ts` — transição entre
+  telas (24/11/2026). O template é recriado a cada navegação (o layout
+  não), então o `<ViewTransition>` dele anima a saída e a entrada do
+  conteúdo; a barra lateral está no layout e fica parada (snapshot `root`
+  sem animação). Direção pelo `transitionTypes` da navegação:
+  `tipoTransicao(de, para)` compara a posição em `ORDEM_TELAS` (ordem do
+  menu, "Nova captação" logo depois da Carteira) e devolve `nav-forward`
+  (entra pela direita) ou `nav-back` (pela esquerda). Usado nos links da
+  sidebar e nos `router.push` entre telas; navegação sem tipo (voltar do
+  navegador) só esmaece (`nav-fade`). CSS em `globals.css`
+  (`::view-transition-*`), com `prefers-reduced-motion` zerando tudo.
+  **Toda navegação nova entre telas** deve passar `transitionTypes:
+  [tipoTransicao('/origem', '/destino')]`, senão só esmaece.
 - `components/input-data.tsx` — campo de data digitável (24/11/2026),
   usado no `DateField` da Captação e no "De/Até" do `FiltroPeriodo`.
   Máscara dd/mm/aaaa (barras entram sozinhas; colar "28-11-2026" ou ISO

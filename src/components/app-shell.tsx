@@ -12,6 +12,7 @@ import { applyTheme, getTheme } from '@/lib/theme';
 import { applySkin, getSkin } from '@/lib/skin';
 import { applySidebarRecolhida, getSidebarRecolhida } from '@/lib/sidebar';
 import { applyStatusTexto, getStatusTexto } from '@/lib/status-texto';
+import { tipoTransicao } from '@/lib/transicao';
 import type { CockpitRow } from '@/lib/types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -190,7 +191,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       return (
                         <SidebarMenuItem key={item.href}>
                           <SidebarMenuButton
-                            render={<Link href={item.href} />}
+                            render={<Link href={item.href} transitionTypes={[tipoTransicao(pathname, item.href)]} />}
                             isActive={active}
                             tooltip={item.label}
                             className="data-active:bg-primary data-active:text-primary-foreground data-active:hover:bg-primary data-active:hover:text-primary-foreground"

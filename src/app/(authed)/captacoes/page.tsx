@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { tipoTransicao } from '@/lib/transicao';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Captacao, CaptacaoInput, Cliente } from '@/lib/types';
 import { cleanDesp, DESPACHANTES_PADRAO } from '@/lib/despachante';
@@ -593,7 +594,7 @@ function CaptacoesForm() {
       // se a API desse erro).
       setSalvo(true);
       await new Promise((r) => setTimeout(r, PAUSA_SALVO_MS));
-      router.push('/historico');
+      router.push('/historico', { transitionTypes: [tipoTransicao('/captacoes', '/historico')] });
     } catch (err) {
       setSalvo(false);
       setError(err instanceof ApiError ? err.message : 'Erro ao salvar captação');
@@ -620,7 +621,7 @@ function CaptacoesForm() {
     setSaving(true);
     try {
       await apiFetch(`/captacoes/${editId}`, { method: 'DELETE' });
-      router.push('/historico');
+      router.push('/historico', { transitionTypes: [tipoTransicao('/captacoes', '/historico')] });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erro ao excluir');
       setSaving(false);

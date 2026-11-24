@@ -166,7 +166,7 @@ describe('CarteiraPage', () => {
     const linha = screen.getByText('TECNO').closest('tr')!;
     await user.click(within(linha).getByText('EM ANDAMENTO'));
 
-    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=6');
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=6', { transitionTypes: ['nav-forward'] });
   });
 
   it('clicar em outra célula da linha (não o Status) não navega', async () => {
@@ -190,7 +190,7 @@ describe('CarteiraPage', () => {
     within(linha).getByText('EM ANDAMENTO').closest('td')!.focus();
     await user.keyboard('{Enter}');
 
-    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=6');
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=42&step=6', { transitionTypes: ['nav-forward'] });
   });
 
   it('linha sem captação casada (só embarque) vai pro fluxo de criar, não pra Revisão', async () => {
@@ -228,7 +228,7 @@ describe('CarteiraPage', () => {
     expect(within(lista).getByText('0347-26')).toBeInTheDocument(); // nenhum nome cortado
 
     await user.click(within(lista).getByText('0347-26'));
-    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=3&step=6');
+    expect(pushMock).toHaveBeenCalledWith('/captacoes?edit=3&step=6', { transitionTypes: ['nav-forward'] });
   });
 
   it('sem crítico, o alerta não aparece mais (pedido 01/10/2026: tirada a frase "janela de 7 dias / regime pendente")', async () => {

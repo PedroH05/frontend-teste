@@ -12,6 +12,7 @@ import {
   Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { tipoTransicao } from '@/lib/transicao';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Captacao } from '@/lib/types';
 import { shortTerm } from '@/lib/risco';
@@ -119,7 +120,7 @@ export default function HistoricoPage() {
   // mostra tudo (inclusive todos os BLs) e já tem editar-por-seção e
   // excluir. Substitui o drawer de detalhe usado antes.
   function handleRowClick(c: Captacao) {
-    router.push(`/captacoes?edit=${c.id}&step=6`);
+    router.push(`/captacoes?edit=${c.id}&step=6`, { transitionTypes: [tipoTransicao('/historico', '/captacoes')] });
   }
 
   async function load() {
@@ -243,7 +244,7 @@ export default function HistoricoPage() {
             <span className="font-semibold text-foreground tabular-nums">{linhas.length}</span>
             captações
           </span>
-          <Button className="h-10 px-4" onClick={() => router.push('/captacoes')}>
+          <Button className="h-10 px-4" onClick={() => router.push('/captacoes', { transitionTypes: [tipoTransicao('/historico', '/captacoes')] })}>
             <Plus />
             Nova captação
           </Button>
