@@ -3,6 +3,17 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-11-24 — Salvar sem caminhão
+
+- Pedido: opção A do artefato "Botão Salvar, versão simples". O caminhão
+  com contêiner saiu. Agora o botão gira ("Salvando…") e, depois que a API
+  confirma, vira verde com "✓ Salvo" por 0,6 s antes de ir pro Histórico.
+- Corrige o que incomodava no caminhão: a animação começava antes de saber
+  se tinha salvo (com erro, o botão voltava do nada) e toda gravação
+  esperava 1,4 s fixos. Com erro, nada muda no botão e a mensagem aparece.
+- CSS do caminhão (`.vt-save-*`, `.vt-shipping`, `.vt-tiresmoke`) removido
+  do `globals.css`.
+
 ## 2026-11-24 — Datas digitáveis
 
 - Pedido: além do calendário, dá pra digitar a data. Vale nos campos da

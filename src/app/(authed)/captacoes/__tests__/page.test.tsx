@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import CaptacoesPage from '../page';
 import { mockCaptacoes } from '@/lib/mock-data';
+import { ApiError } from '@/lib/api';
 
 const pushMock = vi.fn();
 const backMock = vi.fn();
@@ -106,6 +107,7 @@ describe('CaptacoesPage', () => {
   afterEach(() => {
     for (const k of Object.keys(filas)) delete filas[k];
     apiFetchMock.mockClear();
+    pushMock.mockClear();
     useSearchParamsMock.mockReturnValue(new URLSearchParams());
   });
 
@@ -149,9 +151,29 @@ describe('CaptacoesPage', () => {
     expect(body.cli).toBe('TECNO');
     expect(body.efetivada).toBe(false); // status default é PENDENTE
 
-    // espera a animação do botão Salvar (1.4s) terminar antes de navegar —
-    // ver shipButtonAway() em ../page.tsx.
+    // botão vira "✓ Salvo" e só depois de um instante vai pro Histórico
+    // (pedido 24/11/2026: opção A, sem caminhão nem guindaste)
+    expect(await screen.findByRole('button', { name: 'Salvo' })).toBeInTheDocument();
+    expect(pushMock).not.toHaveBeenCalled();
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/historico'), { timeout: 2000 });
+  });
+
+  it('erro ao salvar não anima nem mostra "Salvo": botão volta a Salvar e não navega (12/11/2026)', async () => {
+    const user = userEvent.setup();
+    pushMock.mockClear(); // isola do teste anterior, que navegou
+    filaApi('/captacoes', new ApiError(500, 'Falhou no servidor'));
+    render(<CaptacoesPage />);
+
+    await user.type(screen.getByLabelText('Cliente'), 'tecno');
+    for (let i = 0; i < 6; i++) {
+      await user.click(screen.getByRole('button', PROXIMO));
+    }
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    expect(await screen.findByText('Falhou no servidor')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Salvo' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salvar' })).toBeEnabled();
+    expect(pushMock).not.toHaveBeenCalled();
   });
 
   it('passo Carregamento (6º) salva datas (pelo calendário) e transportadora (pedido 01/10/2026)', async () => {

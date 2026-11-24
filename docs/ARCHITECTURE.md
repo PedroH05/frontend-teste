@@ -527,9 +527,10 @@ captacao-api), então registros novos já chegam sem sujeira.
     todo vazio mostra `Alert` âmbar "Dá pra salvar e completar depois".
   - **Excluir abre `AlertDialog`** no lugar do `confirm()` nativo. "Sair"
     e o aviso de dado não salvo continuam com `confirm()` nativo, de
-    propósito. Animação do caminhão no Salvar mantida igual — a barra de
-    ações não usa `<Card>` porque o `overflow-hidden` dele cortaria o
-    caminhão.
+    propósito. Salvar (24/11/2026): sem animação de caminhão; o botão
+    mostra "Salvando…" com spinner e, só depois do OK da API, "✓ Salvo"
+    em verde por `PAUSA_SALVO_MS` (600 ms) antes de ir pro Histórico. Com
+    erro o botão volta a "Salvar" e a mensagem aparece.
   - Container da página tem `w-full` junto do `mx-auto max-w-[1240px]`:
     o `SidebarInset` é `flex-col`, e item flex com margem automática
     encolhe até o conteúdo — sem isso cada etapa ficava com uma largura

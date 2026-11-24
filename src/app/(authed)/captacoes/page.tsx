@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ptBR } from 'react-day-picker/locale';
@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Loader2,
   Minus,
   Plus,
   X,
@@ -138,16 +139,9 @@ type EstadoEtapa = 'atual' | 'completa' | 'vazios' | 'pendente';
 
 const initialForm: FormState = {};
 
-// Cores de "contêiner" sorteadas pro botão Salvar virar ao animar — portado
-// de CONTAINER_COLORS no index.html original.
-const CONTAINER_COLORS: [string, string][] = [
-  ['#4FA8C9', '#3A7A96'],
-  ['#D9A828', '#B08419'],
-  ['#2C8C5A', '#1F6640'],
-  ['#E0762E', '#B85A1E'],
-  ['#2E4C7A', '#203657'],
-  ['#C0392B', '#96271C'],
-];
+// Quanto o botão fica em "✓ Salvo" antes de ir pro Histórico (pedido
+// 24/11/2026: só o botão, sem animação de caminhão/guindaste).
+const PAUSA_SALVO_MS = 600;
 
 const CIRCULO: Record<EstadoEtapa, string> = {
   atual: 'bg-primary text-primary-foreground ring-4 ring-primary/15',
@@ -403,41 +397,8 @@ function CaptacoesForm() {
   // Quem lançou, só pra mostrar na Revisão — vem da captação carregada e é
   // definido pela API (do login); não faz parte do formulário nem do payload.
   const [autorCaptacao, setAutorCaptacao] = useState<string | null>(null);
-  const wrapRef = useRef<HTMLSpanElement>(null);
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const truckRef = useRef<SVGSVGElement>(null);
-  const bedRef = useRef<SVGRectElement>(null);
-
-  // Mede a posição real da "caçamba" do caminhão (bedRef) contra o botão
-  // Salvar, pra o contêiner cair no lugar certo em vez de um valor de queda
-  // fixo — portado de shipButtonAway() no index.html original.
-  function shipButtonAway(): Promise<void> {
-    return new Promise((resolve) => {
-      const wrap = wrapRef.current;
-      const btn = btnRef.current;
-      const truck = truckRef.current;
-      const bed = bedRef.current;
-      if (wrap && btn && truck && bed) {
-        const prevTransform = truck.style.transform;
-        const prevOpacity = truck.style.opacity;
-        truck.style.transform = 'translateY(0) scale(.92)';
-        truck.style.opacity = '1';
-        const btnRect = btn.getBoundingClientRect();
-        const bedRect = bed.getBoundingClientRect();
-        truck.style.transform = prevTransform;
-        truck.style.opacity = prevOpacity;
-        const dx = bedRect.left + bedRect.width / 2 - (btnRect.left + btnRect.width / 2);
-        const dy = bedRect.top + bedRect.height / 2 - (btnRect.top + btnRect.height / 2);
-        const [cBase, cShade] = CONTAINER_COLORS[Math.floor(Math.random() * CONTAINER_COLORS.length)];
-        wrap.style.setProperty('--cBase', cBase);
-        wrap.style.setProperty('--cShade', cShade);
-        wrap.style.setProperty('--fallX', `${dx}px`);
-        wrap.style.setProperty('--fallY', `${dy}px`);
-        wrap.classList.add('vt-shipping');
-      }
-      setTimeout(resolve, 1400);
-    });
-  }
+  // Depois do OK da API o botão fica "✓ Salvo" um instante antes de navegar.
+  const [salvo, setSalvo] = useState(false);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -607,7 +568,6 @@ function CaptacoesForm() {
       return;
     }
     setSaving(true);
-    const shipDone = shipButtonAway();
     try {
       const payload: CaptacaoInput = {
         ...form,
@@ -629,10 +589,13 @@ function CaptacoesForm() {
         });
       }
       setBaseline(JSON.stringify({ form, status })); // salvou — não é mais "sujo"
-      await shipDone;
+      // "✓ Salvo" só depois do OK (antes o caminhão saía no clique, mesmo
+      // se a API desse erro).
+      setSalvo(true);
+      await new Promise((r) => setTimeout(r, PAUSA_SALVO_MS));
       router.push('/historico');
     } catch (err) {
-      wrapRef.current?.classList.remove('vt-shipping');
+      setSalvo(false);
       setError(err instanceof ApiError ? err.message : 'Erro ao salvar captação');
     } finally {
       setSaving(false);
@@ -1442,8 +1405,6 @@ function CaptacoesForm() {
 
           {error && !erroCliente && <p className="text-sm font-medium text-destructive">{error}</p>}
 
-          {/* Sem overflow-hidden (não usa <Card>): o caminhão do Salvar
-              aparece abaixo do botão e sai andando pra direita. */}
           <div className="flex flex-wrap items-center gap-2 rounded-xl bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/10">
             <Button variant="outline" className="h-10 px-4" onClick={handleExit}>
               Sair
@@ -1486,52 +1447,25 @@ function CaptacoesForm() {
                 <ChevronRight />
               </Button>
             )}
-            <span ref={wrapRef} className="vt-save-wrap">
-              <svg
-                ref={truckRef}
-                className="vt-save-truck"
-                viewBox="0 0 64 30"
-                width="60"
-                height="28"
-                aria-hidden="true"
-              >
-                {/* eixo/chassi */}
-                <rect x="3" y="19" width="39" height="2" rx="1" fill="#4a4438" />
-                {/* caçamba sólida, com ripas — antes era só a linha do chassi, */}
-                {/* caçamba invisível (fill:none) sem corpo nenhum */}
-                <rect x="4" y="14" width="37" height="5" rx="1" fill="#6b6459" />
-                <rect x="4" y="14" width="37" height="1.5" fill="#87806f" opacity=".7" />
-                <line x1="10" y1="15.5" x2="10" y2="18.5" stroke="#4a4438" strokeWidth=".6" opacity=".5" />
-                <line x1="18" y1="15.5" x2="18" y2="18.5" stroke="#4a4438" strokeWidth=".6" opacity=".5" />
-                <line x1="26" y1="15.5" x2="26" y2="18.5" stroke="#4a4438" strokeWidth=".6" opacity=".5" />
-                <line x1="34" y1="15.5" x2="34" y2="18.5" stroke="#4a4438" strokeWidth=".6" opacity=".5" />
-                {/* alvo invisível de onde o contêiner cai — mesma função de antes, */}
-                {/* só reposicionado pra ficar dentro da caçamba visível */}
-                <rect ref={bedRef} x="6" y="7" width="32" height="8" fill="none" />
-                {/* postes com a mesma altura nos dois lados (antes: 14px vs 8px, torto) */}
-                <rect x="3" y="6" width="3" height="9" rx="1" fill="#5a544c" />
-                <rect x="38" y="6" width="3" height="9" rx="1" fill="#5a544c" />
-                <rect x="3" y="5.5" width="38" height="1.3" fill="#87806f" opacity=".6" />
-                {/* cabine com forma real (antes: dois blocos cinza empilhados) */}
-                <path d="M42 19 V11 Q42 8 45 8 H50 Q54 8 55 11 L57 15.5 H60 Q61.5 15.5 61.5 17 V19 Z" fill="#5a6270" />
-                <path d="M46 9.3 Q44 9.3 44 11.3 V13 H51.5 L50.5 9.3 Z" fill="#cdd6e0" />
-                <line x1="48.5" y1="9" x2="48.5" y2="19" stroke="#454c58" strokeWidth=".6" />
-                <circle cx="52.5" cy="14" r=".7" fill="#454c58" />
-                <rect x="43.5" y="10.5" width="1.6" height="2.6" rx=".5" fill="#454c58" />
-                <rect x="59.5" y="17.5" width="2.5" height="2.5" rx=".6" fill="#3f3a30" />
-                <circle cx="60.7" cy="15" r="1.1" fill="#E8C34A" />
-                <circle cx="13" cy="23" r="3.6" fill="#1c1a16" />
-                <circle cx="13" cy="23" r="1.6" fill="#8a857c" />
-                <circle className="vt-tiresmoke s1" cx="8" cy="20" r="2.6" fill="#847e73" />
-                <circle className="vt-tiresmoke s2" cx="5" cy="17.5" r="2.1" fill="#a19a8c" />
-                <circle className="vt-tiresmoke s3" cx="10.5" cy="16" r="1.7" fill="#bdb6a6" />
-                <circle cx="50" cy="23" r="3.6" fill="#1c1a16" />
-                <circle cx="50" cy="23" r="1.6" fill="#8a857c" />
-              </svg>
-              <Button ref={btnRef} className="vt-save-btn h-10 px-5" onClick={handleSubmit} disabled={saving}>
-                {saving ? 'Salvando…' : 'Salvar'}
-              </Button>
-            </span>
+            <Button
+              className={cn('h-10 min-w-28 px-5', salvo && 'bg-success text-white hover:bg-success')}
+              onClick={handleSubmit}
+              disabled={saving}
+            >
+              {salvo ? (
+                <>
+                  <Check />
+                  Salvo
+                </>
+              ) : saving ? (
+                <>
+                  <Loader2 className="animate-spin" />
+                  Salvando…
+                </>
+              ) : (
+                'Salvar'
+              )}
+            </Button>
           </div>
         </div>
       </div>
