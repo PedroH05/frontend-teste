@@ -624,11 +624,21 @@
   --vt-desliza: -48px;
   animation: 200ms ease-out 80ms both vt-esmaece, 280ms cubic-bezier(0.2, 0.7, 0.2, 1) both vt-desliza;
 }
-::view-transition-old(.nav-fade) {
-  animation: 120ms ease-in both vt-esmaece reverse;
+/* Sem tipo (voltar/avançar do navegador): mesma animação, direção pelo
+   `data-nav-dir` que o AppShell grava no <html> no popstate. */
+::view-transition-old(.nav-auto) {
+  --vt-desliza: -40px;
+  animation: 140ms ease-in both vt-esmaece reverse, 220ms ease-in both vt-desliza reverse;
 }
-::view-transition-new(.nav-fade) {
-  animation: 180ms ease-out 60ms both vt-esmaece;
+::view-transition-new(.nav-auto) {
+  --vt-desliza: 48px;
+  animation: 200ms ease-out 80ms both vt-esmaece, 280ms cubic-bezier(0.2, 0.7, 0.2, 1) both vt-desliza;
+}
+html[data-nav-dir='back']::view-transition-old(.nav-auto) {
+  --vt-desliza: 40px;
+}
+html[data-nav-dir='back']::view-transition-new(.nav-auto) {
+  --vt-desliza: -48px;
 }
 @keyframes vt-esmaece {
   from { opacity: 0; }

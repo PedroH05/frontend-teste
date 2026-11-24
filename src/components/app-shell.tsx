@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, LogOut, Package, History as HistoryIcon, Search, Settings, StickyNote, User, Users } from 'lucide-react';
@@ -65,6 +65,23 @@ const NAV_ITEMS = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+
+  // Voltar/avançar do navegador não leva `transitionTypes`; a direção do
+  // deslize (`nav-auto` em globals.css) vem deste atributo no <html>,
+  // calculado pela ordem do menu. O `popstate` dispara antes do Next trocar
+  // a tela, então `ultimoCaminho` ainda é a tela de onde se está saindo.
+  const ultimoCaminho = useRef(pathname);
+  useEffect(() => {
+    ultimoCaminho.current = pathname;
+  }, [pathname]);
+  useEffect(() => {
+    function aoVoltar() {
+      const tipo = tipoTransicao(ultimoCaminho.current, window.location.pathname);
+      document.documentElement.dataset.navDir = tipo === 'nav-back' ? 'back' : 'forward';
+    }
+    window.addEventListener('popstate', aoVoltar);
+    return () => window.removeEventListener('popstate', aoVoltar);
+  }, []);
   const router = useRouter();
   const [mock, setMock] = useState(false);
   const [userEmail, setUserEmail] = useState('');

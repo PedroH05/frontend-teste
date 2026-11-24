@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle2, History as HistoryIcon, TrendingDown, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { tipoTransicao } from '@/lib/transicao';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Captacao } from '@/lib/types';
 import { shortTerm } from '@/lib/risco';
@@ -700,7 +701,7 @@ export default function DashboardPage() {
           sub={`Contêineres · ${rotulo}`}
           delay={0.45}
           acao={
-            <Link href="/clientes" className="text-[13px] font-medium text-primary hover:underline">
+            <Link href="/clientes" transitionTypes={[tipoTransicao('/dashboard', '/clientes')]} className="text-[13px] font-medium text-primary hover:underline">
               Ver todos
             </Link>
           }

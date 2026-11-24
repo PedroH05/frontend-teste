@@ -6,12 +6,13 @@ import { ViewTransition } from 'react';
 // está no layout (AppShell), fora daqui, e fica parada.
 //
 // Direção vem do `transitionTypes` do link (ver lib/transicao.ts). Sem
-// tipo (voltar do navegador, link que não passou por `tipoTransicao`) só
-// esmaece, sem deslizar. CSS em globals.css (`::view-transition-*`).
+// tipo (voltar/avançar do navegador) usa `nav-auto`, que também desliza:
+// a direção vem do atributo `data-nav-dir` que o AppShell põe no <html>
+// ao ouvir o `popstate`. CSS em globals.css (`::view-transition-*`).
 const ANIMACAO = {
   'nav-forward': 'nav-forward',
   'nav-back': 'nav-back',
-  default: 'nav-fade',
+  default: 'nav-auto',
 };
 
 export default function AuthedTemplate({ children }: { children: React.ReactNode }) {

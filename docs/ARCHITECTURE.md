@@ -111,11 +111,18 @@ registro, não reflete mais o código atual.
   `tipoTransicao(de, para)` compara a posição em `ORDEM_TELAS` (ordem do
   menu, "Nova captação" logo depois da Carteira) e devolve `nav-forward`
   (entra pela direita) ou `nav-back` (pela esquerda). Usado nos links da
-  sidebar e nos `router.push` entre telas; navegação sem tipo (voltar do
-  navegador) só esmaece (`nav-fade`). CSS em `globals.css`
+  sidebar, nos links internos (breadcrumb, "ver clientes" do Dashboard) e
+  nos `router.push` entre telas. Navegação sem tipo (voltar/avançar do
+  navegador) usa `nav-auto`, que também desliza: o AppShell ouve o
+  `popstate` e grava `data-nav-dir` (`forward`/`back`) no `<html>`, e o
+  CSS inverte o lado por esse atributo. As tabelas da Carteira, Histórico e
+  Clientes trocam a `key` do `<TableBody>` ao terminar de carregar, então
+  as linhas chegam esmaecendo (`animate-in fade-in`) em vez de pular no
+  lugar do esqueleto depois do deslize. CSS em `globals.css`
   (`::view-transition-*`), com `prefers-reduced-motion` zerando tudo.
   **Toda navegação nova entre telas** deve passar `transitionTypes:
-  [tipoTransicao('/origem', '/destino')]`, senão só esmaece.
+  [tipoTransicao('/origem', '/destino')]`, senão a direção cai no
+  `nav-auto` (pra frente).
 - `components/input-data.tsx` — campo de data digitável (24/11/2026),
   usado no `DateField` da Captação e no "De/Até" do `FiltroPeriodo`.
   Máscara dd/mm/aaaa (barras entram sozinhas; colar "28-11-2026" ou ISO

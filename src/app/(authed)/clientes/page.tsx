@@ -296,7 +296,9 @@ export default function ClientesPage() {
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            {/* key troca ao terminar de carregar: as linhas chegam esmaecendo em vez de
+                "pular" no lugar do esqueleto (pedido 24/11/2026, junto da transição). */}
+            <TableBody key={loading ? 'carregando' : 'pronto'} className={loading ? undefined : 'animate-in fade-in duration-300'}>
               {loading ? (
                 <TableSkeletonRows columns={['twoLine', 'bar', 'bar', 'none']} />
               ) : clientesFiltrados.length === 0 ? (

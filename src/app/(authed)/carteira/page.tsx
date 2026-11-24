@@ -739,7 +739,9 @@ export default function CarteiraPage() {
               <TableHead className="h-11 text-xs font-medium text-muted-foreground">Atracação → Parceiro</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          {/* key troca ao terminar de carregar: as linhas chegam esmaecendo em vez de
+              "pular" no lugar do esqueleto (pedido 24/11/2026, junto da transição). */}
+          <TableBody key={loading ? 'carregando' : 'pronto'} className={loading ? undefined : 'animate-in fade-in duration-300'}>
             {loading ? (
               <TableSkeletonRows columns={['pill', 'twoLine', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar', 'bar']} />
             ) : linhas.length === 0 ? (

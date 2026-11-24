@@ -3,6 +3,16 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-11-24 — Transição entre telas: casos que ficavam secos
+
+- Voltar/avançar do navegador agora também desliza (antes só esmaecia),
+  na direção certa pela ordem do menu.
+- Links que ficaram de fora ganharam direção: "Carteira" do breadcrumb da
+  captação e o atalho pra Clientes no Dashboard.
+- Tabelas (Carteira, Histórico, Clientes): as linhas chegam esmaecendo
+  quando os dados carregam, em vez de "pular" no lugar do esqueleto logo
+  depois do deslize.
+
 ## 2026-11-24 — Transição entre telas
 
 - Pedido: o corte entre telas estava seco. Opção C do artefato
