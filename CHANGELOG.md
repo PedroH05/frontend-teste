@@ -3,6 +3,16 @@
 Mudanças relevantes deste frontend. Não é histórico de commit — só o que
 importa pra quem quer entender a evolução do sistema sem ler `git log`.
 
+## 2026-11-24 — Calendário do Período maior e com Manrope
+
+- Pedido: o calendário do filtro de Período (Histórico) estava pequeno pro
+  quadro e a fonte não agradava. Os dois meses agora ocupam a largura toda,
+  dias com 38 px, número normal em vez de negrito 17 px, faixa contínua do
+  período (pontas em vermelho) e ponto embaixo do dia de hoje. No celular
+  aparece um mês só.
+- Fonte Manrope só nesse popover (escolhida no artefato "Calendário do
+  Período"); o resto do sistema segue em Geist.
+
 ## 2026-11-24 — Transição entre telas: casos que ficavam secos
 
 - Voltar/avançar do navegador agora também desliza (antes só esmaecia),

@@ -199,7 +199,7 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
 
       <PopoverContent
         align="start"
-        className="w-[min(720px,calc(100vw-2.5rem))] rounded-[14px] p-0"
+        className="w-[min(720px,calc(100vw-2.5rem))] rounded-[14px] p-0 font-[family-name:var(--font-manrope)]"
         style={{ background: 'var(--popover)', border: '1px solid var(--border)', boxShadow: '0 4px 12px rgba(0,0,0,.08)' }}
       >
         <div className="flex flex-wrap items-end gap-2.5 border-b px-4 py-3" style={{ borderColor: 'var(--border)' }}>
@@ -254,65 +254,98 @@ export function FiltroPeriodo({ value, onChange }: { value: Periodo; onChange: (
             ))}
           </div>
 
-          <div className="flex flex-col gap-3 p-3.5 sm:flex-row sm:p-4">
+          {/* Calendário redesenhado (pedido 24/11/2026, artefato "Calendário do
+              Período"): os dois meses ocupam a largura toda do quadro (antes
+              ficavam espremidos ~180 px cada), dias com 38 px, número normal em
+              vez de negrito 17 px, faixa contínua do período e fonte Manrope.
+              No celular, um mês só. */}
+          <div className="grid min-w-0 flex-1 gap-7 px-5 py-4 sm:grid-cols-2">
             {[mesBase, new Date(mesBase.getFullYear(), mesBase.getMonth() + 1, 1)].map((mes, i) => (
-              <div key={i} className="min-w-0 flex-1">
-                <div className="mb-2.5 flex items-center justify-between">
+              <div key={i} className={i === 1 ? 'hidden min-w-0 sm:block' : 'min-w-0'}>
+                <div className="mb-2.5 flex h-[30px] items-center justify-between">
                   <button
                     type="button"
                     aria-label="Mês anterior"
                     onClick={() => setMesBase((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1))}
-                    className="flex h-7 w-7 items-center justify-center rounded-[8px] text-[14px] leading-none"
-                    style={{ background: 'var(--background)', color: 'var(--muted-foreground)', visibility: i === 0 ? 'visible' : 'hidden' }}
+                    className={`flex size-[30px] items-center justify-center rounded-lg text-base text-muted-foreground hover:bg-muted hover:text-foreground ${i === 0 ? '' : 'invisible'}`}
                   >
                     ‹
                   </button>
-                  <strong className="text-[14.5px] font-bold whitespace-nowrap">{nomeMes(mes)}</strong>
+                  <strong className="text-[15px] font-semibold whitespace-nowrap">{nomeMes(mes)}</strong>
                   <button
                     type="button"
                     aria-label="Próximo mês"
                     onClick={() => setMesBase((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1))}
-                    className="flex h-7 w-7 items-center justify-center rounded-[8px] text-[14px] leading-none"
-                    style={{ background: 'var(--background)', color: 'var(--muted-foreground)', visibility: i === 1 ? 'visible' : 'hidden' }}
+                    className={`flex size-[30px] items-center justify-center rounded-lg text-base text-muted-foreground hover:bg-muted hover:text-foreground ${i === 1 ? '' : 'sm:invisible'}`}
                   >
                     ›
                   </button>
                 </div>
-                <div className="mb-2 grid grid-cols-7 gap-1">
+                <div className="grid grid-cols-7 gap-y-0.5">
                   {DOW.map((d, idx) => (
-                    <span
-                      key={idx}
-                      className="flex items-center justify-center text-[11.5px] font-bold tracking-[.03em] uppercase"
-                      style={{ color: 'var(--muted-foreground)' }}
-                    >
+                    <span key={idx} className="pb-1.5 text-center text-[11.5px] font-semibold text-muted-foreground">
                       {d}
                     </span>
                   ))}
-                </div>
-                <div className="grid grid-cols-7 gap-1">
                   {diasDoMes(mes).map(({ data, noMes }, idx) => {
-                    const inicioP = noMes && mesmoDia(data, rascunho.inicio);
-                    const fimP = noMes && mesmoDia(data, rascunho.fim);
+                    if (!noMes) {
+                      return (
+                        <span
+                          key={idx}
+                          aria-hidden="true"
+                          className="grid h-[38px] place-items-center text-sm font-medium text-muted-foreground tabular-nums opacity-35"
+                        >
+                          {data.getDate()}
+                        </span>
+                      );
+                    }
+                    const inicioP = mesmoDia(data, rascunho.inicio);
+                    const fimP = mesmoDia(data, rascunho.fim);
                     const ponta = inicioP || fimP;
-                    const noIntervalo =
-                      noMes && !!rascunho.inicio && !!rascunho.fim && data > rascunho.inicio && data < rascunho.fim;
+                    const temFaixa = !!rascunho.inicio && !!rascunho.fim && !mesmoDia(rascunho.inicio, rascunho.fim);
+                    const naFaixa = temFaixa && data >= rascunho.inicio! && data <= meiaNoite(rascunho.fim!);
+                    const hojeD = mesmoDia(data, hoje);
+                    // Faixa contínua: fundo claro de ponta a ponta; nas pontas só
+                    // a metade de dentro, pra a faixa "entrar" no círculo vermelho.
+                    const fundoFaixa = !naFaixa
+                      ? undefined
+                      : inicioP
+                        ? 'linear-gradient(90deg, transparent 50%, var(--accent) 50%)'
+                        : fimP
+                          ? 'linear-gradient(90deg, var(--accent) 50%, transparent 50%)'
+                          : 'var(--accent)';
                     return (
                       <button
                         key={idx}
                         type="button"
-                        disabled={!noMes}
                         onClick={() => clicarDia(data)}
-                        className="relative flex aspect-square items-center justify-center rounded-[9px] text-[17px] leading-none"
-                        style={{
-                          color: !noMes ? 'var(--muted-foreground)' : ponta ? '#fff' : 'var(--foreground)',
-                          opacity: !noMes ? 0.4 : 1,
-                          background: ponta ? 'var(--primary)' : noIntervalo ? 'var(--accent)' : 'transparent',
-                          fontWeight: ponta ? 700 : noIntervalo ? 600 : mesmoDia(data, hoje) ? 700 : 600,
-                          fontVariantNumeric: 'tabular-nums',
-                          cursor: noMes ? 'pointer' : 'default',
-                        }}
+                        aria-pressed={ponta}
+                        className="group/dia relative grid h-[38px] place-items-center text-sm tabular-nums"
+                        style={{ background: fundoFaixa }}
                       >
-                        {data.getDate()}
+                        <span
+                          className={`absolute inset-0.5 rounded-[9px] ${ponta ? 'bg-primary' : 'group-hover/dia:bg-muted'}`}
+                          aria-hidden="true"
+                        />
+                        <span
+                          className={`relative ${
+                            ponta
+                              ? 'font-bold text-primary-foreground'
+                              : hojeD
+                                ? 'font-bold text-primary'
+                                : naFaixa
+                                  ? 'font-medium text-accent-foreground'
+                                  : 'font-medium text-foreground'
+                          }`}
+                        >
+                          {data.getDate()}
+                        </span>
+                        {hojeD && (
+                          <span
+                            aria-hidden="true"
+                            className={`absolute bottom-1.5 size-1 rounded-full ${ponta ? 'bg-primary-foreground' : 'bg-primary'}`}
+                          />
+                        )}
                       </button>
                     );
                   })}

@@ -581,6 +581,12 @@ captacao-api), então registros novos já chegam sem sujeira.
   (`InputData`), sincronizados com o clique nos dias e com os atalhos;
   digitar leva o calendário pro mês digitado, data inválida desabilita
   "Aplicar", e "Até" antes do "De" é aplicado na ordem certa.
+  Visual redesenhado em 24/11/2026: meses em `grid sm:grid-cols-2`
+  ocupando a largura toda, dias de 38 px, faixa contínua (fundo `--accent`
+  com meia-faixa nas pontas), ponto no dia de hoje, um mês só no celular.
+  É o único lugar com fonte **Manrope** (`next/font/google` em
+  `app/layout.tsx`, variável `--font-manrope`); o resto do sistema segue
+  Geist.
 - **Histórico: alternador Hoje/Tudo removido (15/10/2026)**: o
   `SegmentedControl` Hoje/Tudo (`dia`/`alvo` em `historico/page.tsx`) saiu
   — ficou redundante depois do `<FiltroPeriodo>` acima existir, já que o
